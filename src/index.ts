@@ -1,0 +1,11 @@
+export { Kernel } from './core/kernel.js';
+export { Pipeline } from './core/pipeline.js';
+export { PluginRegistry } from './core/plugin-registry.js';
+export { SearchFusion } from './plugins/search/fusion.js';
+export { BetterSqlite3Storage } from './plugins/storage/better-sqlite3.js';
+export { PrivacyEngine } from './plugins/privacy/privacy-engine.js';
+export { LifecycleManager } from './core/lifecycle.js';
+export { ObserveQueue } from './core/observe-queue.js';
+export { loadConfig, mergeConfig } from './core/config.js';
+export { ulid, estimateTokens, fnv1a64 } from './core/utils.js';
+export type * from './core/types.js';

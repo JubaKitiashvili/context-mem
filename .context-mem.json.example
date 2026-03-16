@@ -1,0 +1,22 @@
+{
+  "storage": "auto",
+  "plugins": {
+    "summarizers": ["shell", "json", "error", "log", "code"],
+    "search": ["bm25", "trigram"],
+    "runtimes": ["javascript", "python"]
+  },
+  "privacy": {
+    "strip_tags": true,
+    "redact_patterns": []
+  },
+  "token_economics": true,
+  "lifecycle": {
+    "ttl_days": 30,
+    "max_db_size_mb": 500,
+    "max_observations": 50000,
+    "cleanup_schedule": "on_startup",
+    "preserve_types": ["decision", "commit"]
+  },
+  "port": 3457,
+  "db_path": ".context-mem/store.db"
+}
