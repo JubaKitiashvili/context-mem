@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.context-mem/
+*.db
+*.db-wal
+*.db-shm
+.DS_Store
