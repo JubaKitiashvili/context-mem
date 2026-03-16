@@ -85,15 +85,30 @@ export class Kernel {
     }
   }
 
+  private ensureStarted(): void {
+    if (!this.storage) throw new Error('Kernel not started. Call start() first.');
+  }
+
   async observe(content: string, type: Observation['type'], source: string, filePath?: string): Promise<Observation> {
     return this.pipeline.observe(content, type, source, filePath);
   }
 
   async search(query: string, opts?: SearchOpts): Promise<SearchResult[]> {
-    return this.searchFusion.execute(query, opts || {});
+    this.ensureStarted();
+    const results = await this.searchFusion.execute(query, opts || {});
+    // Track discovery token economics
+    const discoveryTokens = results.reduce((sum, r) => sum + estimateTokens(r.snippet), 0);
+    if (this.storage && results.length > 0) {
+      this.storage.exec(
+        'INSERT INTO token_stats (session_id, event_type, tokens_in, tokens_out, timestamp) VALUES (?, ?, ?, ?, ?)',
+        [this.session.session_id, 'discovery', 0, discoveryTokens, Date.now()]
+      );
+    }
+    return results;
   }
 
   async get(id: string): Promise<Observation | null> {
+    this.ensureStarted();
     const row = this.storage.prepare('SELECT * FROM observations WHERE id = ?').get(id) as Record<string, unknown> | undefined;
     if (!row) return null;
 
@@ -103,17 +118,25 @@ export class Kernel {
       [this.session.session_id, 'read', 0, estimateTokens(row.content as string), Date.now()]
     );
 
+    let metadata: Record<string, unknown> = {};
+    try {
+      metadata = JSON.parse(row.metadata as string) as Record<string, unknown>;
+    } catch {
+      // malformed metadata — leave empty
+    }
+
     return {
       id: row.id as string,
       type: row.type as Observation['type'],
       content: row.content as string,
-      summary: row.summary as string | undefined,
-      metadata: JSON.parse(row.metadata as string),
+      summary: (row.summary ?? undefined) as string | undefined,
+      metadata: metadata as unknown as Observation['metadata'],
       indexed_at: row.indexed_at as number,
     };
   }
 
   async stats(): Promise<TokenEconomics> {
+    this.ensureStarted();
     const sid = this.session.session_id;
     const q = (sql: string): Record<string, number> =>
       this.storage.prepare(sql).get(sid) as Record<string, number>;

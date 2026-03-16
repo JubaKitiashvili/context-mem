@@ -1,5 +1,6 @@
 import type { SearchPlugin, PluginConfig, SearchResult, SearchOpts } from '../../core/types.js';
 import type { BetterSqlite3Storage } from '../storage/better-sqlite3.js';
+import { sanitizeFTS5Query } from './fts5-utils.js';
 
 export class TrigramSearch implements SearchPlugin {
   name = 'trigram-search';
@@ -24,7 +25,7 @@ export class TrigramSearch implements SearchPlugin {
       JOIN observations o ON o.rowid = obs_trigram.rowid
       WHERE obs_trigram MATCH ?
     `;
-    const params: unknown[] = [query];
+    const params: unknown[] = [sanitizeFTS5Query(query)];
 
     if (opts.type_filter && opts.type_filter.length > 0) {
       sql += ` AND o.type IN (${opts.type_filter.map(() => '?').join(',')})`;

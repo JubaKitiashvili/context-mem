@@ -218,6 +218,7 @@ export interface ContextMemConfig {
   };
   port: number;
   db_path: string;
+  execute_enabled: boolean;
 }
 
 export const DEFAULT_CONFIG: ContextMemConfig = {
@@ -242,4 +243,5 @@ export const DEFAULT_CONFIG: ContextMemConfig = {
   },
   port: 3457,
   db_path: '.context-mem/store.db',
+  execute_enabled: false,
 };

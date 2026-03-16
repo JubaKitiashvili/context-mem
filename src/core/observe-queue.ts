@@ -16,6 +16,7 @@ export class ObserveQueue {
   private queue: QueueItem[] = [];
   private dedupMap: Map<string, number> = new Map(); // hash → timestamp
   private onFlush: (items: QueueItem[]) => Promise<void>;
+  private flushing = false;
 
   constructor(onFlush: (items: QueueItem[]) => Promise<void>) {
     this.onFlush = onFlush;
@@ -53,9 +54,14 @@ export class ObserveQueue {
   }
 
   async flush(): Promise<void> {
-    if (this.queue.length === 0) return;
-    const items = this.queue.splice(0);
-    await this.onFlush(items);
+    if (this.flushing || this.queue.length === 0) return;
+    this.flushing = true;
+    try {
+      const items = this.queue.splice(0);
+      await this.onFlush(items);
+    } finally {
+      this.flushing = false;
+    }
   }
 
   get size(): number { return this.queue.length; }

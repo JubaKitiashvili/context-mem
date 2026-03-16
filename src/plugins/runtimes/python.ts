@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { writeFileSync, unlinkSync, mkdtempSync } from 'node:fs';
+import fs, { writeFileSync, mkdtempSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import type { RuntimePlugin, PluginConfig, ExecOpts, ExecResult } from '../../core/types.js';
@@ -89,8 +89,7 @@ export class PythonRuntime implements RuntimePlugin {
             }
           }
 
-          try { unlinkSync(tmpFile); } catch { /* best-effort */ }
-          try { unlinkSync(tmpDir); } catch { /* best-effort */ }
+          try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch { /* best-effort */ }
 
           resolve({
             stdout: stdoutResult.text,

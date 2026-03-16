@@ -120,7 +120,7 @@ export class JsonSummarizer implements SummarizerPlugin {
       summary,
       tokens_original: tokensOriginal,
       tokens_summarized: tokensSummarized,
-      savings_pct: Math.round((1 - tokensSummarized / tokensOriginal) * 100),
+      savings_pct: tokensOriginal > 0 ? Math.round((1 - tokensSummarized / tokensOriginal) * 100) : 0,
       content_type: 'json',
     };
   }

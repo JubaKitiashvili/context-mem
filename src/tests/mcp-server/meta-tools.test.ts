@@ -101,9 +101,12 @@ describe('MCP tools — configure', () => {
 
   it('returns updated=true with key and value', async () => {
     const result = await handleConfigure({ key: 'privacy.strip_tags', value: false }, kernel);
-    assert.equal(result.updated, true);
-    assert.equal(result.key, 'privacy.strip_tags');
-    assert.equal(result.value, false);
+    assert.ok(!('error' in result), `should not error: ${'error' in result ? (result as { error: string }).error : ''}`);
+    if (!('error' in result)) {
+      assert.equal(result.updated, true);
+      assert.equal(result.key, 'privacy.strip_tags');
+      assert.equal(result.value, false);
+    }
   });
 
   it('actually mutates the kernel config', async () => {
@@ -121,10 +124,9 @@ describe('MCP tools — configure', () => {
     assert.equal(kernel.config.lifecycle.ttl_days, 7);
   });
 
-  it('can set a string config value', async () => {
+  it('rejects keys not in the allowlist', async () => {
     const result = await handleConfigure({ key: 'storage', value: 'sqlite' }, kernel);
-    assert.equal(result.value, 'sqlite');
-    assert.equal(kernel.config.storage, 'sqlite');
+    assert.ok('error' in result, 'should return error for non-allowlisted key');
   });
 });
 
@@ -139,13 +141,15 @@ describe('MCP tools — execute', () => {
 
   after(async () => { await storage.close(); });
 
-  it('returns error when no runtime plugins registered', async () => {
+  it('returns error when execute_enabled is false', async () => {
     const result = await handleExecute({ code: 'console.log("hi")' }, kernel);
-    assert.ok('error' in result, 'should return error when no runtimes');
+    assert.ok('error' in result, 'should return error when execute_enabled is false');
+    assert.ok((result as { error: string }).error.includes('disabled'), 'error should mention disabled');
   });
 
-  describe('with a mock runtime registered', () => {
+  describe('with a mock runtime registered and execute_enabled=true', () => {
     before(async () => {
+      kernel.config.execute_enabled = true;
       const mockRuntime = makeMockRuntime('javascript', {
         stdout: 'hello world',
         stderr: '',

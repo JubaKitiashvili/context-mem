@@ -24,15 +24,15 @@ export class LifecycleManager {
     ).run(cutoff, ...this.config.preserve_types);
     deleted += ttlResult.changes;
 
-    // 2. Count cap — delete oldest if over max_observations
+    // 2. Count cap — delete oldest if over max_observations (skip preserved types)
     const countRow = this.storage.prepare('SELECT COUNT(*) as cnt FROM observations').get() as { cnt: number };
     if (countRow.cnt > this.config.max_observations) {
       const excess = countRow.cnt - this.config.max_observations;
       const capResult = this.storage.prepare(
         `DELETE FROM observations WHERE id IN (
-          SELECT id FROM observations ORDER BY indexed_at ASC LIMIT ?
+          SELECT id FROM observations WHERE type NOT IN (${preservePlaceholders}) ORDER BY indexed_at ASC LIMIT ?
         )`
-      ).run(excess);
+      ).run(...this.config.preserve_types, excess);
       deleted += capResult.changes;
     }
 

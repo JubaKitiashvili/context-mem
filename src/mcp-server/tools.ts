@@ -348,13 +348,35 @@ export async function handleStats(
   };
 }
 
+const MUTABLE_CONFIG_KEYS = new Set([
+  'privacy.strip_tags',
+  'privacy.redact_patterns',
+  'token_economics',
+  'lifecycle.ttl_days',
+  'lifecycle.max_observations',
+  'lifecycle.cleanup_schedule',
+]);
+
 // Task 21 — configure
 export async function handleConfigure(
   params: { key: string; value: unknown },
   kernel: ToolKernel,
-): Promise<{ updated: boolean; key: string; value: unknown }> {
+): Promise<{ updated: boolean; key: string; value: unknown } | { error: string }> {
+  // Reject prototype pollution keys
+  const segments = params.key.split('.');
+  for (const seg of segments) {
+    if (seg === '__proto__' || seg === 'constructor' || seg === 'prototype') {
+      return { error: `Forbidden config key segment: "${seg}"` };
+    }
+  }
+
+  // Reject keys not in the allowlist
+  if (!MUTABLE_CONFIG_KEYS.has(params.key)) {
+    return { error: `Key "${params.key}" is not in the mutable config allowlist` };
+  }
+
   // Apply mutable config updates via key path
-  const keys = params.key.split('.');
+  const keys = segments;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let cursor: any = kernel.config;
   for (let i = 0; i < keys.length - 1; i++) {
@@ -368,11 +390,18 @@ export async function handleConfigure(
   return { updated: true, key: params.key, value: params.value };
 }
 
+const SENSITIVE_ENV_RE = /KEY|SECRET|TOKEN|PASSWORD|CREDENTIAL/i;
+
 // Task 21 — execute
 export async function handleExecute(
   params: { code: string; language?: string },
   kernel: ToolKernel,
 ): Promise<{ stdout: string; stderr: string; exit_code: number; duration_ms: number } | { error: string }> {
+  // Safety check: execute tool must be explicitly enabled
+  if (!kernel.config.execute_enabled) {
+    return { error: 'Execute tool is disabled. Set execute_enabled: true in .context-mem.json' };
+  }
+
   const runtimes = kernel.registry.getAll('runtime') as RuntimePlugin[];
 
   if (runtimes.length === 0) {
@@ -389,8 +418,16 @@ export async function handleExecute(
     runtime = runtimes[0];
   }
 
+  // Strip sensitive env vars before passing to runtime
+  const safeEnv: Record<string, string> = {};
+  for (const [key, val] of Object.entries(process.env)) {
+    if (!SENSITIVE_ENV_RE.test(key) && val !== undefined) {
+      safeEnv[key] = val;
+    }
+  }
+
   try {
-    const result = await runtime.execute(params.code, {});
+    const result = await runtime.execute(params.code, { env: safeEnv });
     return {
       stdout: result.stdout,
       stderr: result.stderr,
