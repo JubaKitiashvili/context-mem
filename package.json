@@ -10,15 +10,15 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "node --test --experimental-test-glob 'dist/tests/**/*.test.js'",
-    "test:watch": "tsc --watch & node --test --watch --experimental-test-glob 'dist/tests/**/*.test.js'",
+    "test": "node --test 'dist/tests/**/*.test.js'",
+    "test:watch": "tsc --watch & node --test --watch 'dist/tests/**/*.test.js'",
     "lint": "tsc --noEmit",
     "prepublishOnly": "npm run build && npm test"
   },
   "keywords": ["mcp", "context", "llm", "token-optimization", "claude-code", "ai-coding"],
   "author": "Juba Kitiashvili",
   "license": "MIT",
-  "files": ["dist", "hooks"],
+  "files": ["dist", "!dist/tests", "hooks", ".context-mem.json.example"],
   "engines": { "node": ">=18" },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

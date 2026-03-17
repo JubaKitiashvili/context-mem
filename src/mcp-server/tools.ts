@@ -7,9 +7,43 @@ import type {
   ObservationType,
   TokenEconomics,
   SearchResult,
+  KnowledgeCategory,
+  EventPriority,
 } from '../core/types.js';
+import { OBSERVATION_TYPES } from '../core/types.js';
 import type { PluginRegistry } from '../core/plugin-registry.js';
 import type { ContextMemConfig } from '../core/types.js';
+import type { BudgetManager } from '../core/budget.js';
+import type { EventTracker } from '../core/events.js';
+import type { SessionManager } from '../core/session.js';
+import type { ContentStore } from '../plugins/storage/content-store.js';
+import type { KnowledgeBase } from '../plugins/knowledge/knowledge-base.js';
+
+// ---------------------------------------------------------------------------
+// Input validation helpers
+// ---------------------------------------------------------------------------
+
+const MAX_CONTENT_LENGTH = 512 * 1024; // 512KB
+const MAX_LIMIT = 100;
+const MIN_LIMIT = 1;
+
+function validateLimit(v: unknown): number {
+  const n = Number(v);
+  if (!Number.isFinite(n) || !Number.isInteger(n)) return 5;
+  return Math.max(MIN_LIMIT, Math.min(MAX_LIMIT, n));
+}
+
+function validateTimestamp(v: unknown): number | undefined {
+  if (v === undefined || v === null) return undefined;
+  const n = Number(v);
+  if (!Number.isFinite(n) || n < 0) return undefined;
+  return n;
+}
+
+function validateObservationType(v: unknown): ObservationType {
+  const s = String(v || 'context');
+  return (OBSERVATION_TYPES as readonly string[]).includes(s) ? (s as ObservationType) : 'context';
+}
 
 // Minimal kernel interface used by tool handlers
 export interface ToolKernel {
@@ -19,6 +53,11 @@ export interface ToolKernel {
   registry: PluginRegistry;
   sessionId: string;
   config: ContextMemConfig;
+  budgetManager: BudgetManager;
+  eventTracker: EventTracker;
+  sessionManager: SessionManager;
+  contentStore: ContentStore;
+  knowledgeBase: KnowledgeBase;
 }
 
 // ---------------------------------------------------------------------------
@@ -143,6 +182,124 @@ export const toolDefinitions: ToolDefinition[] = [
       required: ['code'],
     },
   },
+  // Content store tools
+  {
+    name: 'index_content',
+    description: 'Index content into the content store with code-aware chunking for later search.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        content: { type: 'string', description: 'Content to index' },
+        source: { type: 'string', description: 'Source identifier (e.g. file path, URL)' },
+      },
+      required: ['content', 'source'],
+    },
+  },
+  {
+    name: 'search_content',
+    description: 'Search the content store for indexed content chunks.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search query' },
+        source: { type: 'string', description: 'Filter by source' },
+        limit: { type: 'number', description: 'Max results (default: 5)' },
+      },
+      required: ['query'],
+    },
+  },
+  // Knowledge base tools
+  {
+    name: 'save_knowledge',
+    description: 'Save a knowledge entry (pattern, decision, error, api, or component).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        category: { type: 'string', enum: ['pattern', 'decision', 'error', 'api', 'component'], description: 'Knowledge category' },
+        title: { type: 'string', description: 'Short title' },
+        content: { type: 'string', description: 'Knowledge content' },
+        tags: { type: 'array', items: { type: 'string' }, description: 'Tags for categorization' },
+        shareable: { type: 'boolean', description: 'Whether this knowledge can be shared (default: true)' },
+      },
+      required: ['category', 'title', 'content'],
+    },
+  },
+  {
+    name: 'search_knowledge',
+    description: 'Search the knowledge base using 3-layer search (FTS5 → trigram → scan).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search query' },
+        category: { type: 'string', enum: ['pattern', 'decision', 'error', 'api', 'component'], description: 'Filter by category' },
+        limit: { type: 'number', description: 'Max results (default: 10)' },
+      },
+      required: ['query'],
+    },
+  },
+  // Budget tools
+  {
+    name: 'budget_status',
+    description: 'Get current budget usage and status for the session.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: 'budget_configure',
+    description: 'Configure budget settings (session limit, overflow strategy).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        session_limit: { type: 'number', description: 'Token budget limit for session' },
+        overflow_strategy: { type: 'string', enum: ['aggressive_truncation', 'warn', 'hard_stop'], description: 'What to do when budget is exceeded' },
+      },
+      required: [],
+    },
+  },
+  // Session tools
+  {
+    name: 'restore_session',
+    description: 'Restore a previous session snapshot by session ID.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        session_id: { type: 'string', description: 'Session ID to restore' },
+      },
+      required: ['session_id'],
+    },
+  },
+  // Event tools
+  {
+    name: 'emit_event',
+    description: 'Emit a context event with priority and metadata.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        event_type: { type: 'string', description: 'Event type (e.g. task_start, error, file_modify, decision)' },
+        data: { type: 'object', description: 'Event data/metadata' },
+        agent: { type: 'string', description: 'Agent identifier' },
+      },
+      required: ['event_type'],
+    },
+  },
+  {
+    name: 'query_events',
+    description: 'Query context events with optional filters.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        event_type: { type: 'string', description: 'Filter by event type' },
+        priority: { type: 'number', description: 'Filter by max priority (1=critical, 4=low)' },
+        limit: { type: 'number', description: 'Max results (default: 50)' },
+        from: { type: 'number', description: 'Start timestamp' },
+        to: { type: 'number', description: 'End timestamp' },
+      },
+      required: [],
+    },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -153,8 +310,15 @@ export const toolDefinitions: ToolDefinition[] = [
 export async function handleObserve(
   params: { content: string; type?: string; source?: string },
   kernel: ToolKernel,
-): Promise<{ id: string; summary: string | undefined; tokens_saved: number }> {
-  const type = (params.type || 'context') as ObservationType;
+): Promise<{ id: string; summary: string | undefined; tokens_saved: number } | { error: string }> {
+  if (!params.content || typeof params.content !== 'string') {
+    return { error: 'content is required and must be a non-empty string' };
+  }
+  if (params.content.length > MAX_CONTENT_LENGTH) {
+    return { error: `content exceeds maximum length of ${MAX_CONTENT_LENGTH} bytes` };
+  }
+
+  const type = validateObservationType(params.type);
   const source = params.source || 'mcp';
 
   const obs = await kernel.pipeline.observe(params.content, type, source);
@@ -171,7 +335,11 @@ export async function handleObserve(
 export async function handleSummarize(
   params: { content: string },
   kernel: ToolKernel,
-): Promise<{ summary: string; tokens_original: number; tokens_summarized: number; savings_pct: number }> {
+): Promise<{ summary: string; tokens_original: number; tokens_summarized: number; savings_pct: number } | { error: string }> {
+  if (!params.content || typeof params.content !== 'string') {
+    return { error: 'content is required and must be a non-empty string' };
+  }
+
   const summarizers = kernel.registry.getAll('summarizer') as SummarizerPlugin[];
   const matching = summarizers.find(s => s.detect(params.content));
 
@@ -202,10 +370,10 @@ export async function handleSearch(
   kernel: ToolKernel,
 ): Promise<Array<{ id: string; title: string; snippet: string; relevance_score: number; timestamp: number }>> {
   const opts: { type_filter?: ObservationType[]; limit?: number } = {
-    limit: params.limit || 5,
+    limit: validateLimit(params.limit ?? 5),
   };
   if (params.type) {
-    opts.type_filter = [params.type as ObservationType];
+    opts.type_filter = [validateObservationType(params.type)];
   }
 
   const results: SearchResult[] = await kernel.search.execute(params.query, opts);
@@ -231,20 +399,24 @@ export async function handleTimeline(
   params: { from?: number; to?: number; type?: string; session_id?: string; limit?: number },
   kernel: ToolKernel,
 ): Promise<TimelineEntry[]> {
+  const validFrom = validateTimestamp(params.from);
+  const validTo = validateTimestamp(params.to);
+  const validLimit = validateLimit(params.limit ?? 20);
+
   let sql = 'SELECT id, type, summary, indexed_at FROM observations WHERE 1=1';
   const queryParams: unknown[] = [];
 
-  if (params.from !== undefined) {
+  if (validFrom !== undefined) {
     sql += ' AND indexed_at >= ?';
-    queryParams.push(params.from);
+    queryParams.push(validFrom);
   }
-  if (params.to !== undefined) {
+  if (validTo !== undefined) {
     sql += ' AND indexed_at <= ?';
-    queryParams.push(params.to);
+    queryParams.push(validTo);
   }
   if (params.type) {
     sql += ' AND type = ?';
-    queryParams.push(params.type);
+    queryParams.push(validateObservationType(params.type));
   }
   if (params.session_id) {
     sql += ' AND session_id = ?';
@@ -252,7 +424,7 @@ export async function handleTimeline(
   }
 
   sql += ' ORDER BY indexed_at DESC LIMIT ?';
-  queryParams.push(params.limit || 20);
+  queryParams.push(validLimit);
 
   const rows = kernel.storage.prepare(sql).all(...queryParams) as Array<{
     id: string; type: string; summary: string | null; indexed_at: number;
@@ -327,7 +499,7 @@ export async function handleStats(
 
   const searchRow = kernel.storage
     .prepare(
-      "SELECT COUNT(*) as n FROM token_stats WHERE session_id = ? AND event_type = 'search'",
+      "SELECT COUNT(*) as n FROM token_stats WHERE session_id = ? AND event_type = 'discovery'",
     )
     .get(kernel.sessionId) as { n: number };
 
@@ -437,4 +609,180 @@ export async function handleExecute(
   } catch (err) {
     return { error: (err as Error).message };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Content Store handlers
+// ---------------------------------------------------------------------------
+
+export async function handleIndexContent(
+  params: { content: string; source: string },
+  kernel: ToolKernel,
+): Promise<{ source_id: number; source: string } | { error: string }> {
+  if (!params.content || typeof params.content !== 'string') {
+    return { error: 'content is required' };
+  }
+  if (!params.source || typeof params.source !== 'string') {
+    return { error: 'source is required' };
+  }
+  if (params.content.length > MAX_CONTENT_LENGTH) {
+    return { error: `content exceeds maximum length of ${MAX_CONTENT_LENGTH} bytes` };
+  }
+
+  const sourceId = kernel.contentStore.index(params.content, params.source);
+  return { source_id: sourceId, source: params.source };
+}
+
+export async function handleSearchContent(
+  params: { query: string; source?: string; limit?: number },
+  kernel: ToolKernel,
+): Promise<Array<{ heading: string | null; content: string; has_code: boolean; source: string; relevance: number }>> {
+  return kernel.contentStore.search(params.query, {
+    source: params.source,
+    limit: validateLimit(params.limit ?? 5),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Knowledge Base handlers
+// ---------------------------------------------------------------------------
+
+const KNOWLEDGE_CATEGORIES = ['pattern', 'decision', 'error', 'api', 'component'] as const;
+
+export async function handleSaveKnowledge(
+  params: { category: string; title: string; content: string; tags?: string[]; shareable?: boolean },
+  kernel: ToolKernel,
+): Promise<{ id: string; category: string; title: string } | { error: string }> {
+  if (!params.title || !params.content) {
+    return { error: 'title and content are required' };
+  }
+  const category = (KNOWLEDGE_CATEGORIES as readonly string[]).includes(params.category)
+    ? params.category as KnowledgeCategory
+    : 'pattern' as KnowledgeCategory;
+
+  const entry = kernel.knowledgeBase.save({
+    category,
+    title: params.title,
+    content: params.content,
+    tags: params.tags,
+    shareable: params.shareable,
+  });
+
+  return { id: entry.id, category: entry.category, title: entry.title };
+}
+
+export async function handleSearchKnowledge(
+  params: { query: string; category?: string; limit?: number },
+  kernel: ToolKernel,
+): Promise<Array<{ id: string; category: string; title: string; content: string; relevance_score: number; tags: string[] }>> {
+  const category = params.category && (KNOWLEDGE_CATEGORIES as readonly string[]).includes(params.category)
+    ? params.category as KnowledgeCategory
+    : undefined;
+
+  const results = kernel.knowledgeBase.search(params.query, {
+    category,
+    limit: validateLimit(params.limit ?? 10),
+  });
+
+  return results.map(r => ({
+    id: r.id,
+    category: r.category,
+    title: r.title,
+    content: r.content,
+    relevance_score: r.relevance_score,
+    tags: r.tags,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Budget handlers
+// ---------------------------------------------------------------------------
+
+export async function handleBudgetStatus(
+  _params: Record<string, never>,
+  kernel: ToolKernel,
+): Promise<{ used: number; limit: number; percentage: number; strategy: string; throttled: boolean; blocked: boolean }> {
+  return kernel.budgetManager.getStatus(kernel.sessionId);
+}
+
+export async function handleBudgetConfigure(
+  params: { session_limit?: number; overflow_strategy?: string },
+  kernel: ToolKernel,
+): Promise<{ updated: boolean } | { error: string }> {
+  const config: Record<string, unknown> = {};
+  if (params.session_limit !== undefined) {
+    if (typeof params.session_limit !== 'number' || params.session_limit <= 0) {
+      return { error: 'session_limit must be a positive number' };
+    }
+    config.session_limit = params.session_limit;
+  }
+  if (params.overflow_strategy !== undefined) {
+    const valid = ['aggressive_truncation', 'warn', 'hard_stop'];
+    if (!valid.includes(params.overflow_strategy)) {
+      return { error: `overflow_strategy must be one of: ${valid.join(', ')}` };
+    }
+    config.overflow_strategy = params.overflow_strategy;
+  }
+
+  kernel.budgetManager.configure(config as Partial<import('../core/types.js').BudgetConfig>);
+  return { updated: true };
+}
+
+// ---------------------------------------------------------------------------
+// Session handlers
+// ---------------------------------------------------------------------------
+
+export async function handleRestoreSession(
+  params: { session_id: string },
+  kernel: ToolKernel,
+): Promise<{ snapshot: Record<string, unknown>; condensed: boolean } | { error: string }> {
+  if (!params.session_id) {
+    return { error: 'session_id is required' };
+  }
+
+  const result = kernel.sessionManager.restoreSnapshot(params.session_id);
+  if (!result) {
+    return { error: `No snapshot found for session: ${params.session_id}` };
+  }
+
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// Event handlers
+// ---------------------------------------------------------------------------
+
+export async function handleEmitEvent(
+  params: { event_type: string; data?: Record<string, unknown>; agent?: string },
+  kernel: ToolKernel,
+): Promise<{ id: string; event_type: string; priority: number }> {
+  const event = kernel.eventTracker.emit(
+    kernel.sessionId,
+    params.event_type,
+    params.data || {},
+    params.agent,
+  );
+
+  return { id: event.id, event_type: event.event_type, priority: event.priority };
+}
+
+export async function handleQueryEvents(
+  params: { event_type?: string; priority?: number; limit?: number; from?: number; to?: number },
+  kernel: ToolKernel,
+): Promise<Array<{ id: string; event_type: string; priority: number; data: Record<string, unknown>; timestamp: number }>> {
+  const events = kernel.eventTracker.query(kernel.sessionId, {
+    event_type: params.event_type,
+    priority: params.priority as EventPriority | undefined,
+    limit: validateLimit(params.limit ?? 50),
+    from: validateTimestamp(params.from),
+    to: validateTimestamp(params.to),
+  });
+
+  return events.map(e => ({
+    id: e.id,
+    event_type: e.event_type,
+    priority: e.priority,
+    data: e.data,
+    timestamp: e.timestamp,
+  }));
 }

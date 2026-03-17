@@ -17,6 +17,6 @@
     "cleanup_schedule": "on_startup",
     "preserve_types": ["decision", "commit"]
   },
-  "port": 3457,
+  "port": 51893,
   "db_path": ".context-mem/store.db"
 }

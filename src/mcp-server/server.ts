@@ -12,6 +12,15 @@ import {
   handleStats,
   handleConfigure,
   handleExecute,
+  handleIndexContent,
+  handleSearchContent,
+  handleSaveKnowledge,
+  handleSearchKnowledge,
+  handleBudgetStatus,
+  handleBudgetConfigure,
+  handleRestoreSession,
+  handleEmitEvent,
+  handleQueryEvents,
 } from './tools.js';
 
 export function createMcpServer(kernel: ToolKernel): Server {
@@ -61,6 +70,33 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'execute':
           result = await handleExecute(params as Parameters<typeof handleExecute>[0], kernel);
+          break;
+        case 'index_content':
+          result = await handleIndexContent(params as Parameters<typeof handleIndexContent>[0], kernel);
+          break;
+        case 'search_content':
+          result = await handleSearchContent(params as Parameters<typeof handleSearchContent>[0], kernel);
+          break;
+        case 'save_knowledge':
+          result = await handleSaveKnowledge(params as Parameters<typeof handleSaveKnowledge>[0], kernel);
+          break;
+        case 'search_knowledge':
+          result = await handleSearchKnowledge(params as Parameters<typeof handleSearchKnowledge>[0], kernel);
+          break;
+        case 'budget_status':
+          result = await handleBudgetStatus(params as Parameters<typeof handleBudgetStatus>[0], kernel);
+          break;
+        case 'budget_configure':
+          result = await handleBudgetConfigure(params as Parameters<typeof handleBudgetConfigure>[0], kernel);
+          break;
+        case 'restore_session':
+          result = await handleRestoreSession(params as Parameters<typeof handleRestoreSession>[0], kernel);
+          break;
+        case 'emit_event':
+          result = await handleEmitEvent(params as Parameters<typeof handleEmitEvent>[0], kernel);
+          break;
+        case 'query_events':
+          result = await handleQueryEvents(params as Parameters<typeof handleQueryEvents>[0], kernel);
           break;
         default:
           return {
