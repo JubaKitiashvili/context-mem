@@ -1,0 +1,27 @@
+{
+  "storage": "auto",
+  "plugins": {
+    "summarizers": [
+      "shell",
+      "json",
+      "error",
+      "log",
+      "code"
+    ],
+    "search": [
+      "bm25",
+      "trigram"
+    ]
+  },
+  "privacy": {
+    "strip_tags": true,
+    "redact_patterns": []
+  },
+  "token_economics": true,
+  "lifecycle": {
+    "ttl_days": 30,
+    "max_observations": 50000,
+    "cleanup_schedule": "on_startup"
+  },
+  "db_path": ".context-mem/store.db"
+}
