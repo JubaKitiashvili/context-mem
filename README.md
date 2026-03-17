@@ -30,6 +30,13 @@ AI coding assistants waste 60–80% of their context window on raw tool outputs 
 
 ## Quick Start
 
+**Claude Code Plugin (recommended):**
+```
+/plugin marketplace add JubaKitiashvili/context-mem
+/plugin install context-mem@context-mem
+```
+
+**npm (manual):**
 ```bash
 npm install -g context-mem
 cd your-project
