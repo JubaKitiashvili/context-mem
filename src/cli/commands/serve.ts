@@ -72,7 +72,9 @@ export async function serve(_args: string[]): Promise<void> {
 async function startDashboard(projectDir: string): Promise<ChildProcess | null> {
   // Check if dashboard is already running (singleton)
   try {
-    const res = await fetch('http://localhost:51893/api/health');
+    const res = await fetch('http://localhost:51893/api/health', {
+      signal: AbortSignal.timeout(2000),
+    });
     if (res.ok) {
       console.error('context-mem: Dashboard already running at http://localhost:51893');
       return null;
@@ -89,6 +91,8 @@ async function startDashboard(projectDir: string): Promise<ChildProcess | null> 
     stdio: 'ignore',
     env: { ...process.env },
   });
+  child.unref();
+  child.on('error', () => {}); // Prevent unhandled error if spawn fails
 
   console.error('context-mem: Dashboard available at http://localhost:51893');
   return child;

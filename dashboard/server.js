@@ -122,7 +122,8 @@ function getStats() {
   const obsCount = db.prepare('SELECT COUNT(*) as v FROM observations').get();
   const byType = db.prepare('SELECT type, COUNT(*) as count FROM observations GROUP BY type ORDER BY count DESC').all();
   const sessions = db.prepare('SELECT COUNT(DISTINCT session_id) as v FROM observations').get();
-  const dbSize = fs.statSync(dbPath).size;
+  const currentDbPath = db.name;
+  const dbSize = fs.statSync(currentDbPath).size;
 
   const tokenStats = db.prepare(`
     SELECT event_type,
@@ -235,11 +236,12 @@ function exportObservations(limit = 1000) {
 function getDbHealth() {
   const schemaVersion = db.prepare('SELECT MAX(version) as v FROM schema_version').get();
   const obsCount = db.prepare('SELECT COUNT(*) as v FROM observations').get();
-  const dbSize = fs.statSync(dbPath).size;
+  const currentDbPath = db.name;
+  const dbSize = fs.statSync(currentDbPath).size;
 
   // WAL file size
   let walSize = 0;
-  try { walSize = fs.statSync(dbPath + '-wal').size; } catch {}
+  try { walSize = fs.statSync(currentDbPath + '-wal').size; } catch {}
 
   // FTS5 check: verify tables exist and have rows
   let ftsOk = true;
@@ -267,7 +269,7 @@ function getDbHealth() {
     trigram_ok: trigramOk,
     oldest_at: oldest?.v || null,
     newest_at: newest?.v || null,
-    db_path: dbPath,
+    db_path: currentDbPath,
   };
 }
 
@@ -580,11 +582,11 @@ function handleApi(req, res) {
         const allStats = [];
         let totalObs = 0, totalContentLen = 0, totalSummaryLen = 0;
         for (const inst of allInstances) {
+          let tmpDb;
           try {
-            const tmpDb = new Database(inst.dbPath, { readonly: true });
+            tmpDb = new Database(inst.dbPath, { readonly: true });
             const obsCount = tmpDb.prepare('SELECT COUNT(*) as v FROM observations').get();
             const sizes = tmpDb.prepare('SELECT COALESCE(SUM(LENGTH(content)),0) as raw, COALESCE(SUM(LENGTH(summary)),0) as comp FROM observations').get();
-            tmpDb.close();
             const obs = obsCount?.v || 0;
             const raw = sizes?.raw || 0;
             const comp = sizes?.comp || 0;
@@ -592,7 +594,9 @@ function handleApi(req, res) {
             totalContentLen += raw;
             totalSummaryLen += comp;
             allStats.push({ project: inst.projectName, projectDir: inst.projectDir, observations: obs, rawBytes: raw, compressedBytes: comp, savings: raw > 0 ? Math.round((1 - comp / raw) * 100) : 0 });
-          } catch {}
+          } catch {} finally {
+            try { if (tmpDb) tmpDb.close(); } catch {}
+          }
         }
         data = {
           projects: allStats,
@@ -608,8 +612,10 @@ function handleApi(req, res) {
       }
       case '/api/switch-project': {
         const targetDb = url.searchParams.get('db');
-        if (targetDb && switchProject(targetDb)) {
-          currentProject = getRegisteredInstances().find(i => i.dbPath === targetDb)?.projectDir || '';
+        const registeredInstances = getRegisteredInstances();
+        const targetInstance = targetDb ? registeredInstances.find(i => i.dbPath === targetDb) : null;
+        if (targetInstance && switchProject(targetDb)) {
+          currentProject = targetInstance.projectDir;
           data = { ok: true, db: targetDb, project: currentProject };
         } else {
           data = { ok: false, error: 'Failed to switch' };
