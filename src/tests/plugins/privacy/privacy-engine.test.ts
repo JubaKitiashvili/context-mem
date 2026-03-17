@@ -58,9 +58,10 @@ describe('PrivacyEngine', () => {
     assert.equal(withRedact.redactions, 1);
   });
 
-  it('fail-closed: throws on privacy engine error', () => {
-    const engine = new PrivacyEngine({ strip_tags: true, redact_patterns: ['(a+)+z'] });
-    const result = engine.process('simple safe content');
-    assert.equal(typeof result.cleaned, 'string');
+  it('fail-closed: throws on ReDoS-prone regex pattern', () => {
+    assert.throws(
+      () => new PrivacyEngine({ strip_tags: true, redact_patterns: ['(a+)+z'] }),
+      { message: /too slow \(potential ReDoS\)/ },
+    );
   });
 });

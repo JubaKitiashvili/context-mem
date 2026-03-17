@@ -24,7 +24,18 @@ async function buildKernel(storage: BetterSqlite3Storage, sessionId: string): Pr
   const search = new SearchFusion([bm25]);
   const config = structuredClone(DEFAULT_CONFIG);
 
-  return { pipeline, search, storage, registry, sessionId, config };
+  const { BudgetManager } = await import('../../core/budget.js');
+  const { EventTracker } = await import('../../core/events.js');
+  const { SessionManager } = await import('../../core/session.js');
+  const { ContentStore } = await import('../../plugins/storage/content-store.js');
+  const { KnowledgeBase } = await import('../../plugins/knowledge/knowledge-base.js');
+  const budgetManager = new BudgetManager(storage);
+  const eventTracker = new EventTracker(storage);
+  const sessionManager = new SessionManager(storage, eventTracker);
+  const contentStore = new ContentStore(storage);
+  const knowledgeBase = new KnowledgeBase(storage);
+
+  return { pipeline, search, storage, registry, sessionId, config, budgetManager, eventTracker, sessionManager, contentStore, knowledgeBase };
 }
 
 describe('MCP tools — search', () => {
@@ -151,6 +162,7 @@ describe('MCP tools — get', () => {
     storage = await createTestDb();
     kernel = await buildKernel(storage, 'mcp-get-session');
     const obs = await handleObserve({ content: testContent, type: 'context' }, kernel);
+    if ('error' in obs) throw new Error(obs.error);
     storedId = obs.id;
   });
 

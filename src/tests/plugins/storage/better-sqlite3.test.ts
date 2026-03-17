@@ -65,10 +65,11 @@ describe('BetterSqlite3Storage', () => {
     storage.exec(
       `INSERT INTO observations (id, type, content, summary, metadata, indexed_at, privacy_level)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      ['tri-1', 'log', 'authentication middleware failed', 'auth fail', '{}', Date.now(), 'public']
+      ['tri-1', 'log', 'authentication middleware failed', 'auth middleware fail', '{}', Date.now(), 'public']
     );
+    // Trigram index only covers the summary column
     const results = storage.prepare(
-      "SELECT * FROM obs_trigram WHERE obs_trigram MATCH '\"uthenti\"'"
+      "SELECT * FROM obs_trigram WHERE obs_trigram MATCH '\"iddleware\"'"
     ).all();
     assert.equal(results.length, 1);
   });

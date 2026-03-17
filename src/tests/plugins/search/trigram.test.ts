@@ -22,16 +22,17 @@ describe('TrigramSearch', () => {
   afterEach(async () => { await storage.close(); });
 
   it('finds substring matches', async () => {
-    const results = await search.search('uthenti', {});
+    // Trigram index only covers the summary column
+    const results = await search.search('iddleware', {});
     assert.ok(results.length >= 1);
     const ids = results.map(r => r.id);
     assert.ok(ids.includes('1'));
   });
 
   it('finds results BM25 would miss', async () => {
-    // "validateT" is not a full word — BM25 porter tokenizer won't match it,
-    // but trigram can find it as a substring
-    const results = await search.search('alidateTo', {});
+    // "alidati" is not a full word — BM25 porter tokenizer won't match it,
+    // but trigram can find it as a substring in the summary
+    const results = await search.search('alidati', {});
     assert.ok(results.length >= 1);
     assert.equal(results[0].id, '2');
   });
@@ -41,8 +42,8 @@ describe('TrigramSearch', () => {
     assert.equal(results.length, 0);
   });
 
-  it('shouldFallback returns false always', () => {
-    assert.equal(search.shouldFallback([]), false);
+  it('shouldFallback returns true only when no results found', () => {
+    assert.equal(search.shouldFallback([]), true);
     assert.equal(search.shouldFallback([{} as any, {} as any]), false);
     assert.equal(search.shouldFallback([{} as any, {} as any, {} as any]), false);
   });

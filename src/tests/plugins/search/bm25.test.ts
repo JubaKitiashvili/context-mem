@@ -45,9 +45,9 @@ describe('BM25Search', () => {
     }
   });
 
-  it('shouldFallback returns true for < 3 results', () => {
+  it('shouldFallback returns true only for 0 results', () => {
     assert.equal(search.shouldFallback([]), true);
-    assert.equal(search.shouldFallback([{} as any, {} as any]), true);
-    assert.equal(search.shouldFallback([{} as any, {} as any, {} as any]), false);
+    assert.equal(search.shouldFallback([{} as any]), false);
+    assert.equal(search.shouldFallback([{} as any, {} as any]), false);
   });
 });

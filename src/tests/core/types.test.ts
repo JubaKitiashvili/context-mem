@@ -111,7 +111,7 @@ describe('DEFAULT_CONFIG', () => {
 
     assert.equal(DEFAULT_CONFIG.storage, 'auto');
     assert.equal(DEFAULT_CONFIG.token_economics, true);
-    assert.equal(DEFAULT_CONFIG.port, 3457);
+    assert.equal(DEFAULT_CONFIG.port, 51893);
     assert.equal(DEFAULT_CONFIG.db_path, '.context-mem/store.db');
   });
 
