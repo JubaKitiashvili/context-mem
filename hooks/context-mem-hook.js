@@ -49,7 +49,7 @@ if (cleaned.length < 10) process.exit(0);
 
 // Fire-and-forget POST to MCP server
 const http = require('http');
-const port = parseInt(process.env.CONTEXT_MEM_PORT || '3457', 10);
+const port = parseInt(process.env.CONTEXT_MEM_PORT || '51893', 10);
 const payload = JSON.stringify({
   jsonrpc: '2.0',
   method: 'tools/call',
