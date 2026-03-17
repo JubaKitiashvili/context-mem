@@ -578,20 +578,20 @@ function handleApi(req, res) {
       case '/api/stats-all': {
         const allInstances = getRegisteredInstances();
         const allStats = [];
-        let totalObs = 0, totalRaw = 0, totalCompressed = 0;
+        let totalObs = 0, totalContentLen = 0, totalSummaryLen = 0;
         for (const inst of allInstances) {
           try {
             const tmpDb = new Database(inst.dbPath, { readonly: true });
             const obsCount = tmpDb.prepare('SELECT COUNT(*) as v FROM observations').get();
-            const tokens = tmpDb.prepare('SELECT COALESCE(SUM(raw_tokens),0) as raw, COALESCE(SUM(compressed_tokens),0) as comp FROM observations').get();
+            const sizes = tmpDb.prepare('SELECT COALESCE(SUM(LENGTH(content)),0) as raw, COALESCE(SUM(LENGTH(summary)),0) as comp FROM observations').get();
             tmpDb.close();
             const obs = obsCount?.v || 0;
-            const raw = tokens?.raw || 0;
-            const comp = tokens?.comp || 0;
+            const raw = sizes?.raw || 0;
+            const comp = sizes?.comp || 0;
             totalObs += obs;
-            totalRaw += raw;
-            totalCompressed += comp;
-            allStats.push({ project: inst.projectName, projectDir: inst.projectDir, observations: obs, rawTokens: raw, compressedTokens: comp, savings: raw > 0 ? Math.round((1 - comp / raw) * 100) : 0 });
+            totalContentLen += raw;
+            totalSummaryLen += comp;
+            allStats.push({ project: inst.projectName, projectDir: inst.projectDir, observations: obs, rawBytes: raw, compressedBytes: comp, savings: raw > 0 ? Math.round((1 - comp / raw) * 100) : 0 });
           } catch {}
         }
         data = {
@@ -599,9 +599,9 @@ function handleApi(req, res) {
           total: {
             projectCount: allInstances.length,
             observations: totalObs,
-            rawTokens: totalRaw,
-            compressedTokens: totalCompressed,
-            savings: totalRaw > 0 ? Math.round((1 - totalCompressed / totalRaw) * 100) : 0,
+            rawBytes: totalContentLen,
+            compressedBytes: totalSummaryLen,
+            savings: totalContentLen > 0 ? Math.round((1 - totalSummaryLen / totalContentLen) * 100) : 0,
           },
         };
         break;
@@ -2335,6 +2335,19 @@ async function loadProjects() {
   } catch {}
 }
 
+function switchToProject(projectDir) {
+  fetchJson('/api/instances').then(instances => {
+    const inst = instances.find(i => i.projectDir === projectDir);
+    if (inst) {
+      fetchJson('/api/switch-project?db=' + encodeURIComponent(inst.dbPath)).then(() => {
+        activeProjectDb = inst.dbPath;
+        loadProjects();
+        refresh();
+      });
+    }
+  });
+}
+
 loadProjects();
 setInterval(loadProjects, 10000);
 
@@ -2346,20 +2359,23 @@ async function refresh() {
       const t = allData.total;
       document.getElementById('statObs').textContent = fmt(t.observations);
       document.getElementById('statObsSub').textContent = t.projectCount + ' project' + (t.projectCount !== 1 ? 's' : '');
-      document.getElementById('statSaved').textContent = fmt(t.rawTokens - t.compressedTokens);
-      document.getElementById('statSavedSub').textContent = fmt(t.rawTokens) + ' original tokens';
+      document.getElementById('statSaved').textContent = fmt(t.rawBytes - t.compressedBytes);
+      document.getElementById('statSavedSub').textContent = fmt(t.rawBytes) + ' raw bytes';
       document.getElementById('statPct').textContent = t.savings + '%';
 
       // Show per-project breakdown in timeline
       const tlEl = document.getElementById('timeline');
       if (allData.projects.length) {
         tlEl.innerHTML = '<div style="padding:12px 0;">' + allData.projects.map(p =>
-          '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin:4px 0;background:var(--bg-card);border-radius:8px;border:1px solid var(--border);">' +
-            '<div><span style="font-weight:600;color:var(--text);">' + escHtml(p.project) + '</span>' +
-            '<span style="color:var(--text-muted);font-size:12px;margin-left:8px;">' + escHtml(p.projectDir) + '</span></div>' +
-            '<div style="display:flex;gap:16px;align-items:center;">' +
-              '<span style="color:var(--text-muted);font-size:13px;">' + fmt(p.observations) + ' obs</span>' +
-              '<span style="color:var(--cyan);font-weight:600;font-size:14px;">' + p.savings + '% saved</span>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;margin:6px 0;background:var(--bg-card);border-radius:8px;border:1px solid var(--border);cursor:pointer;" onclick="switchToProject(\'' + escHtml(p.projectDir) + '\')">' +
+            '<div style="display:flex;align-items:center;gap:10px;">' +
+              '<span class="pill-dot" style="width:8px;height:8px;border-radius:50%;background:var(--green,#4ade80);display:inline-block;"></span>' +
+              '<div><div style="font-weight:600;color:var(--text);font-size:14px;">' + escHtml(p.project) + '</div>' +
+              '<div style="color:var(--text-muted);font-size:11px;margin-top:2px;">' + escHtml(p.projectDir) + '</div></div>' +
+            '</div>' +
+            '<div style="display:flex;gap:20px;align-items:center;">' +
+              '<div style="text-align:right;"><div style="color:var(--text);font-size:14px;font-weight:600;">' + fmt(p.observations) + '</div><div style="color:var(--text-muted);font-size:11px;">observations</div></div>' +
+              '<div style="text-align:right;"><div style="color:var(--cyan);font-size:14px;font-weight:700;">' + p.savings + '%</div><div style="color:var(--text-muted);font-size:11px;">saved</div></div>' +
             '</div>' +
           '</div>'
         ).join('') + '</div>';
