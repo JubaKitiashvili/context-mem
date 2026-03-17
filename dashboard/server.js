@@ -2366,10 +2366,10 @@ async function refresh() {
       // Show per-project breakdown in timeline
       const tlEl = document.getElementById('timeline');
       if (allData.projects.length) {
-        tlEl.innerHTML = '<div style="padding:12px 0;">' + allData.projects.map(p =>
-          '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;margin:6px 0;background:var(--bg-card);border-radius:8px;border:1px solid var(--border);cursor:pointer;" onclick="switchToProject(\'' + escHtml(p.projectDir) + '\')">' +
+        tlEl.innerHTML = '<div style="padding:12px 0;" id="projectCards">' + allData.projects.map(p =>
+          '<div class="project-card" data-dir="' + escHtml(p.projectDir) + '" style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;margin:6px 0;background:var(--bg-card);border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:border-color 0.15s;">' +
             '<div style="display:flex;align-items:center;gap:10px;">' +
-              '<span class="pill-dot" style="width:8px;height:8px;border-radius:50%;background:var(--green,#4ade80);display:inline-block;"></span>' +
+              '<span style="width:8px;height:8px;border-radius:50%;background:var(--green,#4ade80);display:inline-block;flex-shrink:0;"></span>' +
               '<div><div style="font-weight:600;color:var(--text);font-size:14px;">' + escHtml(p.project) + '</div>' +
               '<div style="color:var(--text-muted);font-size:11px;margin-top:2px;">' + escHtml(p.projectDir) + '</div></div>' +
             '</div>' +
@@ -2379,6 +2379,11 @@ async function refresh() {
             '</div>' +
           '</div>'
         ).join('') + '</div>';
+        // Attach click handlers via delegation
+        document.getElementById('projectCards').addEventListener('click', function(e) {
+          const card = e.target.closest('.project-card');
+          if (card) switchToProject(card.dataset.dir);
+        });
       }
 
       document.getElementById('refreshInfo').textContent = 'updated ' + new Date().toLocaleTimeString();
