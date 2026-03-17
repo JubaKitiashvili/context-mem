@@ -9,6 +9,7 @@ export class BetterSqlite3Storage implements StoragePlugin {
   version = '1.0.0';
   type = 'storage' as const;
   private db: Database.Database | null = null;
+  private stmtCache = new Map<string, Database.Statement>();
 
   async init(_config: PluginConfig): Promise<void> {}
 
@@ -24,6 +25,9 @@ export class BetterSqlite3Storage implements StoragePlugin {
     this.db.pragma('busy_timeout = 5000');
     this.db.pragma('wal_autocheckpoint = 1000');
     this.db.pragma('foreign_keys = ON');
+    this.db.pragma('cache_size = -8000');   // 8MB cache (negative = KB)
+    this.db.pragma('mmap_size = 67108864'); // 64MB mmap
+    this.db.pragma('synchronous = NORMAL'); // WAL mode safe with NORMAL
 
     this.runMigrations();
   }
@@ -53,10 +57,16 @@ export class BetterSqlite3Storage implements StoragePlugin {
   }
 
   prepare(sql: string): IStatement {
-    return this.getDb().prepare(sql) as unknown as IStatement;
+    let stmt = this.stmtCache.get(sql);
+    if (!stmt) {
+      stmt = this.getDb().prepare(sql);
+      this.stmtCache.set(sql, stmt);
+    }
+    return stmt as unknown as IStatement;
   }
 
   async close(): Promise<void> {
+    this.stmtCache.clear();
     if (this.db) {
       this.db.close();
       this.db = null;

@@ -62,7 +62,7 @@ export class TrigramSearch implements SearchPlugin {
     }
   }
 
-  shouldFallback(_results: SearchResult[]): boolean {
-    return false;
+  shouldFallback(results: SearchResult[]): boolean {
+    return results.length === 0;
   }
 }

@@ -6,13 +6,31 @@ import { ulid, estimateTokens } from './utils.js';
 import { SearchFusion } from '../plugins/search/fusion.js';
 import { BetterSqlite3Storage } from '../plugins/storage/better-sqlite3.js';
 import { PrivacyEngine } from '../plugins/privacy/privacy-engine.js';
-import { ShellSummarizer } from '../plugins/summarizers/shell-summarizer.js';
-import { JsonSummarizer } from '../plugins/summarizers/json-summarizer.js';
+// Summarizers — registered in priority order
+import { TypescriptErrorSummarizer } from '../plugins/summarizers/typescript-error-summarizer.js';
+import { TestOutputSummarizer } from '../plugins/summarizers/test-output-summarizer.js';
+import { BuildOutputSummarizer } from '../plugins/summarizers/build-output-summarizer.js';
+import { GitLogSummarizer } from '../plugins/summarizers/git-log-summarizer.js';
+import { NetworkSummarizer } from '../plugins/summarizers/network-summarizer.js';
 import { ErrorSummarizer } from '../plugins/summarizers/error-summarizer.js';
-import { LogSummarizer } from '../plugins/summarizers/log-summarizer.js';
+import { JsonSummarizer } from '../plugins/summarizers/json-summarizer.js';
+import { CsvSummarizer } from '../plugins/summarizers/csv-summarizer.js';
+import { MarkdownSummarizer } from '../plugins/summarizers/markdown-summarizer.js';
+import { HtmlSummarizer } from '../plugins/summarizers/html-summarizer.js';
 import { CodeSummarizer } from '../plugins/summarizers/code-summarizer.js';
+import { LogSummarizer } from '../plugins/summarizers/log-summarizer.js';
+import { ShellSummarizer } from '../plugins/summarizers/shell-summarizer.js';
+import { BinarySummarizer } from '../plugins/summarizers/binary-summarizer.js';
+// Search
 import { BM25Search } from '../plugins/search/bm25.js';
 import { TrigramSearch } from '../plugins/search/trigram.js';
+import { LevenshteinSearch } from '../plugins/search/levenshtein.js';
+// Core modules
+import { BudgetManager } from './budget.js';
+import { EventTracker } from './events.js';
+import { SessionManager } from './session.js';
+import { ContentStore } from '../plugins/storage/content-store.js';
+import { KnowledgeBase } from '../plugins/knowledge/knowledge-base.js';
 import { LifecycleManager } from './lifecycle.js';
 import type {
   SessionContext,
@@ -31,6 +49,11 @@ export class Kernel {
   private projectDir: string;
   private searchFusion!: SearchFusion;
   private storage!: BetterSqlite3Storage;
+  budgetManager!: BudgetManager;
+  eventTracker!: EventTracker;
+  sessionManager!: SessionManager;
+  contentStore!: ContentStore;
+  knowledgeBase!: KnowledgeBase;
 
   constructor(projectDir: string) {
     this.projectDir = projectDir;
@@ -56,29 +79,48 @@ export class Kernel {
     // 2. Privacy
     const privacy = new PrivacyEngine(this.config.privacy);
 
-    // 3. Pipeline
-    this.pipeline = new Pipeline(this.registry, this.storage, privacy, this.session.session_id);
+    // 3. Core modules
+    this.budgetManager = new BudgetManager(this.storage);
+    this.eventTracker = new EventTracker(this.storage);
+    this.sessionManager = new SessionManager(this.storage, this.eventTracker);
+    this.contentStore = new ContentStore(this.storage);
+    this.knowledgeBase = new KnowledgeBase(this.storage);
 
-    // 4. Summarizers
+    // 4. Pipeline (with budget integration)
+    this.pipeline = new Pipeline(this.registry, this.storage, privacy, this.session.session_id);
+    this.pipeline.setBudgetManager(this.budgetManager);
+
+    // 5. Summarizers — registered in priority order (most specific first)
     const summarizers = [
-      new ShellSummarizer(),
-      new JsonSummarizer(),
+      new TypescriptErrorSummarizer(),  // Before generic Error
+      new TestOutputSummarizer(),        // Before Shell
+      new BuildOutputSummarizer(),       // Before Shell
+      new GitLogSummarizer(),
+      new NetworkSummarizer(),
       new ErrorSummarizer(),
-      new LogSummarizer(),
+      new JsonSummarizer(),
+      new CsvSummarizer(),
+      new MarkdownSummarizer(),
+      new HtmlSummarizer(),
       new CodeSummarizer(),
+      new LogSummarizer(),
+      new ShellSummarizer(),
+      new BinarySummarizer(),            // Always last (catches binary)
     ];
     for (const s of summarizers) {
       await this.registry.register(s);
     }
 
-    // 5. Search plugins
+    // 6. Search plugins (with Levenshtein fallback)
     const bm25 = new BM25Search(this.storage);
     const trigram = new TrigramSearch(this.storage);
+    const levenshtein = new LevenshteinSearch(this.storage);
     await this.registry.register(bm25);
     await this.registry.register(trigram);
-    this.searchFusion = new SearchFusion([bm25, trigram]);
+    await this.registry.register(levenshtein);
+    this.searchFusion = new SearchFusion([bm25, trigram, levenshtein]);
 
-    // 6. Lifecycle cleanup (on_startup)
+    // 7. Lifecycle cleanup (on_startup)
     if (this.config.lifecycle.cleanup_schedule === 'on_startup') {
       const lifecycle = new LifecycleManager(this.storage, this.config.lifecycle);
       await lifecycle.cleanup();
@@ -89,8 +131,26 @@ export class Kernel {
     if (!this.storage) throw new Error('Kernel not started. Call start() first.');
   }
 
+  /** Safe accessors for ToolKernel adapter */
+  getConfig(): ContextMemConfig { this.ensureStarted(); return this.config; }
+  getStorage(): BetterSqlite3Storage { this.ensureStarted(); return this.storage; }
+  getSearchFusion(): SearchFusion { this.ensureStarted(); return this.searchFusion; }
+  getBudgetManager(): BudgetManager { this.ensureStarted(); return this.budgetManager; }
+  getEventTracker(): EventTracker { this.ensureStarted(); return this.eventTracker; }
+  getSessionManager(): SessionManager { this.ensureStarted(); return this.sessionManager; }
+  getContentStore(): ContentStore { this.ensureStarted(); return this.contentStore; }
+  getKnowledgeBase(): KnowledgeBase { this.ensureStarted(); return this.knowledgeBase; }
+
   async observe(content: string, type: Observation['type'], source: string, filePath?: string): Promise<Observation> {
-    return this.pipeline.observe(content, type, source, filePath);
+    const obs = await this.pipeline.observe(content, type, source, filePath);
+    // Auto-emit event
+    this.eventTracker.emit(this.session.session_id, type === 'error' ? 'error' : 'file_read', {
+      observation_id: obs.id,
+      type,
+      source,
+      file_path: filePath,
+    });
+    return obs;
   }
 
   async search(query: string, opts?: SearchOpts): Promise<SearchResult[]> {
@@ -104,6 +164,11 @@ export class Kernel {
         [this.session.session_id, 'discovery', 0, discoveryTokens, Date.now()]
       );
     }
+    // Auto-emit search event
+    this.eventTracker.emit(this.session.session_id, 'search', {
+      query,
+      results_count: results.length,
+    });
     return results;
   }
 
@@ -138,32 +203,44 @@ export class Kernel {
   async stats(): Promise<TokenEconomics> {
     this.ensureStarted();
     const sid = this.session.session_id;
-    const q = (sql: string): Record<string, number> =>
-      this.storage.prepare(sql).get(sid) as Record<string, number>;
+    const q = (sql: string): number => {
+      const row = this.storage.prepare(sql).get(sid) as { v: number } | undefined;
+      return row?.v ?? 0;
+    };
 
-    const stored = q("SELECT COUNT(*) as v FROM token_stats WHERE session_id = ? AND event_type = 'store'");
-    const contentBytes = q("SELECT COALESCE(SUM(tokens_in),0) as v FROM token_stats WHERE session_id = ? AND event_type = 'store'");
-    const summaryBytes = q("SELECT COALESCE(SUM(tokens_out),0) as v FROM token_stats WHERE session_id = ? AND event_type = 'store'");
-    const searches = q("SELECT COUNT(*) as v FROM token_stats WHERE session_id = ? AND event_type = 'discovery'");
-    const discovery = q("SELECT COALESCE(SUM(tokens_out),0) as v FROM token_stats WHERE session_id = ? AND event_type = 'discovery'");
-    const reads = q("SELECT COALESCE(SUM(tokens_out),0) as v FROM token_stats WHERE session_id = ? AND event_type = 'read'");
+    const storedV = q("SELECT COUNT(*) as v FROM token_stats WHERE session_id = ? AND event_type = 'store'");
+    const contentBytesV = q("SELECT COALESCE(SUM(tokens_in),0) as v FROM token_stats WHERE session_id = ? AND event_type = 'store'");
+    const summaryBytesV = q("SELECT COALESCE(SUM(tokens_out),0) as v FROM token_stats WHERE session_id = ? AND event_type = 'store'");
+    const searchesV = q("SELECT COUNT(*) as v FROM token_stats WHERE session_id = ? AND event_type = 'discovery'");
+    const discoveryV = q("SELECT COALESCE(SUM(tokens_out),0) as v FROM token_stats WHERE session_id = ? AND event_type = 'discovery'");
+    const readsV = q("SELECT COALESCE(SUM(tokens_out),0) as v FROM token_stats WHERE session_id = ? AND event_type = 'read'");
 
-    const saved = contentBytes.v - (discovery.v + reads.v);
+    const saved = contentBytesV - (discoveryV + readsV);
 
     return {
       session_id: sid,
-      observations_stored: stored.v,
-      total_content_bytes: contentBytes.v,
-      total_summary_bytes: summaryBytes.v,
-      searches_performed: searches.v,
-      discovery_tokens: discovery.v,
-      read_tokens: reads.v,
+      observations_stored: storedV,
+      total_content_bytes: contentBytesV,
+      total_summary_bytes: summaryBytesV,
+      searches_performed: searchesV,
+      discovery_tokens: discoveryV,
+      read_tokens: readsV,
       tokens_saved: Math.max(0, saved),
-      savings_percentage: contentBytes.v > 0 ? Math.round((saved / contentBytes.v) * 100) : 0,
+      savings_percentage: contentBytesV > 0 ? Math.round((saved / contentBytesV) * 100) : 0,
     };
   }
 
   async stop(): Promise<void> {
+    // Save session snapshot before shutdown
+    if (this.storage && this.sessionManager) {
+      try {
+        const tokenStats = await this.stats();
+        this.sessionManager.saveSnapshot(this.session.session_id, tokenStats);
+      } catch {
+        // Snapshot save failed — non-critical
+      }
+    }
+
     // Session-scoped private cleanup
     if (this.storage) {
       this.storage.exec(
@@ -172,5 +249,10 @@ export class Kernel {
       );
     }
     await this.registry.shutdown();
+  }
+
+  async restoreSession(sessionId: string): Promise<{ snapshot: Record<string, unknown>; condensed: boolean } | null> {
+    this.ensureStarted();
+    return this.sessionManager.restoreSnapshot(sessionId);
   }
 }

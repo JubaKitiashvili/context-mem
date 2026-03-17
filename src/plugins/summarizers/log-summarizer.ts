@@ -14,6 +14,10 @@ const LOG_LEVEL_PATTERNS = [
   /\b(INFO|WARN|ERROR|DEBUG|TRACE|FATAL)\b/,  // Bare: INFO
 ];
 
+// Nginx/Apache Combined Log Format detection
+// e.g.: 192.168.1.1 - - [15/Mar/2026:00:00:00 +0000] "GET /path HTTP/1.1" 200 1234 "ref" "ua"
+const ACCESS_LOG_REGEX = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s.*\[.+\]\s"(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\s+(\S+)\s+HTTP\/[\d.]+"\s+(\d{3})\s+(\d+)/;
+
 // Strips timestamps from a line for deduplication comparison
 function normalizeLogLine(line: string): string {
   return line
@@ -28,11 +32,70 @@ function normalizeLogLine(line: string): string {
     .trim();
 }
 
+function isAccessLog(lines: string[]): boolean {
+  const sample = lines.slice(0, 20).filter(l => l.trim().length > 0);
+  if (sample.length < 5) return false;
+  let matchCount = 0;
+  for (const line of sample) {
+    if (ACCESS_LOG_REGEX.test(line)) matchCount++;
+  }
+  return matchCount / sample.length >= 0.5;
+}
+
+function summarizeAccessLog(content: string): string {
+  const lines = content.split('\n').filter(l => l.trim().length > 0);
+  const methodDist = new Map<string, number>();
+  const statusDist = new Map<string, number>();
+  const endpointDist = new Map<string, number>();
+  let totalBytes = 0;
+
+  for (const line of lines) {
+    const m = ACCESS_LOG_REGEX.exec(line);
+    if (m) {
+      const method = m[1];
+      const endpoint = m[2];
+      const status = m[3];
+      const bytes = parseInt(m[4], 10);
+
+      methodDist.set(method, (methodDist.get(method) || 0) + 1);
+      const statusCat = `${status[0]}xx`;
+      statusDist.set(statusCat, (statusDist.get(statusCat) || 0) + 1);
+      const key = `${method} ${endpoint}`;
+      endpointDist.set(key, (endpointDist.get(key) || 0) + 1);
+      totalBytes += bytes;
+    }
+  }
+
+  const parts = [
+    `# Access Log Summary (${lines.length} requests)`,
+    '',
+    `## Methods`,
+    ...Array.from(methodDist.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([m, c]) => `  ${m}: ${c}`),
+    '',
+    `## Status Codes`,
+    ...Array.from(statusDist.entries())
+      .sort()
+      .map(([s, c]) => `  ${s}: ${c}`),
+    '',
+    `## Top Endpoints (${endpointDist.size} unique)`,
+    ...Array.from(endpointDist.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
+      .map(([e, c]) => `  ${e}: ${c}`),
+    '',
+    `## Transfer: ${(totalBytes / 1024).toFixed(1)} KB total`,
+  ];
+
+  return parts.join('\n');
+}
+
 export class LogSummarizer implements SummarizerPlugin {
   name = 'log-summarizer';
   version = '1.0.0';
   type = 'summarizer' as const;
-  contentTypes = ['log', 'syslog', 'application-log'];
+  contentTypes = ['log', 'syslog', 'application-log', 'access-log'];
 
   async init(_config: PluginConfig): Promise<void> {}
   async destroy(): Promise<void> {}
@@ -40,6 +103,9 @@ export class LogSummarizer implements SummarizerPlugin {
   detect(content: string): boolean {
     const lines = content.split('\n').filter(l => l.trim().length > 0);
     if (lines.length < MIN_LINES_TO_SUMMARIZE) return false;
+
+    // Check for access log format first
+    if (isAccessLog(lines)) return true;
 
     // Check if a meaningful portion of lines match log patterns
     let matchCount = 0;
@@ -67,9 +133,22 @@ export class LogSummarizer implements SummarizerPlugin {
       };
     }
 
-    // Track deduplicated lines: normalized key → { firstLine, count, lastLine }
+    // Access log format gets HTTP-aware aggregation
+    const nonEmpty = lines.filter(l => l.trim().length > 0);
+    if (isAccessLog(nonEmpty)) {
+      const summary = summarizeAccessLog(content);
+      const tokensSummarized = estimateTokens(summary);
+      return {
+        summary,
+        tokens_original: tokensOriginal,
+        tokens_summarized: tokensSummarized,
+        savings_pct: tokensOriginal > 0 ? Math.round((1 - tokensSummarized / tokensOriginal) * 100) : 0,
+        content_type: 'access-log',
+      };
+    }
+
+    // Standard log deduplication
     const seen = new Map<string, { firstLine: string; count: number; lastLine: string }>();
-    // Preserve insertion order (first seen)
     const order: string[] = [];
 
     for (const line of lines) {

@@ -61,6 +61,6 @@ export class BM25Search implements SearchPlugin {
   }
 
   shouldFallback(results: SearchResult[]): boolean {
-    return results.length < 3;
+    return results.length === 0;
   }
 }

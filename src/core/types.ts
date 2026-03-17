@@ -46,9 +46,73 @@ export interface Observation {
   type: ObservationType;
   content: string;
   summary?: string;
+  content_hash?: string;
   metadata: ObservationMetadata;
   embeddings?: Float32Array;
   indexed_at: number;
+}
+
+// Truncation result
+export interface TruncationResult {
+  content: string;
+  tier: 1 | 2 | 3 | 4;
+  original_length: number;
+  truncated_length: number;
+}
+
+// Budget types
+export type OverflowStrategy = 'aggressive_truncation' | 'warn' | 'hard_stop';
+
+export interface BudgetConfig {
+  session_limit: number;
+  overflow_strategy: OverflowStrategy;
+  agent_limits?: Record<string, number>;
+}
+
+export interface BudgetStatus {
+  used: number;
+  limit: number;
+  percentage: number;
+  strategy: OverflowStrategy;
+  throttled: boolean;
+  blocked: boolean;
+}
+
+// Knowledge types
+export type KnowledgeCategory = 'pattern' | 'decision' | 'error' | 'api' | 'component';
+
+export interface KnowledgeEntry {
+  id: string;
+  category: KnowledgeCategory;
+  title: string;
+  content: string;
+  tags: string[];
+  shareable: boolean;
+  relevance_score: number;
+  access_count: number;
+  created_at: number;
+  archived: boolean;
+}
+
+// Event types
+export type EventPriority = 1 | 2 | 3 | 4;
+
+export interface ContextEvent {
+  id: string;
+  session_id: string;
+  event_type: string;
+  priority: EventPriority;
+  agent?: string;
+  data: Record<string, unknown>;
+  context_bytes: number;
+  timestamp: number;
+}
+
+// Session snapshot
+export interface SessionSnapshot {
+  session_id: string;
+  snapshot: string;
+  created_at: number;
 }
 
 // Storage plugin
@@ -109,7 +173,7 @@ export interface SearchOpts {
 
 export interface SearchPlugin extends Plugin {
   type: 'search';
-  strategy: 'bm25' | 'trigram' | 'vector';
+  strategy: 'bm25' | 'trigram' | 'vector' | 'levenshtein';
   priority: number;
   search(query: string, opts: SearchOpts): Promise<SearchResult[]>;
   shouldFallback(results: SearchResult[]): boolean;
@@ -221,7 +285,14 @@ export interface ContextMemConfig {
   execute_enabled: boolean;
 }
 
-export const DEFAULT_CONFIG: ContextMemConfig = {
+function deepFreeze<T extends object>(obj: T): Readonly<T> {
+  for (const val of Object.values(obj)) {
+    if (val && typeof val === 'object') deepFreeze(val as object);
+  }
+  return Object.freeze(obj);
+}
+
+export const DEFAULT_CONFIG: ContextMemConfig = deepFreeze({
   storage: 'auto',
   plugins: {
     summarizers: ['shell', 'json', 'error', 'log', 'code'],
@@ -241,7 +312,7 @@ export const DEFAULT_CONFIG: ContextMemConfig = {
     cleanup_schedule: 'on_startup',
     preserve_types: ['decision', 'commit'],
   },
-  port: 3457,
+  port: 51893,
   db_path: '.context-mem/store.db',
   execute_enabled: false,
-};
+});
