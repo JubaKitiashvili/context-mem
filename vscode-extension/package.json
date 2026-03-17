@@ -1,0 +1,110 @@
+{
+  "name": "context-mem",
+  "displayName": "context-mem",
+  "description": "Context optimization for AI coding assistants — 99% token savings via 14 content-aware summarizers",
+  "version": "0.2.0",
+  "publisher": "JubaKitiashvili",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JubaKitiashvili/context-mem"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["AI", "Other"],
+  "keywords": ["mcp", "context", "token-optimization", "ai", "claude", "copilot", "cursor"],
+  "icon": "media/icon.png",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "context-mem",
+          "title": "context-mem",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "context-mem": [
+        {
+          "type": "webview",
+          "id": "context-mem.dashboard",
+          "name": "Dashboard"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "context-mem.start",
+        "title": "context-mem: Start Server"
+      },
+      {
+        "command": "context-mem.stop",
+        "title": "context-mem: Stop Server"
+      },
+      {
+        "command": "context-mem.restart",
+        "title": "context-mem: Restart Server"
+      },
+      {
+        "command": "context-mem.openDashboard",
+        "title": "context-mem: Open Dashboard"
+      },
+      {
+        "command": "context-mem.showStats",
+        "title": "context-mem: Show Token Stats"
+      },
+      {
+        "command": "context-mem.search",
+        "title": "context-mem: Search Observations"
+      },
+      {
+        "command": "context-mem.init",
+        "title": "context-mem: Initialize in Workspace"
+      }
+    ],
+    "configuration": {
+      "title": "context-mem",
+      "properties": {
+        "context-mem.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start context-mem MCP server when workspace opens"
+        },
+        "context-mem.port": {
+          "type": "number",
+          "default": 51893,
+          "description": "Dashboard port"
+        },
+        "context-mem.showStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show token savings in status bar"
+        },
+        "context-mem.statusBarRefreshInterval": {
+          "type": "number",
+          "default": 10,
+          "description": "Status bar refresh interval in seconds"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "tsc -p ./tsconfig.json",
+    "watch": "tsc -watch -p ./tsconfig.json",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.0.0",
+    "typescript": "^5.5.0"
+  }
+}
