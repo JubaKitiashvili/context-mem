@@ -575,6 +575,37 @@ function handleApi(req, res) {
           active: i.dbPath === db.name,
         }));
         break;
+      case '/api/stats-all': {
+        const allInstances = getRegisteredInstances();
+        const allStats = [];
+        let totalObs = 0, totalRaw = 0, totalCompressed = 0;
+        for (const inst of allInstances) {
+          try {
+            const tmpDb = new Database(inst.dbPath, { readonly: true });
+            const obsCount = tmpDb.prepare('SELECT COUNT(*) as v FROM observations').get();
+            const tokens = tmpDb.prepare('SELECT COALESCE(SUM(raw_tokens),0) as raw, COALESCE(SUM(compressed_tokens),0) as comp FROM observations').get();
+            tmpDb.close();
+            const obs = obsCount?.v || 0;
+            const raw = tokens?.raw || 0;
+            const comp = tokens?.comp || 0;
+            totalObs += obs;
+            totalRaw += raw;
+            totalCompressed += comp;
+            allStats.push({ project: inst.projectName, projectDir: inst.projectDir, observations: obs, rawTokens: raw, compressedTokens: comp, savings: raw > 0 ? Math.round((1 - comp / raw) * 100) : 0 });
+          } catch {}
+        }
+        data = {
+          projects: allStats,
+          total: {
+            projectCount: allInstances.length,
+            observations: totalObs,
+            rawTokens: totalRaw,
+            compressedTokens: totalCompressed,
+            savings: totalRaw > 0 ? Math.round((1 - totalCompressed / totalRaw) * 100) : 0,
+          },
+        };
+        break;
+      }
       case '/api/switch-project': {
         const targetDb = url.searchParams.get('db');
         if (targetDb && switchProject(targetDb)) {
@@ -1857,6 +1888,78 @@ function getDashboardHtml() {
     color: var(--text-dim);
   }
   .snapshot-stat-val { font-weight: 600; color: var(--green); }
+/* --- Project Bar --- */
+.project-bar {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 24px;
+}
+.project-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.project-bar-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.project-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+  overflow-x: auto;
+}
+.project-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+.project-pill:hover {
+  border-color: var(--cyan);
+  color: var(--text);
+  background: var(--bg-card);
+}
+.project-pill.active {
+  background: var(--cyan-dim, rgba(0,212,255,0.1));
+  border-color: var(--cyan);
+  color: var(--cyan);
+  font-weight: 600;
+}
+.project-pill .pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green, #4ade80);
+  flex-shrink: 0;
+}
+.project-pill.skeleton {
+  opacity: 0.4;
+  cursor: default;
+}
+.project-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
 </style>
 </head>
 <body>
@@ -1867,9 +1970,6 @@ function getDashboardHtml() {
     <h1>context-mem <span>dashboard</span></h1>
   </div>
   <div style="display:flex;align-items:center;gap:12px;">
-    <select id="projectSelector" style="background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;max-width:200px;cursor:pointer;" title="Switch project">
-      <option value="">Loading...</option>
-    </select>
     <div class="refresh-indicator" id="refreshInfo">auto-refresh: 3s</div>
     <button class="theme-toggle" id="themeToggle" title="Toggle light/dark theme">L</button>
     <button class="export-btn" onclick="document.getElementById('shortcutsOverlay').classList.add('open')" title="Keyboard shortcuts">?</button>
@@ -1877,6 +1977,17 @@ function getDashboardHtml() {
       <div class="status-dot"></div>
       <span id="statusText">connected</span>
     </div>
+  </div>
+</div>
+
+<!-- Project switcher bar -->
+<div class="project-bar" id="projectBar">
+  <div class="project-bar-inner">
+    <div class="project-bar-label">Projects</div>
+    <div class="project-pills" id="projectPills">
+      <div class="project-pill skeleton">Loading...</div>
+    </div>
+    <div class="project-count" id="projectCount"></div>
   </div>
 </div>
 
@@ -2167,37 +2278,98 @@ async function fetchJson(url) {
   return res.json();
 }
 
-// --- Project selector (multi-project) ---
+// --- Project switcher (multi-project) ---
+let activeProjectDb = '__all__';
+
 async function loadProjects() {
   try {
     const instances = await fetchJson('/api/instances');
-    const sel = document.getElementById('projectSelector');
+    const container = document.getElementById('projectPills');
+    const countEl = document.getElementById('projectCount');
+    const bar = document.getElementById('projectBar');
+
     if (!instances.length) {
-      sel.innerHTML = '<option value="">No active projects</option>';
+      bar.style.display = 'none';
       return;
     }
-    sel.innerHTML = instances.map(i =>
-      '<option value="' + escHtml(i.dbPath) + '"' + (i.active ? ' selected' : '') + '>' +
-      escHtml(i.projectName) + '</option>'
-    ).join('') + '<option value="__all__">All Projects (unified)</option>';
+
+    // Show bar only if >1 project
+    bar.style.display = instances.length > 1 ? '' : 'none';
+
+    const allPill = '<div class="project-pill' + (activeProjectDb === '__all__' ? ' active' : '') + '" data-db="__all__" title="Aggregated view across all projects">' +
+      '<span class="pill-dot" style="background:var(--cyan)"></span>All Projects</div>';
+
+    container.innerHTML = allPill + instances.map(i => {
+      const isActive = !!(activeProjectDb && activeProjectDb !== '__all__' && i.dbPath === activeProjectDb);
+      return '<div class="project-pill' + (isActive ? ' active' : '') + '" data-db="' + escHtml(i.dbPath) + '" title="' + escHtml(i.projectDir) + '">' +
+        '<span class="pill-dot"></span>' +
+        escHtml(i.projectName) +
+      '</div>';
+    }).join('');
+
+    countEl.textContent = instances.length + ' project' + (instances.length > 1 ? 's' : '') + ' active';
+
+    // Click handlers
+    container.querySelectorAll('.project-pill').forEach(pill => {
+      pill.addEventListener('click', async () => {
+        const db = pill.getAttribute('data-db');
+        if (db === activeProjectDb) return;
+
+        if (db === '__all__') {
+          activeProjectDb = '__all__';
+          container.querySelectorAll('.project-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          refresh();
+          return;
+        }
+
+        try {
+          await fetchJson('/api/switch-project?db=' + encodeURIComponent(db));
+          activeProjectDb = db;
+          container.querySelectorAll('.project-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          refresh();
+        } catch {}
+      });
+    });
   } catch {}
 }
 
-document.getElementById('projectSelector').addEventListener('change', async function() {
-  const val = this.value;
-  if (!val || val === '__all__') return; // TODO: unified view
-  try {
-    await fetchJson('/api/switch-project?db=' + encodeURIComponent(val));
-    refresh();
-  } catch {}
-});
-
 loadProjects();
-// Refresh project list periodically
 setInterval(loadProjects, 10000);
 
 async function refresh() {
   try {
+    // --- All Projects aggregated view ---
+    if (activeProjectDb === '__all__') {
+      const allData = await fetchJson('/api/stats-all');
+      const t = allData.total;
+      document.getElementById('statObs').textContent = fmt(t.observations);
+      document.getElementById('statObsSub').textContent = t.projectCount + ' project' + (t.projectCount !== 1 ? 's' : '');
+      document.getElementById('statSaved').textContent = fmt(t.rawTokens - t.compressedTokens);
+      document.getElementById('statSavedSub').textContent = fmt(t.rawTokens) + ' original tokens';
+      document.getElementById('statPct').textContent = t.savings + '%';
+
+      // Show per-project breakdown in timeline
+      const tlEl = document.getElementById('timeline');
+      if (allData.projects.length) {
+        tlEl.innerHTML = '<div style="padding:12px 0;">' + allData.projects.map(p =>
+          '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin:4px 0;background:var(--bg-card);border-radius:8px;border:1px solid var(--border);">' +
+            '<div><span style="font-weight:600;color:var(--text);">' + escHtml(p.project) + '</span>' +
+            '<span style="color:var(--text-muted);font-size:12px;margin-left:8px;">' + escHtml(p.projectDir) + '</span></div>' +
+            '<div style="display:flex;gap:16px;align-items:center;">' +
+              '<span style="color:var(--text-muted);font-size:13px;">' + fmt(p.observations) + ' obs</span>' +
+              '<span style="color:var(--cyan);font-weight:600;font-size:14px;">' + p.savings + '% saved</span>' +
+            '</div>' +
+          '</div>'
+        ).join('') + '</div>';
+      }
+
+      document.getElementById('refreshInfo').textContent = 'updated ' + new Date().toLocaleTimeString();
+      return;
+    }
+
+    // --- Single project view ---
     // Determine if searching or browsing
     const isSearching = currentSearch.length > 0;
 
