@@ -60,6 +60,8 @@ export async function serve(_args: string[]): Promise<void> {
   };
   process.on('SIGTERM', shutdown);
   process.on('SIGINT', shutdown);
+  // When editor closes stdin, shut down cleanly
+  process.stdin.on('close', shutdown);
 }
 
 function startDashboard(projectDir: string): ChildProcess | null {
@@ -70,11 +72,9 @@ function startDashboard(projectDir: string): ChildProcess | null {
   if (!fs.existsSync(serverScript)) return null;
 
   const child = spawn('node', [serverScript, '--port', '51893', '--db', dbPath, '--project', projectDir, '--no-open'], {
-    detached: true,
     stdio: 'ignore',
     env: { ...process.env },
   });
-  child.unref();
 
   console.error('context-mem: Dashboard available at http://localhost:51893');
   return child;
