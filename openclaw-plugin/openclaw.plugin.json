@@ -1,0 +1,26 @@
+{
+  "id": "context-mem",
+  "kind": "context-engine",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable context-mem context engine"
+      },
+      "dashboardPort": {
+        "type": "number",
+        "default": 51893,
+        "description": "Dashboard HTTP port"
+      },
+      "summarizers": {
+        "type": "array",
+        "items": { "type": "string" },
+        "default": ["shell", "json", "error", "log", "code", "test", "build", "git", "csv", "markdown", "html", "network", "typescript-error", "binary"],
+        "description": "Active summarizer plugins"
+      }
+    }
+  }
+}

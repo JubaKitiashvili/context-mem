@@ -1,0 +1,24 @@
+{
+  "name": "@context-mem/openclaw-plugin",
+  "version": "0.2.0",
+  "description": "context-mem ContextEngine plugin for OpenClaw — 99% token savings via 14 content-aware summarizers",
+  "type": "module",
+  "main": "src/index.ts",
+  "keywords": ["openclaw", "openclaw-plugin", "context-management", "context-mem", "mcp"],
+  "author": "Juba Kitiashvili",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JubaKitiashvili/context-mem",
+    "directory": "openclaw-plugin"
+  },
+  "peerDependencies": {
+    "openclaw": "*"
+  },
+  "dependencies": {
+    "context-mem": "^0.2.0"
+  },
+  "openclaw": {
+    "extensions": ["./src/index.ts"]
+  }
+}

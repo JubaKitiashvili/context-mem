@@ -1,6 +1,14 @@
 # context-mem for OpenClaw
 
-## MCP Server Integration
+## Option 1: Native ContextEngine Plugin (recommended)
+
+```bash
+openclaw plugins install @context-mem/openclaw-plugin
+```
+
+See [openclaw-plugin/](../../openclaw-plugin/) for full documentation.
+
+## Option 2: MCP Server
 
 Add to your OpenClaw MCP configuration:
 
@@ -9,34 +17,8 @@ Add to your OpenClaw MCP configuration:
   "mcpServers": {
     "context-mem": {
       "command": "npx",
-      "args": ["-y", "context-mem", "serve"],
-      "env": {}
+      "args": ["-y", "context-mem", "serve"]
     }
   }
 }
 ```
-
-## ContextEngine Plugin (Native)
-
-If using OpenClaw's ContextEngine plugin system, add to your project config:
-
-```json
-{
-  "contextEngine": {
-    "plugins": ["context-mem"]
-  }
-}
-```
-
-Then install:
-```bash
-npm install context-mem
-```
-
-context-mem provides:
-- 14 content-aware summarizers (99% token savings)
-- 3-layer hybrid search (BM25 + Trigram + Fuzzy)
-- Knowledge base with relevance decay
-- Budget management with overflow strategies
-- Session continuity via snapshots
-- Real-time dashboard at http://localhost:51893
