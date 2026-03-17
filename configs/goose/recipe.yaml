@@ -1,0 +1,14 @@
+# context-mem recipe for Goose
+# Add to your Goose profile or use: goose session --recipe recipe.yaml
+
+extensions:
+  context-mem:
+    name: context-mem
+    type: stdio
+    cmd: npx
+    args:
+      - "-y"
+      - "context-mem"
+      - "serve"
+    description: Context optimization — 99% token savings via 14 content-aware summarizers
+    enabled: true

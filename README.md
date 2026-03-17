@@ -30,7 +30,7 @@ AI coding assistants waste 60–80% of their context window on raw tool outputs 
 
 ## Quick Start
 
-**Claude Code Plugin (recommended):**
+**Claude Code (recommended):**
 ```
 /plugin marketplace add JubaKitiashvili/context-mem
 /plugin install context-mem@context-mem
@@ -43,6 +43,54 @@ cd your-project
 context-mem init
 context-mem serve
 ```
+
+<details>
+<summary>More platforms — Cursor, Windsurf, Copilot, Cline, Roo Code, Gemini CLI, Goose, OpenClaw, CrewAI, LangChain</summary>
+
+**Cursor** — `.cursor/mcp.json`:
+```json
+{ "mcpServers": { "context-mem": { "command": "npx", "args": ["-y", "context-mem", "serve"] } } }
+```
+
+**Windsurf** — `.windsurf/mcp.json`:
+```json
+{ "mcpServers": { "context-mem": { "command": "npx", "args": ["-y", "context-mem", "serve"] } } }
+```
+
+**GitHub Copilot** — `.vscode/mcp.json`:
+```json
+{ "servers": { "context-mem": { "type": "stdio", "command": "npx", "args": ["-y", "context-mem", "serve"] } } }
+```
+
+**Cline** — add to MCP settings:
+```json
+{ "mcpServers": { "context-mem": { "command": "npx", "args": ["-y", "context-mem", "serve"], "disabled": false } } }
+```
+
+**Roo Code** — same as Cline format above.
+
+**Gemini CLI** — `.gemini/settings.json`:
+```json
+{ "mcpServers": { "context-mem": { "command": "npx", "args": ["-y", "context-mem", "serve"] } } }
+```
+
+**Goose** — add to profile extensions:
+```yaml
+extensions:
+  context-mem:
+    type: stdio
+    cmd: npx
+    args: ["-y", "context-mem", "serve"]
+```
+
+**OpenClaw** — add to MCP config:
+```json
+{ "mcpServers": { "context-mem": { "command": "npx", "args": ["-y", "context-mem", "serve"] } } }
+```
+
+**CrewAI / LangChain** — see [configs/](configs/) for Python integration examples.
+
+</details>
 
 ## Runtime Context Optimization (benchmark-verified)
 
@@ -199,6 +247,22 @@ context-mem dashboard   # Open web dashboard
 |---|---|
 | [Benchmark Results](docs/benchmarks/results.md) | Full benchmark suite — 21 scenarios, 7 parts |
 | [Configuration Guide](.context-mem.json.example) | All config options with defaults |
+
+## Platform Support
+
+| Platform | Integration | Config |
+|---|---|---|
+| **Claude Code** | Plugin marketplace | [configs/claude-code/](configs/claude-code/) |
+| **Cursor** | MCP native | [configs/cursor/](configs/cursor/) |
+| **Windsurf** | MCP native | [configs/windsurf/](configs/windsurf/) |
+| **GitHub Copilot** | Agent Mode MCP | [configs/copilot/](configs/copilot/) |
+| **Cline / Roo Code** | MCP native | [configs/cline/](configs/cline/) |
+| **Gemini CLI** | MCP + GEMINI.md | [configs/gemini-cli/](configs/gemini-cli/) |
+| **Goose** | Recipe YAML | [configs/goose/](configs/goose/) |
+| **OpenClaw** | MCP config | [configs/openclaw/](configs/openclaw/) |
+| **Antigravity** | GEMINI.md routing | [configs/antigravity/](configs/antigravity/) |
+| **CrewAI** | Python MCP adapter | [configs/crewai/](configs/crewai/) |
+| **LangChain** | langchain-mcp-adapters | [configs/langchain/](configs/langchain/) |
 
 ## Available On
 

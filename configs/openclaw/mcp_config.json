@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "context-mem": {
+      "command": "npx",
+      "args": ["-y", "context-mem", "serve"],
+      "env": {}
+    }
+  }
+}
