@@ -66,8 +66,7 @@ export async function serve(_args: string[]): Promise<void> {
   };
   process.on('SIGTERM', shutdown);
   process.on('SIGINT', shutdown);
-  // When editor closes stdin, shut down cleanly
-  process.stdin.on('close', shutdown);
+  process.on('exit', () => deregisterInstance(projectDir));
 }
 
 async function startDashboard(projectDir: string): Promise<ChildProcess | null> {
