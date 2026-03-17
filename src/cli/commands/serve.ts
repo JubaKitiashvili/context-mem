@@ -1,6 +1,9 @@
 import { Kernel } from '../../core/kernel.js';
 import { createMcpServer } from '../../mcp-server/server.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { spawn, type ChildProcess } from 'node:child_process';
+import path from 'node:path';
+import fs from 'node:fs';
 import type { ToolKernel } from '../../mcp-server/tools.js';
 
 export async function serve(_args: string[]): Promise<void> {
@@ -42,8 +45,36 @@ export async function serve(_args: string[]): Promise<void> {
 
   console.error('context-mem: MCP server started (stdio)');
 
+  // Auto-start dashboard in background
+  let dashboardProcess: ChildProcess | null = null;
+  const noDashboard = _args.includes('--no-dashboard');
+  if (!noDashboard) {
+    dashboardProcess = startDashboard(projectDir);
+  }
+
   // Graceful shutdown
-  const shutdown = async () => { await kernel.stop(); process.exit(0); };
+  const shutdown = async () => {
+    if (dashboardProcess) dashboardProcess.kill('SIGTERM');
+    await kernel.stop();
+    process.exit(0);
+  };
   process.on('SIGTERM', shutdown);
   process.on('SIGINT', shutdown);
+}
+
+function startDashboard(projectDir: string): ChildProcess | null {
+  const dbPath = path.join(projectDir, '.context-mem', 'store.db');
+  const serverScript = path.join(__dirname, '..', '..', 'dashboard', 'server.js');
+
+  if (!fs.existsSync(serverScript)) return null;
+
+  const child = spawn('node', [serverScript, '--port', '51893', '--db', dbPath, '--project', projectDir, '--no-open'], {
+    detached: true,
+    stdio: 'ignore',
+    env: { ...process.env },
+  });
+  child.unref();
+
+  console.error('context-mem: Dashboard available at http://localhost:51893');
+  return child;
 }
