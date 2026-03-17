@@ -149,7 +149,7 @@ extensions:
 
 **Session Snapshots** — Save/restore session state across restarts with progressive trimming.
 
-**Dashboard** — Real-time web UI at `http://localhost:51893` — token economics, observations, search, knowledge base, events, system health.
+**Dashboard** — Real-time web UI at `http://localhost:51893` — auto-starts with `serve`, supports multi-project aggregation. Token economics, observations, search, knowledge base, events, system health. Switch between projects or see everything at once.
 
 <p align="center">
   <img src="docs/screenshots/dashboard-overview.png" width="600" alt="Dashboard — token economics and observation stats" />
@@ -157,6 +157,12 @@ extensions:
 <p align="center">
   <img src="docs/screenshots/dashboard-middle.png" width="600" alt="Dashboard — event stream, session snapshots, activity" />
 </p>
+
+**VS Code Extension** — Sidebar dashboard, status bar with live savings, command palette (start/stop/search/stats). Install from marketplace: `context-mem`.
+
+**Auto-Detection** — `context-mem init` detects your editor (Cursor, Windsurf, VS Code, Cline, Roo Code) and creates MCP config automatically.
+
+**OpenClaw Native Plugin** — Full ContextEngine integration with lifecycle hooks (bootstrap, ingest, assemble, compact, afterTurn, dispose). See [openclaw-plugin/](openclaw-plugin/).
 
 **Privacy** — Everything local. `<private>` tag stripping, custom regex redaction. No telemetry, no cloud.
 
