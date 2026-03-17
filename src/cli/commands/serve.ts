@@ -64,7 +64,8 @@ export async function serve(_args: string[]): Promise<void> {
 
 function startDashboard(projectDir: string): ChildProcess | null {
   const dbPath = path.join(projectDir, '.context-mem', 'store.db');
-  const serverScript = path.join(__dirname, '..', '..', 'dashboard', 'server.js');
+  // __dirname = dist/cli/commands/ → go up 3 levels to project root
+  const serverScript = path.join(__dirname, '..', '..', '..', 'dashboard', 'server.js');
 
   if (!fs.existsSync(serverScript)) return null;
 
