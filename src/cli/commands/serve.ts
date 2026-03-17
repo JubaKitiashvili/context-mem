@@ -5,6 +5,7 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';
 import type { ToolKernel } from '../../mcp-server/tools.js';
+import { registerInstance, deregisterInstance } from '../../core/instance-registry.js';
 
 export async function serve(_args: string[]): Promise<void> {
   const projectDir = process.cwd();
@@ -45,15 +46,20 @@ export async function serve(_args: string[]): Promise<void> {
 
   console.error('context-mem: MCP server started (stdio)');
 
-  // Auto-start dashboard in background
+  // Register in global instance registry
+  const dbRelPath = kernel.getConfig()?.db_path || '.context-mem/store.db';
+  registerInstance(projectDir, dbRelPath);
+
+  // Auto-start dashboard (singleton — only first instance starts it)
   let dashboardProcess: ChildProcess | null = null;
   const noDashboard = _args.includes('--no-dashboard');
   if (!noDashboard) {
-    dashboardProcess = startDashboard(projectDir);
+    dashboardProcess = await startDashboard(projectDir);
   }
 
   // Graceful shutdown
   const shutdown = async () => {
+    deregisterInstance(projectDir);
     if (dashboardProcess) dashboardProcess.kill('SIGTERM');
     await kernel.stop();
     process.exit(0);
@@ -64,14 +70,23 @@ export async function serve(_args: string[]): Promise<void> {
   process.stdin.on('close', shutdown);
 }
 
-function startDashboard(projectDir: string): ChildProcess | null {
-  const dbPath = path.join(projectDir, '.context-mem', 'store.db');
+async function startDashboard(projectDir: string): Promise<ChildProcess | null> {
+  // Check if dashboard is already running (singleton)
+  try {
+    const res = await fetch('http://localhost:51893/api/health');
+    if (res.ok) {
+      console.error('context-mem: Dashboard already running at http://localhost:51893');
+      return null;
+    }
+  } catch {
+    // Not running — start it
+  }
+
   // __dirname = dist/cli/commands/ → go up 3 levels to project root
   const serverScript = path.join(__dirname, '..', '..', '..', 'dashboard', 'server.js');
-
   if (!fs.existsSync(serverScript)) return null;
 
-  const child = spawn('node', [serverScript, '--port', '51893', '--db', dbPath, '--project', projectDir, '--no-open'], {
+  const child = spawn('node', [serverScript, '--port', '51893', '--no-open', '--multi'], {
     stdio: 'ignore',
     env: { ...process.env },
   });

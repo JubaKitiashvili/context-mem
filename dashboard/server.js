@@ -29,10 +29,40 @@ const PORT = parseInt(process.env.CONTEXT_MEM_DASHBOARD_PORT || getArg('--port',
 const DB_PATH = process.env.CONTEXT_MEM_DB || getArg('--db', '');
 const PROJECT_DIR = process.env.CONTEXT_MEM_PROJECT || getArg('--project', process.cwd());
 const NO_OPEN = args.includes('--no-open');
+const MULTI_MODE = args.includes('--multi');
+
+// --- Instance registry (multi-project support) ---
+const os = require('os');
+const INSTANCES_DIR = path.join(os.homedir(), '.context-mem', 'instances');
+
+function getRegisteredInstances() {
+  if (!fs.existsSync(INSTANCES_DIR)) return [];
+  const instances = [];
+  for (const file of fs.readdirSync(INSTANCES_DIR).filter(f => f.endsWith('.json'))) {
+    try {
+      const info = JSON.parse(fs.readFileSync(path.join(INSTANCES_DIR, file), 'utf8'));
+      // Check if process is still alive and DB exists
+      let alive = false;
+      try { process.kill(info.pid, 0); alive = true; } catch {}
+      if (alive && fs.existsSync(info.dbPath)) {
+        instances.push(info);
+      } else {
+        try { fs.unlinkSync(path.join(INSTANCES_DIR, file)); } catch {}
+      }
+    } catch {}
+  }
+  return instances.sort((a, b) => a.projectName.localeCompare(b.projectName));
+}
 
 // --- Resolve DB path ---
 function findDb() {
   if (DB_PATH && fs.existsSync(DB_PATH)) return DB_PATH;
+
+  // In multi mode, use first registered instance
+  if (MULTI_MODE) {
+    const instances = getRegisteredInstances();
+    if (instances.length > 0) return instances[0].dbPath;
+  }
 
   // Try standard locations
   const candidates = [
@@ -68,8 +98,22 @@ try {
   }
 }
 
-const db = new Database(dbPath, { readonly: true });
+let db = new Database(dbPath, { readonly: true });
 db.pragma('journal_mode = WAL');
+let currentProject = PROJECT_DIR;
+
+/** Switch active DB to a different project */
+function switchProject(newDbPath) {
+  try {
+    const newDb = new Database(newDbPath, { readonly: true });
+    newDb.pragma('journal_mode = WAL');
+    db.close();
+    db = newDb;
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 console.error(`context-mem dashboard: Reading from ${dbPath}`);
 
@@ -525,6 +569,22 @@ function handleApi(req, res) {
       case '/api/health':
         data = { status: 'ok', db: dbPath, uptime: process.uptime() };
         break;
+      case '/api/instances':
+        data = getRegisteredInstances().map(i => ({
+          ...i,
+          active: i.dbPath === db.name,
+        }));
+        break;
+      case '/api/switch-project': {
+        const targetDb = url.searchParams.get('db');
+        if (targetDb && switchProject(targetDb)) {
+          currentProject = getRegisteredInstances().find(i => i.dbPath === targetDb)?.projectDir || '';
+          data = { ok: true, db: targetDb, project: currentProject };
+        } else {
+          data = { ok: false, error: 'Failed to switch' };
+        }
+        break;
+      }
       default:
         res.writeHead(404, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Not found' }));
@@ -1807,6 +1867,9 @@ function getDashboardHtml() {
     <h1>context-mem <span>dashboard</span></h1>
   </div>
   <div style="display:flex;align-items:center;gap:12px;">
+    <select id="projectSelector" style="background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;max-width:200px;cursor:pointer;" title="Switch project">
+      <option value="">Loading...</option>
+    </select>
     <div class="refresh-indicator" id="refreshInfo">auto-refresh: 3s</div>
     <button class="theme-toggle" id="themeToggle" title="Toggle light/dark theme">L</button>
     <button class="export-btn" onclick="document.getElementById('shortcutsOverlay').classList.add('open')" title="Keyboard shortcuts">?</button>
@@ -2103,6 +2166,35 @@ async function fetchJson(url) {
   if (!res.ok) throw new Error(res.statusText);
   return res.json();
 }
+
+// --- Project selector (multi-project) ---
+async function loadProjects() {
+  try {
+    const instances = await fetchJson('/api/instances');
+    const sel = document.getElementById('projectSelector');
+    if (!instances.length) {
+      sel.innerHTML = '<option value="">No active projects</option>';
+      return;
+    }
+    sel.innerHTML = instances.map(i =>
+      '<option value="' + escHtml(i.dbPath) + '"' + (i.active ? ' selected' : '') + '>' +
+      escHtml(i.projectName) + '</option>'
+    ).join('') + '<option value="__all__">All Projects (unified)</option>';
+  } catch {}
+}
+
+document.getElementById('projectSelector').addEventListener('change', async function() {
+  const val = this.value;
+  if (!val || val === '__all__') return; // TODO: unified view
+  try {
+    await fetchJson('/api/switch-project?db=' + encodeURIComponent(val));
+    refresh();
+  } catch {}
+});
+
+loadProjects();
+// Refresh project list periodically
+setInterval(loadProjects, 10000);
 
 async function refresh() {
   try {
