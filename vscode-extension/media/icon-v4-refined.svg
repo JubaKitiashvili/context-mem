@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#080816"/>
+      <stop offset="100%" stop-color="#100e24"/>
+    </linearGradient>
+    <linearGradient id="prism-edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="40%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <linearGradient id="prism-glass" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.06"/>
+      <stop offset="50%" stop-color="#818cf8" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0.04"/>
+    </linearGradient>
+    <!-- Glass highlight on top face -->
+    <linearGradient id="glass-shine" x1="0.3" y1="0" x2="0.7" y2="1">
+      <stop offset="0%" stop-color="white" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Incoming ray gradients (noisy, scattered, gray-white) -->
+    <linearGradient id="ray-in-1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#94a3b8" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#94a3b8" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#cbd5e1" stop-opacity="0.55"/>
+    </linearGradient>
+    <linearGradient id="ray-in-2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#64748b" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#94a3b8" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#e2e8f0" stop-opacity="0.45"/>
+    </linearGradient>
+    <!-- Output beam gradient (vibrant, focused) -->
+    <linearGradient id="beam-core" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="40%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="beam-glow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Refraction glow inside prism -->
+    <radialGradient id="refract-glow" cx="0.6" cy="0.5" r="0.35">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Entry point glow -->
+    <radialGradient id="entry-glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Exit point glow -->
+    <radialGradient id="exit-glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="128" height="128" rx="24" fill="url(#bg)"/>
+
+  <!-- Ambient glow behind prism -->
+  <ellipse cx="64" cy="64" rx="38" ry="32" fill="url(#refract-glow)"/>
+
+  <!-- === INCOMING RAYS (noisy, scattered, various thickness) === -->
+
+  <!-- Main rays converging to left face of prism -->
+  <g>
+    <line x1="6" y1="24" x2="40" y2="50" stroke="url(#ray-in-1)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="4" y1="38" x2="38" y2="55" stroke="url(#ray-in-2)" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="6" y1="52" x2="36" y2="60" stroke="url(#ray-in-1)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="4" y1="64" x2="36" y2="64" stroke="url(#ray-in-2)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="6" y1="76" x2="36" y2="68" stroke="url(#ray-in-1)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="4" y1="90" x2="38" y2="73" stroke="url(#ray-in-2)" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="6" y1="104" x2="40" y2="78" stroke="url(#ray-in-1)" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Noise fragments near rays -->
+  <g opacity="0.18">
+    <rect x="10" y="30" width="9" height="1.5" rx="0.75" fill="#94a3b8" transform="rotate(-12 14 30)"/>
+    <rect x="8" y="46" width="7" height="1.5" rx="0.75" fill="#64748b" transform="rotate(-5 11 46)"/>
+    <rect x="12" y="68" width="6" height="1" rx="0.5" fill="#94a3b8"/>
+    <rect x="8" y="82" width="10" height="1.5" rx="0.75" fill="#64748b" transform="rotate(8 13 82)"/>
+    <rect x="10" y="98" width="8" height="1.5" rx="0.75" fill="#94a3b8" transform="rotate(15 14 98)"/>
+  </g>
+
+  <!-- Entry point glow on left face -->
+  <circle cx="36" cy="64" r="12" fill="url(#entry-glow)"/>
+
+  <!-- === HEXAGONAL PRISM === -->
+
+  <!-- Prism shadow/depth -->
+  <path d="M50 32 L82 32 L98 64 L82 96 L50 96 L34 64 Z"
+        fill="url(#prism-glass)"/>
+
+  <!-- Glass highlight (top-left face) -->
+  <path d="M50 32 L82 32 L98 64 L34 64 Z"
+        fill="url(#glass-shine)"/>
+
+  <!-- Internal refraction caustics -->
+  <g opacity="0.08">
+    <line x1="42" y1="48" x2="90" y2="48" stroke="#818cf8" stroke-width="0.5"/>
+    <line x1="38" y1="56" x2="94" y2="56" stroke="#a78bfa" stroke-width="0.5"/>
+    <line x1="36" y1="64" x2="96" y2="64" stroke="#818cf8" stroke-width="0.7"/>
+    <line x1="38" y1="72" x2="94" y2="72" stroke="#a78bfa" stroke-width="0.5"/>
+    <line x1="42" y1="80" x2="90" y2="80" stroke="#818cf8" stroke-width="0.5"/>
+  </g>
+
+  <!-- Internal light path (visible refraction beam inside prism) -->
+  <g opacity="0.12">
+    <path d="M36 64 Q 66 58 96 64" stroke="#22d3ee" stroke-width="1.5" fill="none"/>
+    <path d="M36 64 Q 66 70 96 64" stroke="#c084fc" stroke-width="1" fill="none"/>
+  </g>
+
+  <!-- Prism outline -->
+  <path d="M50 32 L82 32 L98 64 L82 96 L50 96 L34 64 Z"
+        fill="none" stroke="url(#prism-edge)" stroke-width="2"
+        stroke-linejoin="round"/>
+
+  <!-- Vertex highlights -->
+  <g opacity="0.4">
+    <circle cx="50" cy="32" r="1.5" fill="#22d3ee"/>
+    <circle cx="82" cy="32" r="1.5" fill="#818cf8"/>
+    <circle cx="98" cy="64" r="1.5" fill="#c084fc"/>
+    <circle cx="82" cy="96" r="1.5" fill="#c084fc"/>
+    <circle cx="50" cy="96" r="1.5" fill="#818cf8"/>
+    <circle cx="34" cy="64" r="1.5" fill="#22d3ee"/>
+  </g>
+
+  <!-- === OUTPUT BEAM (single, focused, bright) === -->
+
+  <!-- Beam outer glow -->
+  <line x1="98" y1="64" x2="124" y2="64" stroke="url(#beam-glow)" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Beam mid glow -->
+  <line x1="98" y1="64" x2="122" y2="64" stroke="url(#beam-glow)" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Beam core -->
+  <line x1="98" y1="64" x2="120" y2="64" stroke="url(#beam-core)" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Exit point glow -->
+  <circle cx="98" cy="64" r="8" fill="url(#exit-glow)"/>
+
+  <!-- Exit bright point -->
+  <circle cx="98" cy="64" r="2.5" fill="#a78bfa" opacity="0.7"/>
+  <circle cx="98" cy="64" r="1.2" fill="white" opacity="0.95"/>
+
+  <!-- Tiny spectral particles along beam -->
+  <circle cx="106" cy="64" r="0.8" fill="white" opacity="0.5"/>
+  <circle cx="112" cy="63.5" r="0.6" fill="#c084fc" opacity="0.4"/>
+  <circle cx="116" cy="64.2" r="0.5" fill="#818cf8" opacity="0.3"/>
+</svg>

@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#080816"/>
+      <stop offset="100%" stop-color="#100e24"/>
+    </linearGradient>
+    <linearGradient id="lens-edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <radialGradient id="lens-glass" cx="0.4" cy="0.35" r="0.6">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.08"/>
+      <stop offset="50%" stop-color="#818cf8" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0.02"/>
+    </radialGradient>
+    <radialGradient id="lens-shine" cx="0.35" cy="0.3" r="0.3">
+      <stop offset="0%" stop-color="white" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ray-in" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#94a3b8" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#94a3b8" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#cbd5e1" stop-opacity="0.5"/>
+    </linearGradient>
+    <linearGradient id="ray-focus" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="focus-glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ambient" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="128" height="128" rx="24" fill="url(#bg)"/>
+
+  <!-- Ambient glow -->
+  <circle cx="56" cy="64" r="32" fill="url(#ambient)"/>
+
+  <!-- Incoming scattered rays from left -->
+  <g>
+    <line x1="6" y1="20" x2="38" y2="46" stroke="url(#ray-in)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="4" y1="34" x2="36" y2="52" stroke="url(#ray-in)" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="6" y1="48" x2="36" y2="58" stroke="url(#ray-in)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="4" y1="64" x2="36" y2="64" stroke="url(#ray-in)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="6" y1="80" x2="36" y2="70" stroke="url(#ray-in)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="4" y1="94" x2="36" y2="76" stroke="url(#ray-in)" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="6" y1="108" x2="38" y2="82" stroke="url(#ray-in)" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Noise fragments -->
+  <g opacity="0.16">
+    <rect x="10" y="26" width="8" height="1.5" rx="0.75" fill="#94a3b8" transform="rotate(-15 14 26)"/>
+    <rect x="8" y="42" width="6" height="1.5" rx="0.75" fill="#64748b"/>
+    <rect x="12" y="72" width="7" height="1" rx="0.5" fill="#94a3b8" transform="rotate(8 15 72)"/>
+    <rect x="8" y="100" width="9" height="1.5" rx="0.75" fill="#64748b" transform="rotate(18 12 100)"/>
+  </g>
+
+  <!-- Lens body — convex lens (biconvex profile) -->
+  <ellipse cx="56" cy="64" rx="20" ry="34" fill="url(#lens-glass)"/>
+  <ellipse cx="56" cy="64" rx="20" ry="34" fill="url(#lens-shine)"/>
+
+  <!-- Internal caustic rings -->
+  <g opacity="0.08">
+    <ellipse cx="56" cy="64" rx="14" ry="26" fill="none" stroke="url(#lens-edge)" stroke-width="0.5"/>
+    <ellipse cx="56" cy="64" rx="8" ry="18" fill="none" stroke="url(#lens-edge)" stroke-width="0.5"/>
+  </g>
+
+  <!-- Lens outline -->
+  <ellipse cx="56" cy="64" rx="20" ry="34"
+           fill="none" stroke="url(#lens-edge)" stroke-width="2"/>
+
+  <!-- Center axis line (optical axis) -->
+  <line x1="36" y1="64" x2="76" y2="64" stroke="url(#lens-edge)" stroke-width="0.5" opacity="0.15"/>
+
+  <!-- Converging rays from lens to focal point -->
+  <g>
+    <line x1="74" y1="46" x2="104" y2="64" stroke="url(#ray-focus)" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="75" y1="52" x2="104" y2="64" stroke="url(#ray-focus)" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="76" y1="58" x2="104" y2="64" stroke="url(#ray-focus)" stroke-width="1" stroke-linecap="round"/>
+    <line x1="76" y1="64" x2="104" y2="64" stroke="url(#ray-focus)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="76" y1="70" x2="104" y2="64" stroke="url(#ray-focus)" stroke-width="1" stroke-linecap="round"/>
+    <line x1="75" y1="76" x2="104" y2="64" stroke="url(#ray-focus)" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="74" y1="82" x2="104" y2="64" stroke="url(#ray-focus)" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Focal point glow -->
+  <circle cx="104" cy="64" r="10" fill="url(#focus-glow)"/>
+
+  <!-- Focal point -->
+  <circle cx="104" cy="64" r="3.5" fill="#a78bfa" opacity="0.5"/>
+  <circle cx="104" cy="64" r="2" fill="#c4b5fd" opacity="0.7"/>
+  <circle cx="104" cy="64" r="1" fill="white" opacity="0.95"/>
+
+  <!-- Post-focal dissipating beam -->
+  <line x1="104" y1="64" x2="122" y2="64" stroke="#818cf8" stroke-width="1.5" stroke-linecap="round" opacity="0.25"/>
+
+  <!-- Top/bottom lens highlights -->
+  <circle cx="56" cy="32" r="1.5" fill="#22d3ee" opacity="0.4"/>
+  <circle cx="56" cy="96" r="1.5" fill="#c084fc" opacity="0.4"/>
+</svg>

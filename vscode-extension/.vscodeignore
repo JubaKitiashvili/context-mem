@@ -5,3 +5,10 @@ tsconfig.json
 **/*.ts
 **/*.map
 .gitignore
+media/logo-*.html
+media/icon-v*.svg
+media/icon-funnel.svg
+media/icon-128.png
+media/icon-256.png
+media/icon-512.png
+media/icon-transparent-128.png

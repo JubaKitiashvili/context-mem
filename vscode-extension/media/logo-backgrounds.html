@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html><head><title>context-mem — Background Tests</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400&display=swap');
+body{background:#1a1a2e;display:flex;flex-direction:column;align-items:center;min-height:100vh;margin:0;padding:30px 20px;font-family:'Inter',sans-serif;}
+h1{color:#818cf8;font-size:18px;margin-bottom:30px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1100px;width:100%;margin-bottom:30px;}
+.card{padding:28px 32px;border-radius:16px;display:flex;align-items:center;gap:16px;}
+.card-v{padding:28px 32px;border-radius:16px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+.label{position:absolute;top:8px;right:12px;font-size:9px;color:rgba(255,255,255,0.3);font-family:monospace;}
+.card,.card-v{position:relative;}
+.brand{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:22px;line-height:1.1;}
+.sub{font-size:11px;margin-top:3px;letter-spacing:0.3px;opacity:0.5;}
+.brand-sm{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;}
+
+/* Color helpers */
+.t-white{color:#e2e8f0;}
+.t-dark{color:#1a1a2e;}
+.t-gradient{background:linear-gradient(90deg,#22d3ee,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.t-gradient-dark{background:linear-gradient(90deg,#0e7490,#4f46e5,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.t-muted{color:#94a3b8;}
+.t-muted-dark{color:#64748b;}
+
+.section-title{color:#c084fc;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin:10px 0 15px;text-align:center;}
+</style></head>
+<body>
+<h1>Logo on Different Backgrounds</h1>
+
+<div class="section-title">Dark Backgrounds</div>
+<div class="grid">
+  <!-- Pure black -->
+  <div class="card" style="background:#000000;">
+    <span class="label">#000000</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient">context-mem</div><div class="sub t-muted">context optimization for AI</div></div>
+  </div>
+
+  <!-- VS Code dark -->
+  <div class="card" style="background:#1e1e1e;">
+    <span class="label">#1e1e1e VS Code Dark</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient">context-mem</div><div class="sub t-muted">context optimization for AI</div></div>
+  </div>
+
+  <!-- GitHub dark -->
+  <div class="card" style="background:#0d1117;">
+    <span class="label">#0d1117 GitHub Dark</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient">context-mem</div><div class="sub t-muted">context optimization for AI</div></div>
+  </div>
+
+  <!-- Dracula -->
+  <div class="card" style="background:#282a36;">
+    <span class="label">#282a36 Dracula</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient">context-mem</div><div class="sub t-muted">context optimization for AI</div></div>
+  </div>
+
+  <!-- One Dark -->
+  <div class="card" style="background:#282c34;">
+    <span class="label">#282c34 One Dark</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient">context-mem</div><div class="sub t-muted">context optimization for AI</div></div>
+  </div>
+
+  <!-- Nord -->
+  <div class="card" style="background:#2e3440;">
+    <span class="label">#2e3440 Nord</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient">context-mem</div><div class="sub t-muted">context optimization for AI</div></div>
+  </div>
+
+  <!-- Monokai -->
+  <div class="card" style="background:#272822;">
+    <span class="label">#272822 Monokai</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient">context-mem</div><div class="sub t-muted">context optimization for AI</div></div>
+  </div>
+
+  <!-- Dark navy -->
+  <div class="card" style="background:#0f172a;">
+    <span class="label">#0f172a Slate 900</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient">context-mem</div><div class="sub t-muted">context optimization for AI</div></div>
+  </div>
+</div>
+
+<div class="section-title">Light Backgrounds</div>
+<div class="grid">
+  <!-- Pure white -->
+  <div class="card" style="background:#ffffff;">
+    <span class="label" style="color:rgba(0,0,0,0.25);">#ffffff</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient-dark">context-mem</div><div class="sub t-muted-dark">context optimization for AI</div></div>
+  </div>
+
+  <!-- VS Code light -->
+  <div class="card" style="background:#f3f3f3;">
+    <span class="label" style="color:rgba(0,0,0,0.25);">#f3f3f3 VS Code Light</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient-dark">context-mem</div><div class="sub t-muted-dark">context optimization for AI</div></div>
+  </div>
+
+  <!-- GitHub light -->
+  <div class="card" style="background:#f6f8fa;">
+    <span class="label" style="color:rgba(0,0,0,0.25);">#f6f8fa GitHub Light</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient-dark">context-mem</div><div class="sub t-muted-dark">context optimization for AI</div></div>
+  </div>
+
+  <!-- Warm white -->
+  <div class="card" style="background:#fafaf9;">
+    <span class="label" style="color:rgba(0,0,0,0.25);">#fafaf9 Warm</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient-dark">context-mem</div><div class="sub t-muted-dark">context optimization for AI</div></div>
+  </div>
+</div>
+
+<div class="section-title">Colored / Gradient Backgrounds</div>
+<div class="grid">
+  <!-- Indigo dark -->
+  <div class="card" style="background:linear-gradient(135deg,#1e1b4b,#312e81);">
+    <span class="label">#1e1b4b Indigo</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient">context-mem</div><div class="sub" style="color:#818cf8;opacity:0.6;">context optimization for AI</div></div>
+  </div>
+
+  <!-- Slate blue -->
+  <div class="card" style="background:linear-gradient(135deg,#0f172a,#1e293b);">
+    <span class="label">Slate gradient</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient">context-mem</div><div class="sub t-muted">context optimization for AI</div></div>
+  </div>
+
+  <!-- Purple dark -->
+  <div class="card" style="background:linear-gradient(135deg,#2e1065,#4c1d95);">
+    <span class="label">Purple</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-white">context-mem</div><div class="sub" style="color:#c4b5fd;opacity:0.5;">context optimization for AI</div></div>
+  </div>
+
+  <!-- Teal dark -->
+  <div class="card" style="background:linear-gradient(135deg,#042f2e,#134e4a);">
+    <span class="label">Teal</span>
+    <img src="icon-v7-refined.svg" width="48" height="48">
+    <div><div class="brand t-gradient">context-mem</div><div class="sub" style="color:#5eead4;opacity:0.4;">context optimization for AI</div></div>
+  </div>
+</div>
+
+<div class="section-title">VS Code Marketplace Preview (sidebar icon)</div>
+<div class="grid">
+  <div class="card" style="background:#252526;border:1px solid #3c3c3c;gap:10px;">
+    <span class="label" style="color:rgba(255,255,255,0.2);">Extension sidebar</span>
+    <img src="icon-v7-refined.svg" width="42" height="42">
+    <div>
+      <div class="brand-sm t-white">context-mem</div>
+      <div style="font-size:10px;color:#858585;margin-top:2px;">Juba Kitiashvili</div>
+      <div style="font-size:10px;color:#6a6a6a;margin-top:1px;">Context optimization for AI coding assistants</div>
+    </div>
+  </div>
+  <div class="card" style="background:#ffffff;border:1px solid #e0e0e0;gap:10px;">
+    <span class="label" style="color:rgba(0,0,0,0.2);">Extension sidebar (light)</span>
+    <img src="icon-v7-refined.svg" width="42" height="42">
+    <div>
+      <div class="brand-sm t-dark">context-mem</div>
+      <div style="font-size:10px;color:#888;margin-top:2px;">Juba Kitiashvili</div>
+      <div style="font-size:10px;color:#aaa;margin-top:1px;">Context optimization for AI coding assistants</div>
+    </div>
+  </div>
+</div>
+
+</body></html>

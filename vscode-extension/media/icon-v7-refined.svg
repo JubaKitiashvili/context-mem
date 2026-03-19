@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#080816"/>
+      <stop offset="100%" stop-color="#100e24"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <linearGradient id="ray-in" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#94a3b8" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#94a3b8" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#cbd5e1" stop-opacity="0.45"/>
+    </linearGradient>
+    <radialGradient id="vortex-outer" cx="0.5" cy="0.45" r="0.5">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vortex-mid" cx="0.5" cy="0.45" r="0.3">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core-flare" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="white" stop-opacity="0.35"/>
+      <stop offset="25%" stop-color="#c4b5fd" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="beam-out" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="gem-fill" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0.15"/>
+    </linearGradient>
+    <radialGradient id="gem-glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#c084fc" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="128" height="128" rx="24" fill="url(#bg)"/>
+
+  <!-- Ambient outer glow -->
+  <circle cx="64" cy="54" r="42" fill="url(#vortex-outer)"/>
+  <circle cx="64" cy="54" r="26" fill="url(#vortex-mid)"/>
+
+  <!-- === INCOMING SCATTERED RAYS === -->
+  <g>
+    <!-- Top -->
+    <line x1="24" y1="6" x2="50" y2="36" stroke="url(#ray-in)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="46" y1="4" x2="56" y2="34" stroke="url(#ray-in)" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="64" y1="2" x2="64" y2="34" stroke="url(#ray-in)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="82" y1="4" x2="72" y2="34" stroke="url(#ray-in)" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="104" y1="6" x2="78" y2="36" stroke="url(#ray-in)" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Left -->
+    <line x1="6" y1="30" x2="38" y2="44" stroke="url(#ray-in)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="4" y1="48" x2="36" y2="52" stroke="url(#ray-in)" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="6" y1="64" x2="38" y2="58" stroke="url(#ray-in)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="4" y1="78" x2="38" y2="66" stroke="url(#ray-in)" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Right -->
+    <line x1="122" y1="30" x2="90" y2="44" stroke="url(#ray-in)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="124" y1="48" x2="92" y2="52" stroke="url(#ray-in)" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="122" y1="64" x2="90" y2="58" stroke="url(#ray-in)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="124" y1="78" x2="90" y2="66" stroke="url(#ray-in)" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Noise fragments -->
+  <g opacity="0.13">
+    <rect x="30" y="10" width="7" height="1.5" rx="0.75" fill="#94a3b8" transform="rotate(28 33 10)"/>
+    <rect x="92" y="12" width="8" height="1.5" rx="0.75" fill="#64748b" transform="rotate(-32 96 12)"/>
+    <rect x="10" y="38" width="6" height="1" rx="0.5" fill="#94a3b8" transform="rotate(10 13 38)"/>
+    <rect x="114" y="40" width="7" height="1" rx="0.5" fill="#64748b" transform="rotate(-8 117 40)"/>
+    <rect x="8" y="70" width="8" height="1.5" rx="0.75" fill="#94a3b8" transform="rotate(15 12 70)"/>
+    <rect x="116" y="72" width="6" height="1.5" rx="0.75" fill="#64748b" transform="rotate(-12 119 72)"/>
+  </g>
+
+  <!-- === SPIRAL RINGS (vortex) === -->
+
+  <!-- Outer ring — faintest, cyan -->
+  <ellipse cx="64" cy="54" rx="36" ry="28" fill="none" stroke="#22d3ee" stroke-width="0.8" opacity="0.1"/>
+
+  <!-- Ring 2 — partial arc for rotation feel -->
+  <path d="M94 44 A28 22 0 1 0 34 44" fill="none" stroke="#22d3ee" stroke-width="1" opacity="0.14" stroke-linecap="round"/>
+
+  <!-- Ring 3 -->
+  <ellipse cx="64" cy="54" rx="24" ry="18" fill="none" stroke="#818cf8" stroke-width="1.2" opacity="0.18"/>
+
+  <!-- Ring 4 — partial arc -->
+  <path d="M82 48 A16 12 0 1 1 46 48" fill="none" stroke="#818cf8" stroke-width="1.3" opacity="0.25" stroke-linecap="round"/>
+
+  <!-- Ring 5 -->
+  <ellipse cx="64" cy="54" rx="12" ry="9" fill="none" stroke="#a78bfa" stroke-width="1.5" opacity="0.35"/>
+
+  <!-- Ring 6 — innermost -->
+  <ellipse cx="64" cy="54" rx="6" ry="4.5" fill="none" stroke="#c084fc" stroke-width="1.5" opacity="0.45"/>
+
+  <!-- Spiral arm (one elegant curve for rotation) -->
+  <path d="M100 54 Q 92 36 74 32 Q 54 28 40 42 Q 28 56 40 68 Q 54 78 70 70 Q 82 64 78 52 Q 74 42 64 54"
+        fill="none" stroke="url(#accent)" stroke-width="0.8" opacity="0.1" stroke-linecap="round"/>
+
+  <!-- === CORE === -->
+
+  <!-- Core flare -->
+  <circle cx="64" cy="54" r="8" fill="url(#core-flare)"/>
+
+  <!-- Cross flare -->
+  <g opacity="0.15" stroke="#c4b5fd" stroke-linecap="round">
+    <line x1="57" y1="54" x2="71" y2="54" stroke-width="0.6"/>
+    <line x1="64" y1="47" x2="64" y2="61" stroke-width="0.6"/>
+  </g>
+
+  <!-- Core point -->
+  <circle cx="64" cy="54" r="3.5" fill="#a78bfa" opacity="0.45"/>
+  <circle cx="64" cy="54" r="2" fill="#c4b5fd" opacity="0.7"/>
+  <circle cx="64" cy="54" r="1" fill="white"/>
+
+  <!-- === OUTPUT BEAM + GEM === -->
+
+  <!-- Beam connecting core to gem -->
+  <line x1="64" y1="62" x2="64" y2="88" stroke="url(#beam-out)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="64" y1="62" x2="64" y2="86" stroke="#a78bfa" stroke-width="6" stroke-linecap="round" opacity="0.08"/>
+
+  <!-- Gem glow -->
+  <circle cx="64" cy="100" r="10" fill="url(#gem-glow)"/>
+
+  <!-- Gem (small diamond) -->
+  <path d="M64 88 L72 100 L64 112 L56 100 Z"
+        fill="url(#gem-fill)" stroke="url(#accent)" stroke-width="1.5" stroke-linejoin="round"/>
+
+  <!-- Gem facet -->
+  <path d="M64 88 L56 100 L64 100 Z" fill="white" opacity="0.06"/>
+
+  <!-- Gem vertex highlights -->
+  <circle cx="64" cy="88" r="1.2" fill="#818cf8" opacity="0.5"/>
+  <circle cx="64" cy="112" r="1" fill="#c084fc" opacity="0.45"/>
+  <circle cx="72" cy="100" r="0.8" fill="#a78bfa" opacity="0.35"/>
+  <circle cx="56" cy="100" r="0.8" fill="#22d3ee" opacity="0.35"/>
+</svg>

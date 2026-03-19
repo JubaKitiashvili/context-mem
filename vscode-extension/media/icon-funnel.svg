@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0a1a"/>
+      <stop offset="100%" stop-color="#12102a"/>
+    </linearGradient>
+    <linearGradient id="funnel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <linearGradient id="drop" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Data lines entering funnel -->
+    <linearGradient id="dataIn" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.1"/>
+      <stop offset="50%" stop-color="#22d3ee" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="128" height="128" rx="24" fill="url(#bg)"/>
+
+  <!-- Subtle glow behind funnel -->
+  <ellipse cx="64" cy="58" rx="36" ry="40" fill="url(#glow)"/>
+
+  <!-- Incoming data lines (raw noisy data) -->
+  <g opacity="0.5">
+    <rect x="22" y="24" width="84" height="2" rx="1" fill="url(#dataIn)"/>
+    <rect x="26" y="30" width="76" height="2" rx="1" fill="url(#dataIn)"/>
+    <rect x="30" y="36" width="68" height="2" rx="1" fill="url(#dataIn)"/>
+    <rect x="18" y="27" width="12" height="1.5" rx="0.75" fill="#22d3ee" opacity="0.3"/>
+    <rect x="98" y="33" width="10" height="1.5" rx="0.75" fill="#c084fc" opacity="0.3"/>
+  </g>
+
+  <!-- Funnel body -->
+  <path d="M24 42 L104 42 L72 78 L72 92 L56 92 L56 78 Z"
+        fill="none" stroke="url(#funnel)" stroke-width="2.5"
+        stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- Funnel fill (subtle) -->
+  <path d="M25 43 L103 43 L71.5 77.5 L71.5 91.5 L56.5 91.5 L56.5 77.5 Z"
+        fill="url(#funnel)" opacity="0.08"/>
+
+  <!-- Internal funnel lines (compression visualization) -->
+  <g opacity="0.35">
+    <line x1="32" y1="50" x2="96" y2="50" stroke="url(#funnel)" stroke-width="1"/>
+    <line x1="40" y1="58" x2="88" y2="58" stroke="url(#funnel)" stroke-width="1"/>
+    <line x1="48" y1="66" x2="80" y2="66" stroke="url(#funnel)" stroke-width="1"/>
+    <line x1="54" y1="74" x2="74" y2="74" stroke="url(#funnel)" stroke-width="1"/>
+  </g>
+
+  <!-- Output drop (compressed context) -->
+  <path d="M64 96 C64 96 56 104 56 108 C56 112.4 59.6 116 64 116 C68.4 116 72 112.4 72 108 C72 104 64 96 64 96Z"
+        fill="url(#drop)"/>
+
+  <!-- Drop shine -->
+  <ellipse cx="61" cy="106" rx="2.5" ry="3" fill="white" opacity="0.3"/>
+
+  <!-- Subtle corner brackets (code context hint) -->
+  <g stroke="#22d3ee" stroke-width="1.5" opacity="0.2" fill="none" stroke-linecap="round">
+    <!-- Top-left bracket -->
+    <path d="M14 20 L14 14 L20 14"/>
+    <!-- Top-right bracket -->
+    <path d="M108 14 L114 14 L114 20"/>
+    <!-- Bottom-left bracket -->
+    <path d="M14 108 L14 114 L20 114"/>
+    <!-- Bottom-right bracket -->
+    <path d="M108 114 L114 114 L114 108"/>
+  </g>
+</svg>

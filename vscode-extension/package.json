@@ -2,7 +2,7 @@
   "name": "context-mem",
   "displayName": "context-mem",
   "description": "Context optimization for AI coding assistants — 99% token savings via 14 content-aware summarizers",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "JubaKitiashvili",
   "license": "MIT",
   "repository": {

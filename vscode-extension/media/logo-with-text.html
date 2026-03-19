@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html><head><title>context-mem — Logo + Text</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+body{background:#0a0a1a;display:flex;flex-direction:column;align-items:center;min-height:100vh;margin:0;padding:40px 20px;font-family:sans-serif;}
+h1{color:#818cf8;font-size:18px;margin-bottom:30px;font-family:'Inter',sans-serif;}
+.section{margin-bottom:50px;text-align:center;}
+.section-title{color:#c084fc;font-size:13px;font-weight:600;margin-bottom:20px;letter-spacing:2px;text-transform:uppercase;font-family:'Inter',sans-serif;}
+.row{display:flex;gap:60px;justify-content:center;flex-wrap:wrap;align-items:center;}
+
+/* Logo + text combos */
+.combo{display:flex;align-items:center;gap:14px;padding:24px 32px;border-radius:16px;border:1px solid #1e1e3a;background:#0d0d20;}
+.combo:hover{border-color:#333;}
+.combo img{flex-shrink:0;}
+.text-block{text-align:left;}
+.brand-name{font-size:22px;line-height:1.1;}
+.brand-sub{font-size:11px;color:#555;margin-top:3px;letter-spacing:0.5px;}
+
+/* Vertical combos */
+.combo-v{display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px 32px;border-radius:16px;border:1px solid #1e1e3a;background:#0d0d20;}
+.combo-v:hover{border-color:#333;}
+.combo-v .brand-name{text-align:center;}
+.combo-v .brand-sub{text-align:center;}
+
+/* Small inline */
+.combo-sm{display:flex;align-items:center;gap:8px;padding:12px 20px;border-radius:10px;border:1px solid #1e1e3a;background:#0d0d20;}
+.combo-sm:hover{border-color:#333;}
+.combo-sm .brand-name{font-size:14px;}
+
+/* Font variants */
+.f-inter{font-family:'Inter',sans-serif;}
+.f-mono{font-family:'JetBrains Mono',monospace;}
+.f-space{font-family:'Space Grotesk',sans-serif;}
+
+.w-300{font-weight:300;}
+.w-400{font-weight:400;}
+.w-500{font-weight:500;}
+.w-600{font-weight:600;}
+.w-700{font-weight:700;}
+
+/* Color variants */
+.c-white{color:#e2e8f0;}
+.c-gradient{background:linear-gradient(90deg,#22d3ee,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.c-cyan{color:#22d3ee;}
+.c-purple{color:#c084fc;}
+.c-muted{color:#94a3b8;}
+
+/* Separator styles */
+.sep-dot::after{content:'';display:inline;color:#555;}
+.highlight{color:#818cf8;}
+
+/* Dark bg for contrast */
+.on-dark{background:#050510;border-color:#151530;}
+
+/* Banner style */
+.banner{display:flex;align-items:center;gap:16px;padding:20px 40px;border-radius:12px;background:linear-gradient(135deg,#0d0d20 0%,#12102a 100%);border:1px solid #1e1e3a;}
+.banner:hover{border-color:#333;}
+</style></head>
+<body>
+<h1>context-mem — Logo + Text Combinations</h1>
+
+<!-- HORIZONTAL LAYOUTS -->
+<div class="section">
+  <div class="section-title">Horizontal — Different Fonts</div>
+  <div class="row">
+    <div class="combo">
+      <img src="icon-v7-refined.svg" width="48" height="48">
+      <div class="text-block">
+        <div class="brand-name f-space w-600 c-white">context-mem</div>
+        <div class="brand-sub f-inter">context optimization for AI</div>
+      </div>
+    </div>
+    <div class="combo">
+      <img src="icon-v7-refined.svg" width="48" height="48">
+      <div class="text-block">
+        <div class="brand-name f-mono w-500 c-white">context-mem</div>
+        <div class="brand-sub f-mono" style="font-size:10px;">context optimization for AI</div>
+      </div>
+    </div>
+    <div class="combo">
+      <img src="icon-v7-refined.svg" width="48" height="48">
+      <div class="text-block">
+        <div class="brand-name f-inter w-300 c-white" style="font-size:24px;">context-mem</div>
+        <div class="brand-sub f-inter w-400">context optimization for AI</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GRADIENT TEXT -->
+<div class="section">
+  <div class="section-title">Gradient &amp; Color Variants</div>
+  <div class="row">
+    <div class="combo">
+      <img src="icon-v7-refined.svg" width="48" height="48">
+      <div class="text-block">
+        <div class="brand-name f-space w-600 c-gradient">context-mem</div>
+        <div class="brand-sub f-inter c-muted">99% less noise, 100% more context</div>
+      </div>
+    </div>
+    <div class="combo">
+      <img src="icon-v7-refined.svg" width="48" height="48">
+      <div class="text-block">
+        <div class="brand-name f-space w-600"><span class="c-cyan">context</span><span class="c-muted">-</span><span class="c-purple">mem</span></div>
+        <div class="brand-sub f-inter">context optimization for AI</div>
+      </div>
+    </div>
+    <div class="combo">
+      <img src="icon-v7-refined.svg" width="48" height="48">
+      <div class="text-block">
+        <div class="brand-name f-mono w-500 c-white">context<span class="highlight">-mem</span></div>
+        <div class="brand-sub f-mono" style="font-size:10px;">token optimization engine</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VERTICAL LAYOUTS -->
+<div class="section">
+  <div class="section-title">Vertical / Stacked</div>
+  <div class="row">
+    <div class="combo-v">
+      <img src="icon-v7-refined.svg" width="64" height="64">
+      <div>
+        <div class="brand-name f-space w-600 c-white">context-mem</div>
+        <div class="brand-sub f-inter">context optimization for AI</div>
+      </div>
+    </div>
+    <div class="combo-v">
+      <img src="icon-v7-refined.svg" width="64" height="64">
+      <div>
+        <div class="brand-name f-space w-700 c-gradient">context-mem</div>
+        <div class="brand-sub f-inter c-muted">99% less noise</div>
+      </div>
+    </div>
+    <div class="combo-v">
+      <img src="icon-v7-refined.svg" width="64" height="64">
+      <div>
+        <div class="brand-name f-mono w-500"><span class="c-cyan">context</span><span class="c-muted">-</span><span class="c-purple">mem</span></div>
+        <div class="brand-sub f-mono" style="font-size:10px;">compress · search · optimize</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SMALL / INLINE -->
+<div class="section">
+  <div class="section-title">Small / Sidebar / Status Bar</div>
+  <div class="row">
+    <div class="combo-sm">
+      <img src="icon-v7-refined.svg" width="20" height="20">
+      <div class="brand-name f-space w-500 c-white">context-mem</div>
+    </div>
+    <div class="combo-sm">
+      <img src="icon-v7-refined.svg" width="20" height="20">
+      <div class="brand-name f-mono w-500 c-white">context-mem</div>
+    </div>
+    <div class="combo-sm">
+      <img src="icon-v7-refined.svg" width="20" height="20">
+      <div class="brand-name f-space w-500 c-gradient">context-mem</div>
+    </div>
+    <div class="combo-sm">
+      <img src="icon-v7-refined.svg" width="16" height="16">
+      <div class="brand-name f-inter w-400 c-muted" style="font-size:12px;">context-mem <span style="color:#818cf8;">99.2%</span> saved</div>
+    </div>
+  </div>
+</div>
+
+<!-- BANNER -->
+<div class="section">
+  <div class="section-title">Banner / Header</div>
+  <div class="row">
+    <div class="banner">
+      <img src="icon-v7-refined.svg" width="56" height="56">
+      <div class="text-block">
+        <div class="brand-name f-space w-700 c-gradient" style="font-size:28px;">context-mem</div>
+        <div class="brand-sub f-inter c-muted" style="font-size:13px;margin-top:4px;">Context optimization for AI coding assistants — 99% token savings</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body></html>

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0a1a"/>
+      <stop offset="100%" stop-color="#12102a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="128" height="128" rx="24" fill="url(#bg)"/>
+
+  <!-- Glow -->
+  <ellipse cx="64" cy="64" rx="40" ry="35" fill="url(#glow)"/>
+
+  <!-- Wide scattered layers (raw data) — fading out at top -->
+  <g opacity="0.2">
+    <rect x="18" y="18" width="92" height="3" rx="1.5" fill="#22d3ee"/>
+    <rect x="22" y="26" width="84" height="3" rx="1.5" fill="#22d3ee"/>
+  </g>
+  <g opacity="0.3">
+    <rect x="26" y="34" width="76" height="3" rx="1.5" fill="#44d0e8"/>
+    <rect x="28" y="42" width="72" height="3" rx="1.5" fill="#5ebbe8"/>
+  </g>
+
+  <!-- Compression zone — layers get shorter, brighter, more saturated -->
+  <g opacity="0.45">
+    <rect x="32" y="50" width="64" height="3" rx="1.5" fill="#6b9cf0"/>
+    <rect x="36" y="58" width="56" height="3" rx="1.5" fill="#818cf8"/>
+  </g>
+  <g opacity="0.6">
+    <rect x="40" y="66" width="48" height="3.5" rx="1.75" fill="#9580f8"/>
+    <rect x="44" y="74" width="40" height="3.5" rx="1.75" fill="#a87cf8"/>
+  </g>
+
+  <!-- Compressed core — short, bright, glowing -->
+  <g opacity="0.85">
+    <rect x="48" y="82" width="32" height="4" rx="2" fill="#b678fc"/>
+  </g>
+  <rect x="52" y="90" width="24" height="4" rx="2" fill="url(#accent)" opacity="0.95"/>
+
+  <!-- Final essence — single bright bar -->
+  <rect x="56" y="98" width="16" height="5" rx="2.5" fill="url(#accent)"/>
+  <!-- Glow on final bar -->
+  <rect x="56" y="98" width="16" height="5" rx="2.5" fill="white" opacity="0.3"/>
+
+  <!-- Tiny sparkle on the compressed output -->
+  <circle cx="60" cy="100" r="1" fill="white" opacity="0.7"/>
+
+  <!-- Subtle compression arrows on the sides -->
+  <g stroke="url(#accent)" stroke-width="1.5" opacity="0.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 30 L20 96 L28 88"/>
+    <path d="M108 30 L108 96 L100 88"/>
+  </g>
+</svg>
