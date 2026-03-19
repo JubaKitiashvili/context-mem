@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "context-mem": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "context-mem", "serve"]
+    }
+  }
+}

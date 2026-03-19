@@ -23,52 +23,59 @@
       <stop offset="0%" stop-color="#818cf8" stop-opacity="0.7"/>
       <stop offset="100%" stop-color="#c084fc" stop-opacity="0"/>
     </linearGradient>
+    <clipPath id="clip">
+      <rect width="128" height="128" rx="24"/>
+    </clipPath>
   </defs>
 
   <!-- Background -->
   <rect width="128" height="128" rx="24" fill="url(#bg)"/>
 
-  <!-- Incoming rays — bold, fewer -->
-  <g stroke="#94a3b8" stroke-linecap="round">
-    <line x1="4" y1="18" x2="32" y2="42" stroke-width="3" opacity="0.4"/>
-    <line x1="4" y1="38" x2="30" y2="50" stroke-width="2.5" opacity="0.35"/>
-    <line x1="4" y1="56" x2="30" y2="58" stroke-width="3.5" opacity="0.45"/>
-    <line x1="4" y1="64" x2="30" y2="64" stroke-width="4" opacity="0.5"/>
-    <line x1="4" y1="72" x2="30" y2="70" stroke-width="3.5" opacity="0.45"/>
-    <line x1="4" y1="90" x2="30" y2="78" stroke-width="2.5" opacity="0.35"/>
-    <line x1="4" y1="110" x2="32" y2="86" stroke-width="3" opacity="0.4"/>
+  <!-- Scaled content group — 1.2x centered, clipped to rounded rect -->
+  <g clip-path="url(#clip)" transform="translate(64,64) scale(1.2) translate(-60,-64)">
+
+    <!-- Incoming rays — bold, fewer -->
+    <g stroke="#94a3b8" stroke-linecap="round">
+      <line x1="4" y1="18" x2="32" y2="42" stroke-width="3" opacity="0.4"/>
+      <line x1="4" y1="38" x2="30" y2="50" stroke-width="2.5" opacity="0.35"/>
+      <line x1="4" y1="56" x2="30" y2="58" stroke-width="3.5" opacity="0.45"/>
+      <line x1="4" y1="64" x2="30" y2="64" stroke-width="4" opacity="0.5"/>
+      <line x1="4" y1="72" x2="30" y2="70" stroke-width="3.5" opacity="0.45"/>
+      <line x1="4" y1="90" x2="30" y2="78" stroke-width="2.5" opacity="0.35"/>
+      <line x1="4" y1="110" x2="32" y2="86" stroke-width="3" opacity="0.4"/>
+    </g>
+
+    <!-- Lens body -->
+    <ellipse cx="50" cy="64" rx="20" ry="38" fill="url(#lens-fill)"/>
+
+    <!-- Lens glass shine -->
+    <ellipse cx="44" cy="50" rx="10" ry="18" fill="white" opacity="0.06"/>
+
+    <!-- Lens outline — BOLD -->
+    <ellipse cx="50" cy="64" rx="20" ry="38"
+             fill="none" stroke="url(#lens-edge)" stroke-width="3"/>
+
+    <!-- Converging rays — bold, colored -->
+    <g stroke-linecap="round">
+      <line x1="68" y1="38" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="2.5"/>
+      <line x1="69" y1="48" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="2"/>
+      <line x1="70" y1="57" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="1.5"/>
+      <line x1="70" y1="64" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="3"/>
+      <line x1="70" y1="71" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="1.5"/>
+      <line x1="69" y1="80" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="2"/>
+      <line x1="68" y1="90" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="2.5"/>
+    </g>
+
+    <!-- Focal point glow -->
+    <circle cx="102" cy="64" r="14" fill="url(#focus-glow)"/>
+
+    <!-- Focal point — big and bright -->
+    <circle cx="102" cy="64" r="5" fill="#a78bfa" opacity="0.6"/>
+    <circle cx="102" cy="64" r="3" fill="#c4b5fd" opacity="0.8"/>
+    <circle cx="102" cy="64" r="1.5" fill="white"/>
+
+    <!-- Top/bottom lens accents -->
+    <circle cx="50" cy="26" r="2" fill="#22d3ee" opacity="0.5"/>
+    <circle cx="50" cy="102" r="2" fill="#c084fc" opacity="0.5"/>
   </g>
-
-  <!-- Lens body -->
-  <ellipse cx="50" cy="64" rx="20" ry="38" fill="url(#lens-fill)"/>
-
-  <!-- Lens glass shine -->
-  <ellipse cx="44" cy="50" rx="10" ry="18" fill="white" opacity="0.06"/>
-
-  <!-- Lens outline — BOLD -->
-  <ellipse cx="50" cy="64" rx="20" ry="38"
-           fill="none" stroke="url(#lens-edge)" stroke-width="3"/>
-
-  <!-- Converging rays — bold, colored -->
-  <g stroke-linecap="round">
-    <line x1="68" y1="38" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="2.5"/>
-    <line x1="69" y1="48" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="2"/>
-    <line x1="70" y1="57" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="1.5"/>
-    <line x1="70" y1="64" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="3"/>
-    <line x1="70" y1="71" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="1.5"/>
-    <line x1="69" y1="80" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="2"/>
-    <line x1="68" y1="90" x2="102" y2="64" stroke="url(#ray-conv)" stroke-width="2.5"/>
-  </g>
-
-  <!-- Focal point glow -->
-  <circle cx="102" cy="64" r="14" fill="url(#focus-glow)"/>
-
-  <!-- Focal point — big and bright -->
-  <circle cx="102" cy="64" r="5" fill="#a78bfa" opacity="0.6"/>
-  <circle cx="102" cy="64" r="3" fill="#c4b5fd" opacity="0.8"/>
-  <circle cx="102" cy="64" r="1.5" fill="white"/>
-
-  <!-- Top/bottom lens accents -->
-  <circle cx="50" cy="26" r="2" fill="#22d3ee" opacity="0.5"/>
-  <circle cx="50" cy="102" r="2" fill="#c084fc" opacity="0.5"/>
 </svg>

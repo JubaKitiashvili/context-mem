@@ -160,7 +160,7 @@ extensions:
 
 **VS Code Extension** — Sidebar dashboard, status bar with live savings, command palette (start/stop/search/stats). Install from marketplace: `context-mem`.
 
-**Auto-Detection** — `context-mem init` detects your editor (Cursor, Windsurf, VS Code, Cline, Roo Code) and creates MCP config automatically.
+**Auto-Detection** — `context-mem init` detects your editor (Cursor, Windsurf, VS Code, Cline, Roo Code) and creates MCP config + AI rules automatically. First `serve` run also triggers lightweight auto-setup (`.gitignore`, rules) — zero manual config needed.
 
 **OpenClaw Native Plugin** — Full ContextEngine integration with lifecycle hooks (bootstrap, ingest, assemble, compact, afterTurn, dispose). See [openclaw-plugin/](openclaw-plugin/).
 
@@ -256,23 +256,28 @@ context-mem dashboard   # Open web dashboard
 
 ## Platform Support
 
-| Platform | Integration | Config |
-|---|---|---|
-| **Claude Code** | Plugin marketplace | [configs/claude-code/](configs/claude-code/) |
-| **Cursor** | MCP native | [configs/cursor/](configs/cursor/) |
-| **Windsurf** | MCP native | [configs/windsurf/](configs/windsurf/) |
-| **GitHub Copilot** | Agent Mode MCP | [configs/copilot/](configs/copilot/) |
-| **Cline / Roo Code** | MCP native | [configs/cline/](configs/cline/) |
-| **Gemini CLI** | MCP + GEMINI.md | [configs/gemini-cli/](configs/gemini-cli/) |
-| **Goose** | Recipe YAML | [configs/goose/](configs/goose/) |
-| **OpenClaw** | MCP config | [configs/openclaw/](configs/openclaw/) |
-| **Antigravity** | GEMINI.md routing | [configs/antigravity/](configs/antigravity/) |
-| **CrewAI** | Python MCP adapter | [configs/crewai/](configs/crewai/) |
-| **LangChain** | langchain-mcp-adapters | [configs/langchain/](configs/langchain/) |
+| Platform | MCP Config | AI Rules | Auto-Setup |
+|---|---|---|---|
+| **Claude Code** | [CLAUDE.md](configs/claude-code/) | Appends to CLAUDE.md | `init` + `serve` |
+| **Cursor** | [mcp.json](configs/cursor/) | [.cursor/rules/context-mem.mdc](configs/cursor/context-mem.mdc) | `init` + `serve` |
+| **Windsurf** | [mcp_config.json](configs/windsurf/) | [.windsurf/rules/context-mem.md](configs/windsurf/context-mem.md) | `init` + `serve` |
+| **GitHub Copilot** | [mcp.json](configs/copilot/) | [.github/copilot-instructions.md](configs/copilot/copilot-instructions.md) | `init` + `serve` |
+| **Cline** | [cline_mcp_settings.json](configs/cline/) | [.clinerules/context-mem.md](configs/cline/context-mem.md) | `init` + `serve` |
+| **Roo Code** | [mcp_settings.json](configs/roo-code/) | [.roo/rules/context-mem.md](configs/roo-code/context-mem.md) | `init` + `serve` |
+| **Gemini CLI** | [GEMINI.md](configs/gemini-cli/) | Appends to GEMINI.md | `init` + `serve` |
+| **Antigravity** | [GEMINI.md](configs/antigravity/) | Appends to GEMINI.md | `serve` |
+| **Goose** | [recipe.yaml](configs/goose/) | — | Manual |
+| **OpenClaw** | [mcp_config.json](configs/openclaw/) | — | Manual |
+| **CrewAI** | [example.py](configs/crewai/) | — | Manual |
+| **LangChain** | [example.py](configs/langchain/) | — | Manual |
+
+AI Rules teach the AI **when and how** to use context-mem tools automatically — calling `observe` after large outputs, `restore_session` on startup, `search` before re-reading files.
 
 ## Available On
 
 - **npm** — `npm install -g context-mem`
+- **VS Code Marketplace** — [Context Mem](https://marketplace.visualstudio.com/items?itemName=JubaKitiashvili.context-mem)
+- **Claude Code Plugin** — `/plugin marketplace add JubaKitiashvili/context-mem`
 
 ## License
 
@@ -280,11 +285,11 @@ MIT — use it however you want.
 
 ## Author
 
-[Juba Kitiashvili](https://github.com/JubaKitiworworashvili)
+[Juba Kitiashvili](https://github.com/JubaKitiashvili)
 
 ---
 
 <p align="center">
   <b>context-mem — 99% less noise, 100% more context</b><br/>
-  <a href="https://github.com/JubaKitiworworashvili/context-mem">Star this repo</a> · <a href="https://github.com/JubaKitiworworashvili/context-mem/fork">Fork it</a> · <a href="https://github.com/JubaKitiworworashvili/context-mem/issues">Report an issue</a>
+  <a href="https://github.com/JubaKitiashvili/context-mem">Star this repo</a> · <a href="https://github.com/JubaKitiashvili/context-mem/fork">Fork it</a> · <a href="https://github.com/JubaKitiashvili/context-mem/issues">Report an issue</a>
 </p>

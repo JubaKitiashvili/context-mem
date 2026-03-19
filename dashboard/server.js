@@ -571,6 +571,56 @@ function handleApi(req, res) {
       case '/api/health':
         data = { status: 'ok', db: dbPath, uptime: process.uptime() };
         break;
+      case '/api/init-status': {
+        // Check if full init has been run for current project
+        const projectDir = currentProject || PROJECT_DIR;
+        const hasConfig = fs.existsSync(path.join(projectDir, '.context-mem.json'));
+        const hasMarker = fs.existsSync(path.join(projectDir, '.context-mem', '.initialized'));
+        const hasGitignore = (() => {
+          const gp = path.join(projectDir, '.gitignore');
+          if (!fs.existsSync(gp)) return false;
+          return fs.readFileSync(gp, 'utf8').includes('.context-mem');
+        })();
+        // Detect which editors are present
+        const editors = [];
+        if (fs.existsSync(path.join(projectDir, '.cursor')) || fs.existsSync(path.join(os.homedir(), '.cursor'))) editors.push('Cursor');
+        if (fs.existsSync(path.join(projectDir, '.windsurf')) || fs.existsSync(path.join(os.homedir(), '.windsurf'))) editors.push('Windsurf');
+        if (fs.existsSync(path.join(projectDir, '.vscode'))) editors.push('Copilot');
+        if (fs.existsSync(path.join(os.homedir(), '.cline'))) editors.push('Cline');
+        if (fs.existsSync(path.join(os.homedir(), '.roo-code'))) editors.push('Roo Code');
+        if (fs.existsSync(path.join(projectDir, 'CLAUDE.md'))) editors.push('Claude Code');
+        if (fs.existsSync(path.join(projectDir, 'GEMINI.md'))) editors.push('Gemini CLI');
+        data = {
+          initialized: hasConfig,
+          firstRunDone: hasMarker,
+          gitignoreOk: hasGitignore,
+          detectedEditors: editors,
+          projectDir,
+        };
+        break;
+      }
+      case '/api/run-init': {
+        if (req.method !== 'POST') {
+          res.writeHead(405, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'POST required' }));
+          return;
+        }
+        // Run context-mem init in the project directory
+        const { execSync } = require('child_process');
+        const initProjectDir = currentProject || PROJECT_DIR;
+        try {
+          const output = execSync('npx context-mem init', {
+            cwd: initProjectDir,
+            timeout: 30000,
+            encoding: 'utf8',
+            env: { ...process.env },
+          });
+          data = { ok: true, output: output.trim(), projectDir: initProjectDir };
+        } catch (initErr) {
+          data = { ok: false, error: initErr.message, output: initErr.stdout || '' };
+        }
+        break;
+      }
       case '/api/instances':
         data = getRegisteredInstances().map(i => ({
           ...i,
@@ -1654,6 +1704,79 @@ function getDashboardHtml() {
 
   .savings-callout-text strong { color: var(--green); }
 
+  /* --- Init banner --- */
+  .init-banner {
+    background: var(--orange-dim);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    animation: fadeIn 0.3s ease;
+  }
+  .init-banner-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--orange);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .init-banner-text {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .init-banner-text strong { color: var(--orange); }
+  .init-banner-text .init-editors { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+  .init-banner-btn {
+    background: var(--orange);
+    color: #000;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .init-banner-btn:hover { opacity: 0.85; }
+  .init-banner-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .init-banner-progress {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    font-size: 12px;
+    color: var(--orange);
+  }
+  .init-banner-progress .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--orange-dim);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .init-banner.success {
+    background: var(--green-dim);
+    border-color: rgba(34, 197, 94, 0.25);
+  }
+  .init-banner.success .init-banner-icon { background: var(--green); }
+  .init-banner.success .init-banner-text strong { color: var(--green); }
+  body.light .init-banner { background: rgba(245, 158, 11, 0.08); }
+  body.light .init-banner.success { background: rgba(34, 197, 94, 0.08); }
+
   /* --- Footer --- */
   .footer {
     text-align: center;
@@ -2025,6 +2148,20 @@ function getDashboardHtml() {
       <div class="stat-value orange" id="statDb">-</div>
       <div class="stat-sub" id="statDbSub"></div>
     </div>
+  </div>
+
+  <!-- Init banner -->
+  <div class="init-banner" id="initBanner" style="display:none;">
+    <div class="init-banner-icon">!</div>
+    <div class="init-banner-text">
+      <div><strong>Setup recommended</strong> — Run <code>context-mem init</code> to auto-configure editor rules and project settings.</div>
+      <div class="init-editors" id="initEditors"></div>
+    </div>
+    <div class="init-banner-progress" id="initProgress">
+      <div class="spinner"></div>
+      Running init...
+    </div>
+    <button class="init-banner-btn" id="initBtn" onclick="runInit()">Run Init</button>
   </div>
 
   <!-- Savings calculator -->
@@ -3074,6 +3211,63 @@ shortcutsOverlay.addEventListener('click', (e) => {
 fullscreenOverlay.addEventListener('click', (e) => {
   if (e.target === fullscreenOverlay) fullscreenOverlay.classList.remove('open');
 });
+
+// --- Init banner ---
+let initChecked = false;
+async function checkInitStatus() {
+  try {
+    const res = await fetch(API + '/api/init-status');
+    const data = await res.json();
+    const banner = document.getElementById('initBanner');
+    if (data.initialized) {
+      banner.style.display = 'none';
+      return;
+    }
+    // Show banner
+    const editorsEl = document.getElementById('initEditors');
+    if (data.detectedEditors && data.detectedEditors.length > 0) {
+      editorsEl.textContent = 'Detected: ' + data.detectedEditors.join(', ') + ' — init will configure MCP + rules for ' + (data.detectedEditors.length === 1 ? 'it' : 'all of them');
+    }
+    banner.style.display = 'flex';
+  } catch {}
+}
+
+async function runInit() {
+  const btn = document.getElementById('initBtn');
+  const progress = document.getElementById('initProgress');
+  const banner = document.getElementById('initBanner');
+
+  btn.disabled = true;
+  btn.style.display = 'none';
+  progress.style.display = 'flex';
+
+  try {
+    const res = await fetch(API + '/api/run-init', { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      banner.classList.add('success');
+      banner.querySelector('.init-banner-icon').textContent = '\\u2713';
+      banner.querySelector('.init-banner-text').innerHTML = '<div><strong>Setup complete!</strong> Editor configs and rules have been configured.</div>' +
+        (data.output ? '<div class="init-editors" style="white-space:pre-line;">' + escHtml(data.output) + '</div>' : '');
+      progress.style.display = 'none';
+      showToast('Init completed successfully');
+      setTimeout(() => { banner.style.display = 'none'; }, 5000);
+    } else {
+      progress.style.display = 'none';
+      btn.style.display = 'inline-block';
+      btn.disabled = false;
+      showToast('Init failed: ' + (data.error || 'Unknown error'));
+    }
+  } catch (err) {
+    progress.style.display = 'none';
+    btn.style.display = 'inline-block';
+    btn.disabled = false;
+    showToast('Init failed: ' + err.message);
+  }
+}
+
+// Check init status once on load
+checkInitStatus();
 
 // Auto-refresh every 3 seconds (pause during active search typing)
 refresh();
