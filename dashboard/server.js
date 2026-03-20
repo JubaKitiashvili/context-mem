@@ -142,6 +142,9 @@ function getStats() {
     ? Math.round((tokensSaved / storeStats.tokens_in) * 100)
     : 0;
 
+  let embeddedCount = 0;
+  try { embeddedCount = db.prepare('SELECT COUNT(*) as v FROM observations WHERE embeddings IS NOT NULL').get().v; } catch {}
+
   return {
     observations: obsCount.v,
     sessions: sessions.v,
@@ -154,6 +157,7 @@ function getStats() {
     searches: discoveryStats.count,
     reads: readStats.count,
     store_events: storeStats.count,
+    embedded_count: embeddedCount,
   };
 }
 
@@ -658,6 +662,75 @@ function handleApi(req, res) {
             savings: totalContentLen > 0 ? Math.round((1 - totalSummaryLen / totalContentLen) * 100) : 0,
           },
         };
+        break;
+      }
+      case '/api/vector-status': {
+        const vectorProjectDir = currentProject || PROJECT_DIR;
+        const vectorConfigPath = path.join(vectorProjectDir, '.context-mem.json');
+        let vectorEnabled = false;
+        let hfInstalled = false;
+        let embeddedCount = 0;
+        let totalCount = 0;
+
+        // Check config
+        try {
+          const cfg = JSON.parse(fs.readFileSync(vectorConfigPath, 'utf8'));
+          vectorEnabled = Array.isArray(cfg.plugins?.search) && cfg.plugins.search.includes('vector');
+        } catch {}
+
+        // Check if @huggingface/transformers is importable
+        try {
+          require.resolve('@huggingface/transformers');
+          hfInstalled = true;
+        } catch {
+          // Also check project-local node_modules
+          try {
+            require.resolve(path.join(vectorProjectDir, 'node_modules', '@huggingface/transformers'));
+            hfInstalled = true;
+          } catch {}
+        }
+
+        // Count embedded observations
+        try {
+          embeddedCount = db.prepare('SELECT COUNT(*) as v FROM observations WHERE embeddings IS NOT NULL').get().v;
+          totalCount = db.prepare('SELECT COUNT(*) as v FROM observations').get().v;
+        } catch {}
+
+        // Determine status level:
+        // "active"     — vector configured + HF installed + embeddings exist
+        // "ready"      — vector configured + HF installed, but no embeddings yet
+        // "missing-pkg" — vector configured but HF not installed
+        // "available"  — vector not configured (upsell opportunity)
+        let status = 'available';
+        if (vectorEnabled && hfInstalled && embeddedCount > 0) status = 'active';
+        else if (vectorEnabled && hfInstalled) status = 'ready';
+        else if (vectorEnabled && !hfInstalled) status = 'missing-pkg';
+
+        data = { status, vectorEnabled, hfInstalled, embeddedCount, totalCount, projectDir: vectorProjectDir };
+        break;
+      }
+      case '/api/enable-vector': {
+        if (req.method !== 'POST') {
+          res.writeHead(405, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'POST required' }));
+          return;
+        }
+        const enableProjectDir = currentProject || PROJECT_DIR;
+        const enableConfigPath = path.join(enableProjectDir, '.context-mem.json');
+        try {
+          const cfg = JSON.parse(fs.readFileSync(enableConfigPath, 'utf8'));
+          if (!Array.isArray(cfg.plugins?.search)) {
+            cfg.plugins = cfg.plugins || {};
+            cfg.plugins.search = ['bm25', 'trigram'];
+          }
+          if (!cfg.plugins.search.includes('vector')) {
+            cfg.plugins.search.push('vector');
+            fs.writeFileSync(enableConfigPath, JSON.stringify(cfg, null, 2) + '\n');
+          }
+          data = { ok: true, search: cfg.plugins.search };
+        } catch (cfgErr) {
+          data = { ok: false, error: cfgErr.message };
+        }
         break;
       }
       case '/api/switch-project': {
@@ -1777,6 +1850,96 @@ function getDashboardHtml() {
   body.light .init-banner { background: rgba(245, 158, 11, 0.08); }
   body.light .init-banner.success { background: rgba(34, 197, 94, 0.08); }
 
+  /* Vector search banner — reuses init-banner layout */
+  .vector-banner {
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    animation: fadeIn 0.3s ease;
+  }
+  .vector-banner.available {
+    background: var(--purple-dim, rgba(168, 85, 247, 0.1));
+    border: 1px solid rgba(168, 85, 247, 0.25);
+  }
+  .vector-banner.missing-pkg {
+    background: var(--orange-dim);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+  }
+  .vector-banner.active {
+    background: var(--green-dim);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+  }
+  .vector-banner.ready {
+    background: var(--cyan-dim, rgba(34, 211, 238, 0.1));
+    border: 1px solid rgba(34, 211, 238, 0.25);
+  }
+  .vector-banner-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .vector-banner.available .vector-banner-icon { background: var(--purple, #a855f7); }
+  .vector-banner.missing-pkg .vector-banner-icon { background: var(--orange); }
+  .vector-banner.active .vector-banner-icon { background: var(--green); }
+  .vector-banner.ready .vector-banner-icon { background: var(--cyan, #22d3ee); }
+  .vector-banner-text {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .vector-banner-text strong { color: inherit; }
+  .vector-banner.available .vector-banner-text strong { color: var(--purple, #a855f7); }
+  .vector-banner.missing-pkg .vector-banner-text strong { color: var(--orange); }
+  .vector-banner.active .vector-banner-text strong { color: var(--green); }
+  .vector-banner.ready .vector-banner-text strong { color: var(--cyan, #22d3ee); }
+  .vector-banner-sub { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+  .vector-banner-btn {
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+    color: #000;
+  }
+  .vector-banner.available .vector-banner-btn { background: var(--purple, #a855f7); }
+  .vector-banner.missing-pkg .vector-banner-btn { background: var(--orange); }
+  .vector-banner-btn:hover { opacity: 0.85; }
+  .vector-banner-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .vector-banner-progress {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    font-size: 12px;
+    color: var(--purple, #a855f7);
+  }
+  .vector-banner-progress .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--purple-dim, rgba(168, 85, 247, 0.2));
+    border-top-color: var(--purple, #a855f7);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  body.light .vector-banner.available { background: rgba(168, 85, 247, 0.08); }
+  body.light .vector-banner.missing-pkg { background: rgba(245, 158, 11, 0.08); }
+  body.light .vector-banner.active { background: rgba(34, 197, 94, 0.08); }
+  body.light .vector-banner.ready { background: rgba(34, 211, 238, 0.08); }
+
   /* --- Footer --- */
   .footer {
     text-align: center;
@@ -2164,6 +2327,17 @@ function getDashboardHtml() {
     <button class="init-banner-btn" id="initBtn" onclick="runInit()">Run Init</button>
   </div>
 
+  <!-- Vector search banner -->
+  <div class="vector-banner available" id="vectorBanner" style="display:none;">
+    <div class="vector-banner-icon" id="vectorIcon">V</div>
+    <div class="vector-banner-text" id="vectorText"></div>
+    <div class="vector-banner-progress" id="vectorProgress">
+      <div class="spinner"></div>
+      Updating config...
+    </div>
+    <button class="vector-banner-btn" id="vectorBtn" style="display:none;"></button>
+  </div>
+
   <!-- Savings calculator -->
   <div class="savings-callout" id="savingsCallout" style="display:none;">
     <div class="savings-callout-icon">S</div>
@@ -2433,7 +2607,14 @@ async function loadProjects() {
 
     if (!instances.length) {
       bar.style.display = 'none';
+      // No running instances — use current DB directly (single project mode)
+      if (activeProjectDb === '__all__') activeProjectDb = null;
       return;
+    }
+
+    // Single project — auto-select it instead of staying on __all__
+    if (instances.length === 1 && activeProjectDb === '__all__') {
+      activeProjectDb = instances[0].dbPath;
     }
 
     // Show bar only if >1 project
@@ -2486,6 +2667,7 @@ function switchToProject(projectDir) {
         activeProjectDb = inst.dbPath;
         loadProjects();
         refresh();
+        checkVectorStatus();
       });
     }
   });
@@ -2500,6 +2682,10 @@ async function refresh() {
     if (activeProjectDb === '__all__') {
       const allData = await fetchJson('/api/stats-all');
       const t = allData.total;
+      // If no registered instances, fall through to single-project view
+      if (t.projectCount === 0) {
+        activeProjectDb = null;
+      } else {
       document.getElementById('statObs').textContent = fmt(t.observations);
       document.getElementById('statObsSub').textContent = t.projectCount + ' project' + (t.projectCount !== 1 ? 's' : '');
       document.getElementById('statSaved').textContent = fmt(t.rawBytes - t.compressedBytes);
@@ -2531,6 +2717,7 @@ async function refresh() {
 
       document.getElementById('refreshInfo').textContent = 'updated ' + new Date().toLocaleTimeString();
       return;
+      } // end else (has projects)
     }
 
     // --- Single project view ---
@@ -2575,7 +2762,9 @@ async function refresh() {
     document.getElementById('statSavedSub').textContent = fmt(stats.tokens_in) + ' original tokens';
     document.getElementById('statPct').textContent = stats.savings_pct + '%';
     document.getElementById('statSearches').textContent = fmt(stats.searches);
-    document.getElementById('statSearchSub').textContent = stats.reads + ' full reads';
+    document.getElementById('statSearchSub').textContent = stats.embedded_count > 0
+      ? stats.reads + ' reads · ' + stats.embedded_count + ' embedded'
+      : stats.reads + ' full reads';
     document.getElementById('statDb').textContent = stats.db_size_kb < 1024
       ? stats.db_size_kb + ' KB'
       : (stats.db_size_kb / 1024).toFixed(1) + ' MB';
@@ -3209,6 +3398,116 @@ shortcutsOverlay.addEventListener('click', (e) => {
 fullscreenOverlay.addEventListener('click', (e) => {
   if (e.target === fullscreenOverlay) fullscreenOverlay.classList.remove('open');
 });
+
+// --- Vector search banner ---
+async function checkVectorStatus() {
+  try {
+    const data = await fetchJson('/api/vector-status');
+    const banner = document.getElementById('vectorBanner');
+    const icon = document.getElementById('vectorIcon');
+    const text = document.getElementById('vectorText');
+    const btn = document.getElementById('vectorBtn');
+    const progress = document.getElementById('vectorProgress');
+
+    // Reset
+    banner.className = 'vector-banner ' + data.status;
+    btn.style.display = 'none';
+    btn.disabled = false;
+    progress.style.display = 'none';
+
+    if (data.status === 'active') {
+      // Level 3: fully active
+      const pct = data.totalCount > 0 ? Math.round((data.embeddedCount / data.totalCount) * 100) : 0;
+      icon.textContent = '\\u2713';
+      text.innerHTML = '<div><strong>Semantic search active</strong> — ' + data.embeddedCount + ' of ' + data.totalCount + ' observations embedded (' + pct + '%)</div>' +
+        '<div class="vector-banner-sub">Search finds meaning, not just keywords — e.g. "auth problem" matches "login token expired"</div>';
+      banner.style.display = 'flex';
+    } else if (data.status === 'ready') {
+      // Vector enabled + HF installed but no embeddings yet (first use)
+      icon.textContent = '\\u2026';
+      text.innerHTML = '<div><strong>Semantic search ready</strong> — waiting for first observation to download model (~22MB, one-time)</div>' +
+        '<div class="vector-banner-sub">New observations will be embedded automatically</div>';
+      banner.style.display = 'flex';
+    } else if (data.status === 'missing-pkg') {
+      // Level 2: config has vector but package missing
+      icon.textContent = '!';
+      text.innerHTML = '<div><strong>Vector search configured but package missing</strong></div>' +
+        '<div class="vector-banner-sub">Run: <code style="background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:3px;">npm install @huggingface/transformers</code> — then restart the server</div>';
+      btn.textContent = 'Copy Command';
+      btn.style.display = 'inline-block';
+      btn.onclick = function() {
+        navigator.clipboard.writeText('npm install @huggingface/transformers').then(function() {
+          btn.textContent = 'Copied!';
+          setTimeout(function() { btn.textContent = 'Copy Command'; }, 2000);
+        });
+      };
+      banner.style.display = 'flex';
+    } else if (data.status === 'available') {
+      // Level 1: not configured at all (upsell)
+      icon.textContent = 'V';
+      text.innerHTML = '<div><strong>Unlock semantic search</strong> — find "auth problem" when stored as "login token expired"</div>' +
+        '<div class="vector-banner-sub">Local embeddings via all-MiniLM-L6-v2 — no cloud, no cost, ~22MB one-time download</div>';
+      btn.textContent = 'Enable Vector Search';
+      btn.style.display = 'inline-block';
+      btn.onclick = enableVectorSearch;
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
+  } catch {}
+}
+
+async function enableVectorSearch() {
+  const btn = document.getElementById('vectorBtn');
+  const progress = document.getElementById('vectorProgress');
+  const text = document.getElementById('vectorText');
+
+  btn.disabled = true;
+  btn.style.display = 'none';
+  progress.style.display = 'flex';
+
+  try {
+    // Step 1: Add "vector" to config
+    const res = await fetch(API + '/api/enable-vector', { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) {
+      showToast('Failed to update config: ' + (data.error || 'Unknown'));
+      btn.style.display = 'inline-block';
+      btn.disabled = false;
+      progress.style.display = 'none';
+      return;
+    }
+
+    // Step 2: Show next steps
+    progress.style.display = 'none';
+    const icon = document.getElementById('vectorIcon');
+    const banner = document.getElementById('vectorBanner');
+    banner.className = 'vector-banner missing-pkg';
+    icon.textContent = '\\u2192';
+    text.innerHTML = '<div><strong>Config updated!</strong> "vector" added to search plugins.</div>' +
+      '<div class="vector-banner-sub">Next: run <code style="background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:3px;">npm install @huggingface/transformers</code> in your project, then restart the server.</div>';
+    btn.textContent = 'Copy Command';
+    btn.style.display = 'inline-block';
+    btn.disabled = false;
+    btn.className = 'vector-banner-btn';
+    btn.onclick = function() {
+      navigator.clipboard.writeText('npm install @huggingface/transformers').then(function() {
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = 'Copy Command'; }, 2000);
+      });
+    };
+
+    showToast('Vector search enabled in config');
+  } catch (err) {
+    progress.style.display = 'none';
+    btn.style.display = 'inline-block';
+    btn.disabled = false;
+    showToast('Failed: ' + err.message);
+  }
+}
+
+// Check vector status once on load and on project switch
+checkVectorStatus();
 
 // --- Init banner ---
 let initChecked = false;

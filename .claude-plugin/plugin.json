@@ -1,0 +1,13 @@
+{
+  "name": "context-mem",
+  "version": "0.5.0",
+  "description": "Context optimization for AI coding assistants — token savings via 14 content-aware summarizers, 4-layer search (BM25 + Trigram + Levenshtein + Vector), activity journal, and progressive disclosure. Zero LLM calls, zero cloud, zero cost.",
+  "author": {
+    "name": "Juba Kitiashvili",
+    "url": "https://github.com/JubaKitiashvili"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/JubaKitiashvili/context-mem",
+  "homepage": "https://github.com/JubaKitiashvili/context-mem#readme",
+  "keywords": ["context", "memory", "token-optimization", "mcp", "summarization", "search", "session-continuity"]
+}

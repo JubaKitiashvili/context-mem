@@ -206,7 +206,10 @@ export async function serve(_args: string[]): Promise<void> {
     process.exit(1);
   }
 
-  console.error('context-mem: MCP server started (stdio)');
+  // Report search capabilities
+  const searchPlugins = kernel.registry.getAll('search').map(p => (p as any).strategy);
+  const hasVector = searchPlugins.includes('vector');
+  console.error(`context-mem: MCP server started (stdio) — search: ${searchPlugins.join(' + ')}${hasVector ? '' : ' (add "vector" for semantic search)'}`);
 
   // Start HTTP bridge for hook → kernel communication
   const apiPort = parseInt(process.env.CONTEXT_MEM_API_PORT || '', 10) || kernel.getConfig()?.api_port || 51894;

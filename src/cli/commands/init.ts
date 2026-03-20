@@ -177,6 +177,12 @@ export async function init(_args: string[]): Promise<void> {
   if (detected.length === 0) {
     console.log('\nNo editors detected. Add MCP config manually — see: https://github.com/JubaKitiashvili/context-mem#quick-start');
   }
+
+  // Hint about optional vector search
+  console.log('');
+  console.log('Tip: Enable semantic search (find "auth problem" when stored as "login token expired"):');
+  console.log('  npm install @huggingface/transformers');
+  console.log('  Then add "vector" to plugins.search in .context-mem.json');
 }
 
 function detectEditors(projectDir: string): EditorConfig[] {

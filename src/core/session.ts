@@ -1,8 +1,8 @@
 import type { StoragePlugin, TokenEconomics } from './types.js';
 import type { EventTracker } from './events.js';
 
-const MAX_SNAPSHOT_BYTES = 2048;
-const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 1 day
+const MAX_SNAPSHOT_BYTES = 8192;
+const STALE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 // Budget allocation by priority tier
 const P1_BUDGET_PCT = 0.50;
@@ -89,6 +89,35 @@ const CATEGORIES: SessionCategory[] = [
       const lines = rows.map(r => r.fp).filter(Boolean);
       if (!lines.length) return null;
       return lines.map(fp => `- ${fp}`).join('\n');
+    },
+  },
+
+  {
+    name: 'changes',
+    priority: 1,
+    extract: (storage, sessionId) => {
+      // Extract actual code changes — what was modified, not just file paths
+      const rows = storage.prepare(`
+        SELECT json_extract(metadata, '$.file_path') as fp,
+               json_extract(metadata, '$.source') as source,
+               substr(COALESCE(summary, content), 1, 150) as text,
+               type
+        FROM observations
+        WHERE session_id = ?
+          AND json_extract(metadata, '$.source') IN ('Edit', 'Write')
+          AND json_extract(metadata, '$.file_path') IS NOT NULL
+        ORDER BY indexed_at DESC LIMIT 15
+      `).all(sessionId) as Array<{ fp: string | null; source: string; text: string; type: string }>;
+
+      if (!rows.length) return null;
+
+      return rows
+        .filter(r => r.fp)
+        .map(r => {
+          const file = (r.fp || '').split('/').slice(-2).join('/');
+          return `- ${r.source} ${file}: ${(r.text || '').replace(/\n/g, ' ').trim().slice(0, 100)}`;
+        })
+        .join('\n');
     },
   },
 

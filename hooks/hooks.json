@@ -1,10 +1,14 @@
 {
-  "description": "context-mem hooks — observation capture and dashboard auto-start",
+  "description": "context-mem hooks — activity journal, observation capture, session context, and dashboard",
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "startup|clear|compact",
         "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-hook.js\"",
+            "timeout": 5
+          },
           {
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/dashboard-autostart.js\"",
@@ -17,6 +21,11 @@
       {
         "matcher": "Bash|Read|Write|Edit|Grep|Glob",
         "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/activity-journal.js\"",
+            "timeout": 3
+          },
           {
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/context-mem-hook.js\"",

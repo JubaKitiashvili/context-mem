@@ -12,6 +12,7 @@ export class Pipeline {
   private sessionManager?: SessionManager;
   private observationCount = 0;
   private readonly CHECKPOINT_INTERVAL = 20;
+  private embedder: { embed(text: string): Promise<Float32Array | null>; toBuffer(e: Float32Array): Buffer } | null = null;
 
   constructor(
     private registry: PluginRegistry,
@@ -26,6 +27,24 @@ export class Pipeline {
 
   setSessionManager(session: SessionManager): void {
     this.sessionManager = session;
+  }
+
+  setEmbedder(embedder: typeof this.embedder): void {
+    this.embedder = embedder;
+  }
+
+  private scheduleEmbedding(id: string, text: string): void {
+    setImmediate(async () => {
+      try {
+        const embedding = await this.embedder!.embed(text);
+        if (embedding) {
+          this.storage.exec('UPDATE observations SET embeddings = ? WHERE id = ?', [this.embedder!.toBuffer(embedding), id]);
+        }
+      } catch (err) {
+        // Non-critical — embedding failure never blocks observe()
+        console.error('context-mem: embedding failed:', (err as Error).message);
+      }
+    });
   }
 
   async observe(
@@ -133,6 +152,11 @@ export class Pipeline {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [obs.id, obs.type, obs.content, obs.summary || null, JSON.stringify(obs.metadata), obs.indexed_at, privacyLevel, this.sessionId, contentHash, opts?.correlation_id || null]
     );
+
+    // 6b. Async embedding (fire-and-forget)
+    if (this.embedder) {
+      this.scheduleEmbedding(obs.id, obs.summary || obs.content);
+    }
 
     // 7. Track token economics
     const bytesUsed = Buffer.byteLength(obs.content, 'utf8');

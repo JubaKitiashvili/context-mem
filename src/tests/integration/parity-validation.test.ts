@@ -614,8 +614,8 @@ const users = await fetch('/api/users');
       const sessionId = 'old-session-test';
       const storage = getStorage(kernel);
 
-      // Insert an old snapshot (2 days ago — beyond 24h STALE_THRESHOLD)
-      const twoDaysAgo = Date.now() - (2 * 24 * 60 * 60 * 1000);
+      // Insert an old snapshot (8 days ago — beyond 7-day STALE_THRESHOLD)
+      const twoDaysAgo = Date.now() - (8 * 24 * 60 * 60 * 1000);
       const snapshotData = JSON.stringify({
         session_id: sessionId,
         stats: { observations: 10, tokens_saved: 500 },

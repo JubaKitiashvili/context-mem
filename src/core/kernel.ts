@@ -44,10 +44,12 @@ import { SessionManager } from './session.js';
 import { ContentStore } from '../plugins/storage/content-store.js';
 import { KnowledgeBase } from '../plugins/knowledge/knowledge-base.js';
 import { LifecycleManager } from './lifecycle.js';
+import type { VectorSearch } from '../plugins/search/vector.js';
 import type {
   SessionContext,
   ContextMemConfig,
   SearchResult,
+  SearchPlugin,
   Observation,
   TokenEconomics,
   SearchOpts,
@@ -124,14 +126,37 @@ export class Kernel {
       await this.registry.register(s);
     }
 
-    // 6. Search plugins (with Levenshtein fallback)
+    // 6. Search plugins (with Levenshtein fallback + optional vector)
     const bm25 = new BM25Search(this.storage);
     const trigram = new TrigramSearch(this.storage);
     const levenshtein = new LevenshteinSearch(this.storage);
     await this.registry.register(bm25);
     await this.registry.register(trigram);
     await this.registry.register(levenshtein);
-    this.searchFusion = new SearchFusion([bm25, trigram, levenshtein]);
+
+    let vectorPlugin: VectorSearch | null = null;
+    if (this.config.plugins.search.includes('vector')) {
+      try {
+        const { Embedder } = await import('../plugins/search/embedder.js');
+        if (await Embedder.isAvailable()) {
+          const { VectorSearch: VS } = await import('../plugins/search/vector.js');
+          vectorPlugin = new VS(this.storage);
+          await this.registry.register(vectorPlugin);
+          this.pipeline.setEmbedder(Embedder);
+        } else {
+          console.error('context-mem: Vector search configured but @huggingface/transformers not installed.');
+          console.error('  Install it with: npm install @huggingface/transformers');
+          console.error('  Falling back to BM25 + Trigram + Levenshtein search.');
+        }
+      } catch {
+        console.error('context-mem: Vector search configured but @huggingface/transformers not available.');
+        console.error('  Install it with: npm install @huggingface/transformers');
+      }
+    }
+
+    const searchPlugins: SearchPlugin[] = [bm25, trigram, levenshtein];
+    if (vectorPlugin) searchPlugins.push(vectorPlugin);
+    this.searchFusion = new SearchFusion(searchPlugins);
 
     // 7. Runtime plugins
     const runtimes = [

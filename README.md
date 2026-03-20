@@ -3,7 +3,7 @@
 > Context optimization for AI coding assistants — 99% token savings, zero configuration, no LLM dependency.
 
 [![npm version](https://img.shields.io/npm/v/context-mem)](https://www.npmjs.com/package/context-mem)
-[![tests](https://img.shields.io/badge/tests-343%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-356%20passing-brightgreen)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-green)]()
 
@@ -17,14 +17,18 @@ AI coding assistants waste 60–80% of their context window on raw tool outputs 
 |---|---|---|---|---|
 | **Approach** | 14 specialized summarizers | LLM-based compression | Sandbox + intent filter | External docs injection |
 | **Token Savings** | 99% (benchmarked) | ~95% (claimed) | 98% (claimed) | N/A |
-| **Search** | BM25 + Trigram + Fuzzy | Basic recall | BM25 + Trigram + Fuzzy | Doc lookup |
-| **LLM Calls** | None (free, deterministic) | Every observation ($$$) | None | None |
+| **Search** | BM25 + Trigram + Fuzzy + **Vector** | Basic recall | BM25 + Trigram + Fuzzy | Doc lookup |
+| **Semantic Search** | Local embeddings (free) | LLM-based ($$$) | No | No |
+| **LLM Calls** | None (free, deterministic) | Every observation (~$57/mo) | None | None |
+| **Activity Journal** | File edits, commands, reads | No | No | No |
+| **Cross-Session Memory** | Journal + snapshots + DB | LLM summaries | Yes | No |
 | **Knowledge Base** | 5 categories, auto-extraction, relevance decay | No | No | No |
 | **Budget Management** | Configurable limits + overflow | No | Basic throttling | No |
 | **Event Tracking** | P1–P4, error-fix detection | No | Session events only | No |
-| **Dashboard** | Real-time web UI | No | No | No |
+| **Dashboard** | Real-time web UI | Basic view | No | No |
 | **Session Continuity** | Snapshot save/restore | Partial | Yes | No |
 | **Content Types** | 14 specialized detectors | Generic LLM | Generic sandbox | Docs only |
+| **Model Lock-in** | None (MCP protocol) | Claude-only | Claude-only | Any |
 | **Privacy** | Fully local, tag stripping | Local | Local | Cloud |
 | **License** | MIT | AGPL-3.0 | Elastic v2 | Open |
 
@@ -99,7 +103,7 @@ extensions:
 | **Content summarizer** | Auto-detects 14 content types, produces statistical summaries | **97–100%** per output |
 | **Index + Search** | FTS5 BM25 retrieval returns only relevant chunks, code preserved exactly | **80%** per search |
 | **Smart truncation** | 4-tier fallback: JSON schema → Pattern → Head/Tail → Binary hash | **83–100%** per output |
-| **Session snapshots** | Captures full session state in <2 KB | **~50%** vs log replay |
+| **Session snapshots** | Captures full session state in <8 KB | **~50%** vs log replay |
 | **Budget enforcement** | Throttling at 80% prevents runaway token consumption | Prevents overflow |
 
 **Result:** In a full coding session, **99% of tool output tokens are eliminated** — leaving 99.6% of your context window free for actual problem solving. See **[BENCHMARK.md](docs/benchmarks/results.md)** for complete results.
@@ -139,7 +143,11 @@ extensions:
 
 ## Features
 
-**Search** — 3-layer hybrid: BM25 full-text → trigram fuzzy → Levenshtein typo-tolerant. Sub-millisecond latency with intent classification.
+**Search** — 4-layer hybrid: BM25 full-text → trigram fuzzy → Levenshtein typo-tolerant → optional vector/semantic search. Sub-millisecond latency with intent classification. Semantic search finds "auth problem" when stored as "login token expired" — local embeddings via all-MiniLM-L6-v2, no cloud, no cost.
+
+**Activity Journal** — Every file edit, bash command, and file read is logged to `.context-mem/journal.md` in human-readable format. Cross-session memory injects journal entries on startup — Claude knows exactly what changed in previous sessions without LLM calls.
+
+**Plugin Commands** — `/context-mem:status` (stats + dashboard link), `/context-mem:search <query>` (search observations), `/context-mem:journal` (show activity log).
 
 **Knowledge Base** — Save and search patterns, decisions, errors, APIs, components. Time-decay relevance scoring with automatic archival. **Auto-extraction** — decisions, errors, commits, and frequently-accessed files are automatically saved to the knowledge base without manual intervention.
 
@@ -229,7 +237,7 @@ context-mem import      # Import data from JSON export file
   "storage": "auto",
   "plugins": {
     "summarizers": ["shell", "json", "error", "log", "code"],
-    "search": ["bm25", "trigram"],
+    "search": ["bm25", "trigram", "vector"],
     "runtimes": ["javascript", "python"]
   },
   "privacy": {
