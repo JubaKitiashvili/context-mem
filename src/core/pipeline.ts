@@ -5,9 +5,13 @@ import { PrivacyEngine } from '../plugins/privacy/privacy-engine.js';
 import { truncate, MAX_PASSTHROUGH } from './truncation.js';
 import { ulid, estimateTokens } from './utils.js';
 import type { BudgetManager } from './budget.js';
+import type { SessionManager } from './session.js';
 
 export class Pipeline {
   private budgetManager?: BudgetManager;
+  private sessionManager?: SessionManager;
+  private observationCount = 0;
+  private readonly CHECKPOINT_INTERVAL = 20;
 
   constructor(
     private registry: PluginRegistry,
@@ -20,7 +24,17 @@ export class Pipeline {
     this.budgetManager = budget;
   }
 
-  async observe(content: string, type: ObservationType, source: string, filePath?: string): Promise<Observation> {
+  setSessionManager(session: SessionManager): void {
+    this.sessionManager = session;
+  }
+
+  async observe(
+    content: string,
+    type: ObservationType,
+    source: string,
+    filePath?: string,
+    opts?: { correlation_id?: string; files_modified?: string[] },
+  ): Promise<Observation> {
     if (!content || !content.trim()) {
       throw new Error('Cannot observe empty content');
     }
@@ -82,7 +96,12 @@ export class Pipeline {
 
     // 4. Truncation cascade — if no summarizer matched and content is large
     if (!summary && cleaned.length > MAX_PASSTHROUGH) {
-      const aggressive = this.budgetManager ? this.budgetManager.getStatus(this.sessionId).throttled : false;
+      let aggressive = false;
+      if (this.budgetManager) {
+        const bs = this.budgetManager.getStatus(this.sessionId);
+        // Force aggressive truncation when throttled (80%+) or when strategy is aggressive_truncation and over limit
+        aggressive = bs.throttled || (bs.strategy === 'aggressive_truncation' && bs.percentage >= 100);
+      }
       const result = truncate(cleaned, aggressive);
       summary = result.content;
       tokensSummarized = estimateTokens(summary);
@@ -102,15 +121,17 @@ export class Pipeline {
         tokens_summarized: tokensSummarized,
         privacy_level: privacyLevel,
         session_id: this.sessionId,
+        correlation_id: opts?.correlation_id,
+        files_modified: opts?.files_modified,
       },
       indexed_at: Date.now(),
     };
 
     // 6. Store
     this.storage.exec(
-      `INSERT INTO observations (id, type, content, summary, metadata, indexed_at, privacy_level, session_id, content_hash)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [obs.id, obs.type, obs.content, obs.summary || null, JSON.stringify(obs.metadata), obs.indexed_at, privacyLevel, this.sessionId, contentHash]
+      `INSERT INTO observations (id, type, content, summary, metadata, indexed_at, privacy_level, session_id, content_hash, correlation_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [obs.id, obs.type, obs.content, obs.summary || null, JSON.stringify(obs.metadata), obs.indexed_at, privacyLevel, this.sessionId, contentHash, opts?.correlation_id || null]
     );
 
     // 7. Track token economics
@@ -124,6 +145,32 @@ export class Pipeline {
     // 8. Record budget usage
     if (this.budgetManager) {
       this.budgetManager.record(this.sessionId, bytesUsed);
+    }
+
+    // 9. Auto-checkpoint every N observations
+    this.observationCount++;
+    if (this.observationCount % this.CHECKPOINT_INTERVAL === 0 && this.sessionManager) {
+      try {
+        const row = this.storage.prepare(`
+          SELECT COUNT(*) as cnt, COALESCE(SUM(tokens_in),0) as t_in, COALESCE(SUM(tokens_out),0) as t_out
+          FROM token_stats WHERE session_id = ?
+        `).get(this.sessionId) as { cnt: number; t_in: number; t_out: number };
+
+        const minimalStats = {
+          session_id: this.sessionId,
+          observations_stored: row.cnt,
+          total_content_bytes: row.t_in,
+          total_summary_bytes: row.t_out,
+          searches_performed: 0,
+          discovery_tokens: 0,
+          read_tokens: 0,
+          tokens_saved: Math.max(0, row.t_in - row.t_out),
+          savings_percentage: row.t_in > 0 ? Math.round(((row.t_in - row.t_out) / row.t_in) * 100) : 0,
+        };
+        this.sessionManager.saveSnapshot(this.sessionId, minimalStats);
+      } catch {
+        // Non-fatal — checkpoint is best-effort
+      }
     }
 
     return obs;

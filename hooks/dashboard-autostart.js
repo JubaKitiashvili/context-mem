@@ -21,9 +21,6 @@ const DB_PATH = path.join(PROJECT_DIR, '.context-mem', 'store.db');
 const PID_FILE = path.join(PROJECT_DIR, '.context-mem', 'dashboard.pid');
 const SERVER_SCRIPT = path.join(__dirname, '..', 'dashboard', 'server.js');
 
-// Skip if no database
-if (!fs.existsSync(DB_PATH)) process.exit(0);
-
 // Skip if server script missing
 if (!fs.existsSync(SERVER_SCRIPT)) process.exit(0);
 

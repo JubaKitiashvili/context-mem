@@ -25,6 +25,18 @@ import { BinarySummarizer } from '../plugins/summarizers/binary-summarizer.js';
 import { BM25Search } from '../plugins/search/bm25.js';
 import { TrigramSearch } from '../plugins/search/trigram.js';
 import { LevenshteinSearch } from '../plugins/search/levenshtein.js';
+// Runtimes
+import { JavaScriptRuntime } from '../plugins/runtimes/javascript.js';
+import { TypeScriptRuntime } from '../plugins/runtimes/typescript.js';
+import { PythonRuntime } from '../plugins/runtimes/python.js';
+import { ShellRuntime } from '../plugins/runtimes/shell.js';
+import { RubyRuntime } from '../plugins/runtimes/ruby.js';
+import { GoRuntime } from '../plugins/runtimes/go.js';
+import { RustRuntime } from '../plugins/runtimes/rust.js';
+import { PhpRuntime } from '../plugins/runtimes/php.js';
+import { PerlRuntime } from '../plugins/runtimes/perl.js';
+import { RRuntime } from '../plugins/runtimes/r.js';
+import { ElixirRuntime } from '../plugins/runtimes/elixir.js';
 // Core modules
 import { BudgetManager } from './budget.js';
 import { EventTracker } from './events.js';
@@ -86,9 +98,10 @@ export class Kernel {
     this.contentStore = new ContentStore(this.storage);
     this.knowledgeBase = new KnowledgeBase(this.storage);
 
-    // 4. Pipeline (with budget integration)
+    // 4. Pipeline (with budget + session integration)
     this.pipeline = new Pipeline(this.registry, this.storage, privacy, this.session.session_id);
     this.pipeline.setBudgetManager(this.budgetManager);
+    this.pipeline.setSessionManager(this.sessionManager);
 
     // 5. Summarizers — registered in priority order (most specific first)
     const summarizers = [
@@ -120,7 +133,25 @@ export class Kernel {
     await this.registry.register(levenshtein);
     this.searchFusion = new SearchFusion([bm25, trigram, levenshtein]);
 
-    // 7. Lifecycle cleanup (on_startup)
+    // 7. Runtime plugins
+    const runtimes = [
+      new JavaScriptRuntime(),
+      new TypeScriptRuntime(),
+      new PythonRuntime(),
+      new ShellRuntime(),
+      new RubyRuntime(),
+      new GoRuntime(),
+      new RustRuntime(),
+      new PhpRuntime(),
+      new PerlRuntime(),
+      new RRuntime(),
+      new ElixirRuntime(),
+    ];
+    for (const rt of runtimes) {
+      await this.registry.register(rt);
+    }
+
+    // 8. Lifecycle cleanup (on_startup)
     if (this.config.lifecycle.cleanup_schedule === 'on_startup') {
       const lifecycle = new LifecycleManager(this.storage, this.config.lifecycle);
       await lifecycle.cleanup();
@@ -141,6 +172,8 @@ export class Kernel {
   getContentStore(): ContentStore { this.ensureStarted(); return this.contentStore; }
   getKnowledgeBase(): KnowledgeBase { this.ensureStarted(); return this.knowledgeBase; }
 
+  private fileAccessCounts = new Map<string, number>();
+
   async observe(content: string, type: Observation['type'], source: string, filePath?: string): Promise<Observation> {
     const obs = await this.pipeline.observe(content, type, source, filePath);
     // Auto-emit event
@@ -150,7 +183,60 @@ export class Kernel {
       source,
       file_path: filePath,
     });
+    // Auto-extract knowledge from observations
+    this.autoExtractKnowledge(obs, type, source, filePath);
     return obs;
+  }
+
+  private autoExtractKnowledge(obs: Observation, type: Observation['type'], _source: string, filePath?: string): void {
+    try {
+      const body = obs.summary || obs.content.slice(0, 500);
+
+      // Decision observations → knowledge
+      if (type === 'decision') {
+        const title = obs.content.split('\n')[0].slice(0, 120);
+        this.knowledgeBase.save({ category: 'decision', title, content: body, tags: ['auto-extracted'] });
+        return;
+      }
+
+      // Error observations → knowledge (dedup by title)
+      if (type === 'error') {
+        const title = obs.content.split('\n')[0].slice(0, 120);
+        const existing = this.knowledgeBase.search(title, { category: 'error', limit: 1 });
+        if (existing.length === 0) {
+          this.knowledgeBase.save({ category: 'error', title, content: body, tags: ['auto-extracted'] });
+        }
+        return;
+      }
+
+      // Commit observations → pattern knowledge
+      if (type === 'commit') {
+        this.knowledgeBase.save({
+          category: 'pattern',
+          title: obs.content.split('\n')[0].slice(0, 120),
+          content: body,
+          tags: ['commit', 'auto-extracted'],
+        });
+        return;
+      }
+
+      // Frequently-accessed files → component knowledge
+      if (type === 'code' && filePath) {
+        const count = (this.fileAccessCounts.get(filePath) || 0) + 1;
+        this.fileAccessCounts.set(filePath, count);
+        if (count === 5) {
+          const fileName = filePath.split('/').pop() || filePath;
+          this.knowledgeBase.save({
+            category: 'component',
+            title: `Frequently accessed: ${fileName}`,
+            content: body,
+            tags: [filePath, 'auto-extracted'],
+          });
+        }
+      }
+    } catch {
+      // Auto-extraction is non-critical — never block observe
+    }
   }
 
   async search(query: string, opts?: SearchOpts): Promise<SearchResult[]> {

@@ -2376,7 +2376,7 @@ function getDashboardHtml() {
 </div>
 
 <div class="footer">
-  context-mem v0.1.0 &mdash; context optimization for AI coding assistants
+  context-mem v0.4.0 &mdash; context optimization for AI coding assistants
 </div>
 
 <script>
@@ -2873,20 +2873,18 @@ async function refresh() {
     } else {
       snapListEl.innerHTML = snapshots.map(snap => {
         const d = snap.data || {};
-        const s = d.stats || {};
+        const statsStr = typeof d.stats === 'string' ? d.stats : '';
+        const intentStr = typeof d.intent === 'string' ? d.intent : '';
         return '<div class="snapshot-item">' +
           '<div class="snapshot-header">' +
             '<span class="snapshot-session">' + snap.session_id.slice(0, 14) + '...</span>' +
             '<span class="snapshot-time">' + timeAgo(snap.created_at) + '</span>' +
           '</div>' +
-          '<div class="snapshot-stats">' +
-            (s.observations !== undefined ? '<span>obs: <span class="snapshot-stat-val">' + s.observations + '</span></span>' : '') +
-            (s.savings_pct !== undefined ? '<span>saved: <span class="snapshot-stat-val">' + s.savings_pct + '%</span></span>' : '') +
-            (s.tokens_saved !== undefined ? '<span>tokens: <span class="snapshot-stat-val">' + fmt(s.tokens_saved) + '</span></span>' : '') +
-          '</div>' +
-          (d.decisions && d.decisions.length > 0 ?
-            '<div style="margin-top:4px;font-size:9px;color:var(--text-muted);">' +
-              d.decisions.slice(0, 2).map(dec => '&bull; ' + escHtml(String(dec).slice(0, 60))).join('<br>') +
+          (statsStr ? '<div class="snapshot-stats"><span style="color:var(--green);font-weight:600;">' + escHtml(statsStr) + '</span></div>' : '') +
+          (intentStr ? '<div style="margin-top:2px;font-size:9px;color:var(--text-muted);">' + escHtml(intentStr) + '</div>' : '') +
+          (d.files && typeof d.files === 'string' && d.files !== '' ?
+            '<div style="margin-top:4px;font-size:9px;color:var(--text-muted);max-height:60px;overflow:hidden;">' +
+              d.files.split('\\n').slice(0, 3).map(f => '&bull; ' + escHtml(f.replace(/^- /, '').slice(0, 70))).join('<br>') +
             '</div>' : '') +
         '</div>';
       }).join('');

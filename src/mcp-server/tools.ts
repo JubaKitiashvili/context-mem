@@ -85,6 +85,8 @@ export const toolDefinitions: ToolDefinition[] = [
           description: 'Content type (default: context)',
         },
         source: { type: 'string', description: 'Source identifier (default: mcp)' },
+        correlation_id: { type: 'string', description: 'Links related observations (e.g., same debugging session)' },
+        files_modified: { type: 'array', items: { type: 'string' }, description: 'File paths modified in this observation' },
       },
       required: ['content'],
     },
@@ -133,6 +135,9 @@ export const toolDefinitions: ToolDefinition[] = [
         },
         session_id: { type: 'string', description: 'Filter by session ID' },
         limit: { type: 'number', description: 'Max results (default: 20)' },
+        anchor: { type: 'string', description: 'Observation ID to center the timeline on' },
+        depth_before: { type: 'number', description: 'Number of observations before anchor (default 10)' },
+        depth_after: { type: 'number', description: 'Number of observations after anchor (default 5)' },
       },
       required: [],
     },
@@ -172,12 +177,16 @@ export const toolDefinitions: ToolDefinition[] = [
   },
   {
     name: 'execute',
-    description: 'Execute a code snippet using an available runtime plugin.',
+    description: 'Execute code in JavaScript, TypeScript, Python, Shell, Ruby, Go, Rust, PHP, Perl, R, or Elixir.',
     inputSchema: {
       type: 'object',
       properties: {
         code: { type: 'string', description: 'Code to execute' },
-        language: { type: 'string', description: 'Language hint (e.g. "javascript", "python")' },
+        language: {
+          type: 'string',
+          enum: ['javascript', 'typescript', 'python', 'shell', 'ruby', 'go', 'rust', 'php', 'perl', 'r', 'elixir'],
+          description: 'Language hint',
+        },
       },
       required: ['code'],
     },
@@ -308,7 +317,7 @@ export const toolDefinitions: ToolDefinition[] = [
 
 // Task 19 — observe
 export async function handleObserve(
-  params: { content: string; type?: string; source?: string },
+  params: { content: string; type?: string; source?: string; correlation_id?: string; files_modified?: string[] },
   kernel: ToolKernel,
 ): Promise<{ id: string; summary: string | undefined; tokens_saved: number } | { error: string }> {
   if (!params.content || typeof params.content !== 'string') {
@@ -321,14 +330,25 @@ export async function handleObserve(
   const type = validateObservationType(params.type);
   const source = params.source || 'mcp';
 
-  const obs = await kernel.pipeline.observe(params.content, type, source);
+  const obs = await kernel.pipeline.observe(params.content, type, source, undefined, {
+    correlation_id: params.correlation_id,
+    files_modified: params.files_modified,
+  });
   const tokensSaved = obs.metadata.tokens_original - obs.metadata.tokens_summarized;
 
-  return {
+  // Check budget and append warning if needed
+  const budgetStatus = kernel.budgetManager.check(kernel.sessionId);
+  const result: { id: string; summary: string | undefined; tokens_saved: number; budget_warning?: string } = {
     id: obs.id,
     summary: obs.summary,
     tokens_saved: tokensSaved,
   };
+
+  if (budgetStatus.signal && budgetStatus.percentage >= 80) {
+    result.budget_warning = budgetStatus.signal;
+  }
+
+  return result;
 }
 
 // Task 19 — summarize
@@ -396,9 +416,51 @@ export interface TimelineEntry {
 }
 
 export async function handleTimeline(
-  params: { from?: number; to?: number; type?: string; session_id?: string; limit?: number },
+  params: { from?: number; to?: number; type?: string; session_id?: string; limit?: number; anchor?: string; depth_before?: number; depth_after?: number },
   kernel: ToolKernel,
 ): Promise<TimelineEntry[]> {
+  // Anchor mode: center timeline around a specific observation
+  if (params.anchor) {
+    const depthBefore = validateLimit(params.depth_before ?? 10);
+    const depthAfter = validateLimit(params.depth_after ?? 5);
+
+    // Get the anchor observation's timestamp
+    const anchorRow = kernel.storage.prepare(
+      'SELECT id, type, summary, indexed_at FROM observations WHERE id = ?'
+    ).get(params.anchor) as { id: string; type: string; summary: string | null; indexed_at: number } | undefined;
+
+    if (!anchorRow) {
+      return [];
+    }
+
+    // Get observations before the anchor
+    const beforeRows = kernel.storage.prepare(
+      'SELECT id, type, summary, indexed_at FROM observations WHERE indexed_at < ? ORDER BY indexed_at DESC LIMIT ?'
+    ).all(anchorRow.indexed_at, depthBefore) as Array<{
+      id: string; type: string; summary: string | null; indexed_at: number;
+    }>;
+
+    // Get observations after the anchor
+    const afterRows = kernel.storage.prepare(
+      'SELECT id, type, summary, indexed_at FROM observations WHERE indexed_at > ? ORDER BY indexed_at ASC LIMIT ?'
+    ).all(anchorRow.indexed_at, depthAfter) as Array<{
+      id: string; type: string; summary: string | null; indexed_at: number;
+    }>;
+
+    // Combine: before (reversed to chronological) + anchor + after
+    const allRows = [...beforeRows.reverse(), anchorRow, ...afterRows];
+
+    return allRows.map(row => ({
+      id: row.id,
+      type: row.type,
+      summary: row.id === anchorRow.id
+        ? (row.summary ? `${row.summary} <- ANCHOR` : '<- ANCHOR')
+        : row.summary,
+      timestamp: row.indexed_at,
+    }));
+  }
+
+  // Standard mode: reverse-chronological with filters
   const validFrom = validateTimestamp(params.from);
   const validTo = validateTimestamp(params.to);
   const validLimit = validateLimit(params.limit ?? 20);
@@ -701,7 +763,7 @@ export async function handleSearchKnowledge(
 export async function handleBudgetStatus(
   _params: Record<string, never>,
   kernel: ToolKernel,
-): Promise<{ used: number; limit: number; percentage: number; strategy: string; throttled: boolean; blocked: boolean }> {
+): Promise<{ used: number; limit: number; percentage: number; strategy: string; throttled: boolean; blocked: boolean; signal?: string }> {
   return kernel.budgetManager.getStatus(kernel.sessionId);
 }
 
@@ -735,17 +797,44 @@ export async function handleBudgetConfigure(
 export async function handleRestoreSession(
   params: { session_id: string },
   kernel: ToolKernel,
-): Promise<{ snapshot: Record<string, unknown>; condensed: boolean } | { error: string }> {
-  if (!params.session_id) {
-    return { error: 'session_id is required' };
-  }
+): Promise<{ content: Array<{ type: string; text: string }> } | { error: string }> {
+  const sessionId = (params.session_id as string) || kernel.sessionId;
 
-  const result = kernel.sessionManager.restoreSnapshot(params.session_id);
+  const result = kernel.sessionManager.restoreSnapshot(sessionId);
   if (!result) {
-    return { error: `No snapshot found for session: ${params.session_id}` };
+    return { content: [{ type: 'text', text: 'No saved session found. Starting fresh.' }] };
   }
 
-  return result;
+  let guide = `## Session Restored${result.condensed ? ' (condensed — session > 24h old)' : ''}\n\n`;
+
+  const snapshot = result.snapshot as Record<string, string>;
+  const CATEGORY_LABELS: Record<string, string> = {
+    files: 'Active Files',
+    tasks: 'Pending Tasks',
+    rules: 'Rules Loaded',
+    decisions: 'Recent Decisions',
+    errors: 'Recent Errors',
+    cwd: 'Working Directory',
+    git: 'Git Activity',
+    env: 'Environment',
+    plan: 'Active Plan',
+    mcp_tools: 'Tool Usage',
+    intent: 'Session Intent',
+    knowledge: 'Knowledge Saved',
+    stats: 'Token Stats',
+    search_history: 'Recent Searches',
+    correlations: 'Correlation Groups',
+  };
+
+  for (const [key, label] of Object.entries(CATEGORY_LABELS)) {
+    if (snapshot[key]) {
+      guide += `### ${label}\n${snapshot[key]}\n\n`;
+    }
+  }
+
+  guide += '---\nUse `search` to find specific past observations. Use `timeline` with `anchor` for chronological context.\n';
+
+  return { content: [{ type: 'text', text: guide }] };
 }
 
 // ---------------------------------------------------------------------------

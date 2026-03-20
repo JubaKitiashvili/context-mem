@@ -4,30 +4,37 @@ import { tmpdir } from 'node:os';
 import type { RuntimePlugin, PluginConfig, ExecOpts, ExecResult } from '../../core/types.js';
 import { spawnSafe, detectCommand } from './sandbox.js';
 
-export class JavaScriptRuntime implements RuntimePlugin {
-  name = 'javascript-runtime';
+export class PhpRuntime implements RuntimePlugin {
+  name = 'php-runtime';
   version = '1.0.0';
   type = 'runtime' as const;
-  language = 'javascript';
-  extensions = ['.js', '.mjs'];
+  language = 'php';
+  extensions = ['.php'];
 
   async init(_config: PluginConfig): Promise<void> {}
   async destroy(): Promise<void> {}
 
   async detect(): Promise<boolean> {
-    return detectCommand('node');
+    return detectCommand('php');
   }
 
   async execute(code: string, opts: ExecOpts): Promise<ExecResult> {
     const timeout = opts.timeout ?? 10000;
-    const tmpDir = mkdtempSync(join(tmpdir(), 'ctx-mem-js-'));
-    const tmpFile = join(tmpDir, 'script.js');
 
-    writeFileSync(tmpFile, code, 'utf8');
+    // Prepend <?php if not already present
+    let source = code;
+    if (!source.trimStart().startsWith('<?php')) {
+      source = `<?php\n${code}`;
+    }
+
+    const tmpDir = mkdtempSync(join(tmpdir(), 'ctx-mem-php-'));
+    const tmpFile = join(tmpDir, 'script.php');
+
+    writeFileSync(tmpFile, source, 'utf8');
 
     try {
       return await spawnSafe({
-        cmd: 'node',
+        cmd: 'php',
         args: [tmpFile],
         timeout,
         env: opts.env,

@@ -17,22 +17,28 @@ try {
 
 const toolName = data.tool_name;
 const toolInput = data.tool_input || {};
-const toolOutput = data.tool_output || {};
+const toolOutput = data.tool_response || data.tool_output || {};
 
 // Classify what to observe
 function getObservation(name, inp, out) {
   const stdout = out.stdout || out.content || out.output || '';
   const content = typeof stdout === 'string' ? stdout : JSON.stringify(stdout);
 
-  if (!content || content.length < 10) return null;
-
   switch (name) {
-    case 'Bash': return { content, type: 'log', source: 'Bash' };
-    case 'Read': return { content, type: 'code', source: 'Read', filePath: inp.file_path };
+    case 'Bash':
+      if (!content || content.length < 10) return null;
+      return { content, type: 'log', source: 'Bash' };
+    case 'Read':
+      // Read tool_output may not include file content — use file_path as observation
+      return { content: content.length >= 10 ? content : `Read file: ${inp.file_path}`, type: 'code', source: 'Read', filePath: inp.file_path };
     case 'Write':
-    case 'Edit': return { content: inp.content || content, type: 'code', source: name, filePath: inp.file_path };
+    case 'Edit':
+      // Edit/Write tool_output may only have exit_code — use input content or file_path
+      return { content: inp.content || inp.new_string || content || `${name}: ${inp.file_path}`, type: 'code', source: name, filePath: inp.file_path };
     case 'Grep':
-    case 'Glob': return { content, type: 'context', source: name };
+    case 'Glob':
+      if (!content || content.length < 10) return null;
+      return { content, type: 'context', source: name };
     default: return null;
   }
 }
@@ -47,31 +53,30 @@ cleaned = cleaned.replace(/<redact>[\s\S]*?<\/redact>/gi, '[REDACTED]');
 
 if (cleaned.length < 10) process.exit(0);
 
-// Fire-and-forget POST to MCP server
+// Fire-and-forget POST to HTTP bridge
 const http = require('http');
-const port = parseInt(process.env.CONTEXT_MEM_PORT || '51893', 10);
+const port = parseInt(process.env.CONTEXT_MEM_API_PORT || '51894', 10);
 const payload = JSON.stringify({
-  jsonrpc: '2.0',
-  method: 'tools/call',
-  params: {
-    name: 'observe',
-    arguments: {
-      content: cleaned.slice(0, 50000), // Cap at 50KB
-      type: obs.type,
-      source: obs.source,
-    }
-  }
+  content: cleaned.slice(0, 50000), // Cap at 50KB
+  type: obs.type,
+  source: obs.source,
+  filePath: obs.filePath,
 });
+
+// Keep process alive until response arrives or timeout
+const guard = setTimeout(() => {}, 2000);
 
 const req = http.request({
   hostname: '127.0.0.1',
   port,
-  path: '/',
+  path: '/api/observe',
   method: 'POST',
   headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
-  timeout: 500,
-}, () => {});
+  timeout: 1000,
+}, (res) => {
+  res.resume();
+  res.on('end', () => clearTimeout(guard));
+});
 
-req.on('error', () => {}); // Fire and forget
-req.write(payload);
-req.end();
+req.on('error', () => clearTimeout(guard));
+req.end(payload);

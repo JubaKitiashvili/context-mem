@@ -105,6 +105,11 @@ export function createMcpServer(kernel: ToolKernel): Server {
           };
       }
 
+      // If the handler returns a pre-formatted MCP content response, pass through directly
+      if (result && typeof result === 'object' && 'content' in (result as Record<string, unknown>) && Array.isArray((result as Record<string, unknown>).content)) {
+        return result as { content: Array<{ type: string; text: string }> };
+      }
+
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
       };

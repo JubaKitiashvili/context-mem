@@ -1,6 +1,6 @@
 {
   "name": "@context-mem/openclaw-plugin",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "context-mem ContextEngine plugin for OpenClaw — 99% token savings via 14 content-aware summarizers",
   "type": "module",
   "main": "src/index.ts",

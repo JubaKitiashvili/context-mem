@@ -3,7 +3,7 @@
 > Context optimization for AI coding assistants — 99% token savings, zero configuration, no LLM dependency.
 
 [![npm version](https://img.shields.io/npm/v/context-mem)](https://www.npmjs.com/package/context-mem)
-[![tests](https://img.shields.io/badge/tests-333%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-343%20passing-brightgreen)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-green)]()
 
@@ -19,7 +19,7 @@ AI coding assistants waste 60–80% of their context window on raw tool outputs 
 | **Token Savings** | 99% (benchmarked) | ~95% (claimed) | 98% (claimed) | N/A |
 | **Search** | BM25 + Trigram + Fuzzy | Basic recall | BM25 + Trigram + Fuzzy | Doc lookup |
 | **LLM Calls** | None (free, deterministic) | Every observation ($$$) | None | None |
-| **Knowledge Base** | 5 categories, relevance decay | No | No | No |
+| **Knowledge Base** | 5 categories, auto-extraction, relevance decay | No | No | No |
 | **Budget Management** | Configurable limits + overflow | No | Basic throttling | No |
 | **Event Tracking** | P1–P4, error-fix detection | No | Session events only | No |
 | **Dashboard** | Real-time web UI | No | No | No |
@@ -141,7 +141,9 @@ extensions:
 
 **Search** — 3-layer hybrid: BM25 full-text → trigram fuzzy → Levenshtein typo-tolerant. Sub-millisecond latency with intent classification.
 
-**Knowledge Base** — Save and search patterns, decisions, errors, APIs, components. Time-decay relevance scoring with automatic archival.
+**Knowledge Base** — Save and search patterns, decisions, errors, APIs, components. Time-decay relevance scoring with automatic archival. **Auto-extraction** — decisions, errors, commits, and frequently-accessed files are automatically saved to the knowledge base without manual intervention.
+
+**Export/Import** — Transfer knowledge between machines: `context-mem export` dumps knowledge, snapshots, and events as JSON; `context-mem import` restores them in another project. Merge or replace modes.
 
 **Budget Management** — Session token limits with three overflow strategies: aggressive truncation, warn, hard stop.
 
@@ -169,13 +171,13 @@ extensions:
 ## Architecture
 
 ```
-Tool Output → Hook Capture → Pipeline → Summarizer (14 types) → SQLite + FTS5
-                                ↓                                      ↓
-                          SHA256 Dedup                          3-Layer Search
-                                ↓                                      ↓
-                        4-Tier Truncation              Progressive Disclosure
-                                                               ↓
-                                                AI Assistant ← MCP Server
+Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarizer (14 types) → SQLite + FTS5
+                                    ↓                    ↓                                      ↓
+                              ObserveQueue         SHA256 Dedup                          3-Layer Search
+                             (burst protection)          ↓                                      ↓
+                                              4-Tier Truncation                    Progressive Disclosure
+                                                      ↓                                        ↓
+                                              Auto-Extract KB                   AI Assistant ← MCP Server
 ```
 
 ## MCP Tools
@@ -213,6 +215,8 @@ context-mem serve       # Start MCP server (stdio)
 context-mem status      # Show database stats
 context-mem doctor      # Run health checks
 context-mem dashboard   # Open web dashboard
+context-mem export      # Export knowledge, snapshots, events as JSON
+context-mem import      # Import data from JSON export file
 ```
 
 ## Configuration

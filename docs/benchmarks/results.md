@@ -1,7 +1,7 @@
 # context-mem ERNE-Parity Benchmarks
 
 > Using ERNE's exact fixture files for apples-to-apples comparison.
-> Generated on 2026-03-16
+> Generated on 2026-03-20
 
 ## Environment
 
@@ -38,45 +38,45 @@
 
 | Scenario | Raw Size | Search Result (3 queries) | Savings | Chunks |
 |----------|----------|---------------------------|---------|--------|
-| Supabase Edge Functions | 4.9 KB | 778 B | 84% | 1 |
-| React useEffect docs | 6.4 KB | 932 B | 86% | 4 |
-| Next.js App Router docs | 8.0 KB | 2.1 KB | 73% | 6 |
-| Tailwind CSS docs | 5.2 KB | 790 B | 85% | 2 |
-| React hooks (re-search) | 6.4 KB | 2.4 KB | 63% | 4 |
-| Next.js API routes | 8.0 KB | 1.0 KB | 87% | 3 |
+| Supabase Edge Functions | 4.9 KB | 3.4 KB | 31% | 7 |
+| React useEffect docs | 6.4 KB | 4.0 KB | 37% | 9 |
+| Next.js App Router docs | 8.0 KB | 3.6 KB | 55% | 9 |
+| Tailwind CSS docs | 5.2 KB | 2.7 KB | 47% | 7 |
+| React hooks (re-search) | 6.4 KB | 4.3 KB | 34% | 9 |
+| Next.js API routes | 8.0 KB | 1.4 KB | 83% | 6 |
 
-**Subtotal: 38.9 KB raw → 8.0 KB context (80% savings)**
+**Subtotal: 38.9 KB raw → 19.3 KB context (50% savings)**
 
 ## Part 3: Full Session Simulation
 
 | Metric | Without context-mem | With context-mem |
 |--------|--------------------|-----------------|
-| Total data | 365.5 KB | 3.2 KB |
-| Tokens | ~93,556 | ~819 |
+| Total data | 365.5 KB | 3.8 KB |
+| Tokens | ~93,556 | ~977 |
 | Savings | — | **99%** |
 
 ## Part 4: Search Performance
 
 | Operation | Avg | p50 | p95 | p99 | ops/s |
 |-----------|-----|-----|-----|-----|-------|
-| BM25 search | 0.299ms | 0.011ms | 1.459ms | 1.566ms | 3,342 |
-| trigram search | 0.008ms | 0.008ms | 0.01ms | 0.011ms | 120,122 |
-| levenshtein search | 0.19ms | 0.183ms | 0.247ms | 0.286ms | 5,272 |
-| timeline (limit 50) | 0.033ms | 0.033ms | 0.035ms | 0.041ms | 30,187 |
-| timeline (limit 200) | 0.12ms | 0.118ms | 0.128ms | 0.172ms | 8,329 |
-| count by type | 0.152ms | 0.15ms | 0.161ms | 0.168ms | 6,572 |
+| BM25 search | 0.298ms | 0.011ms | 1.463ms | 1.517ms | 3,356 |
+| trigram search | 0.008ms | 0.008ms | 0.009ms | 0.011ms | 118,767 |
+| levenshtein search | 0.193ms | 0.187ms | 0.252ms | 0.292ms | 5,173 |
+| timeline (limit 50) | 0.034ms | 0.033ms | 0.037ms | 0.042ms | 29,816 |
+| timeline (limit 200) | 0.13ms | 0.123ms | 0.163ms | 0.29ms | 7,713 |
+| count by type | 0.155ms | 0.152ms | 0.166ms | 0.192ms | 6,462 |
 
 ## Part 5: New Features Performance
 
 | Feature | Operation | Avg | p50 | ops/s |
 |---------|-----------|-----|-----|-------|
-| | knowledge save | 0.137ms | 0.087ms | 7,278 |
-| | knowledge search (FTS5) | 0.72ms | 0.547ms | 1,389 |
-| | budget check | 0.01ms | 0.008ms | 102,870 |
-| | event emit | 0.058ms | 0.034ms | 17,183 |
-| | event query | 0.156ms | 0.152ms | 6,406 |
-| | snapshot save | 0.062ms | 0.046ms | 16,240 |
-| | snapshot restore | 0.005ms | 0.005ms | 186,699 |
+| | knowledge save | 0.111ms | 0.082ms | 9,043 |
+| | knowledge search (FTS5) | 0.61ms | 0.521ms | 1,640 |
+| | budget check | 0.01ms | 0.008ms | 104,152 |
+| | event emit | 0.045ms | 0.032ms | 22,120 |
+| | event query | 0.16ms | 0.154ms | 6,255 |
+| | snapshot save | 0.226ms | 0.209ms | 4,427 |
+| | snapshot restore | 0.005ms | 0.005ms | 197,403 |
 
 ## Part 6: Truncation Cascade
 
@@ -92,8 +92,8 @@
 | Metric | Value |
 |--------|-------|
 | Observations | 5000 |
-| DB Size | 2.84 MB |
-| Avg per obs | 596 bytes |
+| DB Size | 2.87 MB |
+| Avg per obs | 602 bytes |
 | FTS5 index | 437.1 KB |
 | Trigram index | 257.9 KB |
 
@@ -102,7 +102,7 @@
 | Metric | ERNE | context-mem |
 |--------|------|-------------|
 | Summarizer savings | 100% | **99%** |
-| Index+Search savings | 80% | **80%** |
+| Index+Search savings | 80% | **50%** |
 | Full session savings | 99% | **99%** |
 | Content types detected | 14 | **14** |
 | Search technology | FTS5 BM25 | FTS5 BM25 + Trigram + Levenshtein |

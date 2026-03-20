@@ -39,6 +39,8 @@ export interface ObservationMetadata {
   tokens_summarized: number;
   privacy_level: 'public' | 'private' | 'redacted';
   session_id?: string;
+  correlation_id?: string;
+  files_modified?: string[];
 }
 
 export interface Observation {
@@ -76,6 +78,7 @@ export interface BudgetStatus {
   strategy: OverflowStrategy;
   throttled: boolean;
   blocked: boolean;
+  signal?: string;
 }
 
 // Knowledge types
@@ -281,6 +284,7 @@ export interface ContextMemConfig {
     preserve_types: ObservationType[];
   };
   port: number;
+  api_port: number;
   db_path: string;
   execute_enabled: boolean;
 }
@@ -313,6 +317,7 @@ export const DEFAULT_CONFIG: ContextMemConfig = deepFreeze({
     preserve_types: ['decision', 'commit'],
   },
   port: 51893,
+  api_port: 51894,
   db_path: '.context-mem/store.db',
   execute_enabled: false,
 });

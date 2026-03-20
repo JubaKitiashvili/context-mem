@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import type { ToolKernel } from '../../mcp-server/tools.js';
 import { registerInstance, deregisterInstance } from '../../core/instance-registry.js';
+import { startHttpBridge } from '../../core/http-bridge.js';
 
 /** Lightweight first-run setup that runs automatically on serve */
 function firstRunSetup(projectDir: string): void {
@@ -53,23 +54,32 @@ const CONTEXT_MEM_RULES = `# context-mem Integration
 
 context-mem is active in this project. It compresses tool outputs via 14 content-aware summarizers (99% token savings) and serves optimized context through MCP.
 
-## Automatic Behaviors
+## Workflow (IMPORTANT — follow this order)
 
-- **Session start**: Call \`restore_session\` to recover prior context
-- **After large outputs** (file reads, terminal output, search results): Call \`observe\` with the content to compress and store it
-- **Before re-reading files**: Call \`search\` first — the answer may already be in context-mem
-- **When learning project patterns**: Call \`save_knowledge\` to persist decisions, error fixes, API patterns
-- **Periodically**: Call \`budget_status\` to check token usage
+1. **Session start**: Call \`restore_session\` to recover prior context
+2. **Before re-reading files**: Call \`search\` first — the answer may already be stored
+3. **After large outputs**: Call \`observe\` to compress and store content
+4. **Need details on a search result?**: Call \`get\` with the ID — never guess content
+5. **Need chronological context?**: Call \`timeline\` — optionally with \`anchor\` ID for before/after view
+6. **When learning patterns**: Call \`save_knowledge\` for decisions, error fixes, API patterns
+7. **Periodically**: Call \`budget_status\` — if >80%, call \`restore_session\` to save state and reclaim context
+
+## Rules
+
+- ALWAYS \`search\` before \`get\` — never guess observation IDs
+- ALWAYS \`observe\` outputs over 500 tokens — keep context clean
+- NEVER call \`get\` without first finding the ID via \`search\` or \`timeline\`
+- When \`budget_status\` shows >80%: save your work, call \`restore_session\`
 
 ## Available MCP Tools
 
 - \`observe\` — store and compress content (auto-summarized)
-- \`search\` / \`get\` / \`timeline\` — retrieve stored context
+- \`search\` / \`get\` / \`timeline\` — retrieve stored context (use in this order)
 - \`stats\` — view compression statistics
 - \`save_knowledge\` / \`search_knowledge\` — persistent knowledge base
 - \`budget_status\` / \`budget_configure\` — token budget management
 - \`emit_event\` / \`query_events\` — event tracking
-- \`restore_session\` — session continuity
+- \`restore_session\` — session continuity + context reclaim
 `;
 
 const QUICK_RULES: QuickEditorRule[] = [
@@ -198,6 +208,10 @@ export async function serve(_args: string[]): Promise<void> {
 
   console.error('context-mem: MCP server started (stdio)');
 
+  // Start HTTP bridge for hook → kernel communication
+  const apiPort = parseInt(process.env.CONTEXT_MEM_API_PORT || '', 10) || kernel.getConfig()?.api_port || 51894;
+  const bridge = await startHttpBridge(kernel, apiPort);
+
   // Register in global instance registry
   const dbRelPath = kernel.getConfig()?.db_path || '.context-mem/store.db';
   registerInstance(projectDir, dbRelPath);
@@ -212,6 +226,7 @@ export async function serve(_args: string[]): Promise<void> {
   // Graceful shutdown
   const shutdown = async () => {
     deregisterInstance(projectDir);
+    if (bridge) bridge.close();
     if (dashboardProcess) dashboardProcess.kill('SIGTERM');
     await kernel.stop();
     process.exit(0);

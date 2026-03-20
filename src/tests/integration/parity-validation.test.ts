@@ -521,8 +521,8 @@ const users = await fetch('/api/users');
       assert.ok(!status.blocked, 'Should not be blocked yet (< 100%)');
     });
 
-    it('blocked at 100% usage', async () => {
-      kernel.budgetManager.configure({ session_limit: 100 });
+    it('blocked at 100% usage with hard_stop strategy', async () => {
+      kernel.budgetManager.configure({ session_limit: 100, overflow_strategy: 'hard_stop' });
 
       const storage = getStorage(kernel);
       const sessionId = kernel['session'].session_id;
@@ -534,7 +534,17 @@ const users = await fetch('/api/users');
 
       const status = kernel.budgetManager.getStatus(sessionId);
       assert.ok(status.percentage >= 100, `Should be at or above 100%, got ${status.percentage}%`);
-      assert.ok(status.blocked, 'Should be blocked at 100%');
+      assert.ok(status.blocked, 'Should be blocked at 100% with hard_stop');
+
+      // Verify warn strategy does NOT block at 100%
+      kernel.budgetManager.configure({ session_limit: 100, overflow_strategy: 'warn' });
+      const warnStatus = kernel.budgetManager.getStatus(sessionId);
+      assert.ok(!warnStatus.blocked, 'warn strategy should not block at 100%');
+
+      // Verify aggressive_truncation strategy does NOT block at 100%
+      kernel.budgetManager.configure({ session_limit: 100, overflow_strategy: 'aggressive_truncation' });
+      const aggStatus = kernel.budgetManager.getStatus(sessionId);
+      assert.ok(!aggStatus.blocked, 'aggressive_truncation should not block at 100%');
     });
   });
 
@@ -595,7 +605,9 @@ const users = await fetch('/api/users');
       const restored = kernel.sessionManager.restoreSnapshot(sessionId);
       assert.ok(restored, 'Should restore the snapshot');
       assert.equal(restored!.condensed, false, 'Recent snapshot should not be condensed');
-      assert.ok(restored!.snapshot.session_id, 'Snapshot should contain session_id');
+      // Snapshot now uses category-based keys (15 categories with P1/P2/P3 priorities)
+      // The decisions category should be present since we observed a decision
+      assert.ok(restored!.snapshot.decisions, 'Snapshot should contain decisions category');
     });
 
     it('old snapshots are condensed', () => {
@@ -751,7 +763,9 @@ const users = await fetch('/api/users');
 
       const restored = await handleRestoreSession({ session_id: tk.sessionId }, tk);
       assert.ok(!('error' in restored), 'Should not error');
-      assert.ok((restored as { snapshot: Record<string, unknown> }).snapshot, 'Should return snapshot');
+      const content = (restored as { content: Array<{ type: string; text: string }> }).content;
+      assert.ok(content, 'Should return content array');
+      assert.ok(content[0].text.includes('Session Restored'), 'Should contain session restored header');
     });
   });
 });

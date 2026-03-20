@@ -28,14 +28,25 @@ export class BudgetManager {
     const used = row?.used ?? 0;
     const percentage = config.session_limit > 0 ? (used / config.session_limit) * 100 : 0;
 
-    return {
+    const status: BudgetStatus = {
       used,
       limit: config.session_limit,
       percentage,
       strategy: config.overflow_strategy,
       throttled: percentage >= 80,
-      blocked: percentage >= 100,
+      // Only hard_stop actually blocks. aggressive_truncation and warn allow observations through.
+      blocked: percentage >= 100 && config.overflow_strategy === 'hard_stop',
     };
+
+    if (percentage >= 90) {
+      status.signal = 'CRITICAL: Context 90%+ full. Call restore_session NOW to save state before context is lost.';
+    } else if (percentage >= 80) {
+      status.signal = 'WARNING: Context 80%+ full. Consider calling restore_session to save state and reclaim context.';
+    } else if (percentage >= 60) {
+      status.signal = 'Context 60% used. No action needed yet.';
+    }
+
+    return status;
   }
 
   record(_sessionId: string, _bytes: number): void {

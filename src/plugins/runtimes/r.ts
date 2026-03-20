@@ -4,12 +4,12 @@ import { tmpdir } from 'node:os';
 import type { RuntimePlugin, PluginConfig, ExecOpts, ExecResult } from '../../core/types.js';
 import { spawnSafe, detectFirstAvailable } from './sandbox.js';
 
-export class PythonRuntime implements RuntimePlugin {
-  name = 'python-runtime';
+export class RRuntime implements RuntimePlugin {
+  name = 'r-runtime';
   version = '1.0.0';
   type = 'runtime' as const;
-  language = 'python';
-  extensions = ['.py'];
+  language = 'r';
+  extensions = ['.r', '.R'];
 
   private executable: string | null = null;
 
@@ -17,7 +17,7 @@ export class PythonRuntime implements RuntimePlugin {
   async destroy(): Promise<void> {}
 
   async detect(): Promise<boolean> {
-    const exe = await detectFirstAvailable(['python3', 'python']);
+    const exe = await detectFirstAvailable(['Rscript', 'r']);
     if (exe !== null) {
       this.executable = exe;
       return true;
@@ -28,23 +28,22 @@ export class PythonRuntime implements RuntimePlugin {
   async execute(code: string, opts: ExecOpts): Promise<ExecResult> {
     const timeout = opts.timeout ?? 10000;
 
-    // Lazily resolve executable if detect() was not called first
     if (this.executable === null) {
-      this.executable = await detectFirstAvailable(['python3', 'python']);
+      this.executable = await detectFirstAvailable(['Rscript', 'r']);
     }
 
     if (this.executable === null) {
       return {
         stdout: '',
-        stderr: 'python not found',
+        stderr: 'No R runtime found (tried Rscript, r)',
         exit_code: 127,
         duration_ms: 0,
         truncated: false,
       };
     }
 
-    const tmpDir = mkdtempSync(join(tmpdir(), 'ctx-mem-py-'));
-    const tmpFile = join(tmpDir, 'script.py');
+    const tmpDir = mkdtempSync(join(tmpdir(), 'ctx-mem-r-'));
+    const tmpFile = join(tmpDir, 'script.R');
 
     writeFileSync(tmpFile, code, 'utf8');
 

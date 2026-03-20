@@ -3,10 +3,14 @@ import type { TruncationResult } from './types.js';
 
 // Tier thresholds
 export const MAX_PASSTHROUGH = 2048;
-const HEAD = 500;
-const TAIL = 500;
-const AGGRESSIVE_HEAD = 200;
-const AGGRESSIVE_TAIL = 200;
+const HEAD_RATIO = 0.6;
+const TAIL_RATIO = 0.4;
+const TOTAL_LINES = 1000;
+const HEAD = Math.floor(TOTAL_LINES * HEAD_RATIO);   // 600
+const TAIL = TOTAL_LINES - HEAD;                       // 400
+const AGGRESSIVE_TOTAL = 400;
+const AGGRESSIVE_HEAD = Math.floor(AGGRESSIVE_TOTAL * HEAD_RATIO);  // 240
+const AGGRESSIVE_TAIL = AGGRESSIVE_TOTAL - AGGRESSIVE_HEAD;          // 160
 
 // Tier 1: JSON schema extraction
 function tryJsonSchema(content: string): string | null {
@@ -130,9 +134,10 @@ export function truncate(content: string, aggressive = false): TruncationResult 
       // Content fits in budget — return as-is
       return { content, tier: 3, original_length: originalLength, truncated_length: originalLength };
     }
-    const halfBudget = aggressive ? 800 : 2000;
-    const head = content.slice(0, halfBudget);
-    const tail = content.slice(-halfBudget);
+    const headBudget = aggressive ? Math.floor(1600 * HEAD_RATIO) : Math.floor(4000 * HEAD_RATIO);
+    const tailBudget = aggressive ? 1600 - headBudget : 4000 - headBudget;
+    const head = content.slice(0, headBudget);
+    const tail = content.slice(-tailBudget);
     const omitted = originalLength - head.length - tail.length;
     const result = `${head}\n... (${omitted} chars omitted) ...\n${tail}`;
     return { content: result, tier: 3, original_length: originalLength, truncated_length: result.length };

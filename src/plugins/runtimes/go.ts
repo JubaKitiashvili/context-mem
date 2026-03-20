@@ -4,31 +4,38 @@ import { tmpdir } from 'node:os';
 import type { RuntimePlugin, PluginConfig, ExecOpts, ExecResult } from '../../core/types.js';
 import { spawnSafe, detectCommand } from './sandbox.js';
 
-export class JavaScriptRuntime implements RuntimePlugin {
-  name = 'javascript-runtime';
+export class GoRuntime implements RuntimePlugin {
+  name = 'go-runtime';
   version = '1.0.0';
   type = 'runtime' as const;
-  language = 'javascript';
-  extensions = ['.js', '.mjs'];
+  language = 'go';
+  extensions = ['.go'];
 
   async init(_config: PluginConfig): Promise<void> {}
   async destroy(): Promise<void> {}
 
   async detect(): Promise<boolean> {
-    return detectCommand('node');
+    return detectCommand('go');
   }
 
   async execute(code: string, opts: ExecOpts): Promise<ExecResult> {
     const timeout = opts.timeout ?? 10000;
-    const tmpDir = mkdtempSync(join(tmpdir(), 'ctx-mem-js-'));
-    const tmpFile = join(tmpDir, 'script.js');
 
-    writeFileSync(tmpFile, code, 'utf8');
+    // Wrap in package main if not already present
+    let source = code;
+    if (!source.includes('package main')) {
+      source = `package main\nimport "fmt"\nfunc main() {\n${code}\n}\n`;
+    }
+
+    const tmpDir = mkdtempSync(join(tmpdir(), 'ctx-mem-go-'));
+    const tmpFile = join(tmpDir, 'script.go');
+
+    writeFileSync(tmpFile, source, 'utf8');
 
     try {
       return await spawnSafe({
-        cmd: 'node',
-        args: [tmpFile],
+        cmd: 'go',
+        args: ['run', tmpFile],
         timeout,
         env: opts.env,
       });

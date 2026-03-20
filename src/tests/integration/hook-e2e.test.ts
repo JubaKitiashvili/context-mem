@@ -18,7 +18,7 @@ function runHook(input: object | string): HookResult {
       input: stdin,
       encoding: 'utf8',
       timeout: 5000,
-      env: { ...process.env, CONTEXT_MEM_PORT: '19999' }, // Non-listening port so POST fails silently
+      env: { ...process.env, CONTEXT_MEM_API_PORT: '19999' }, // Non-listening port so POST fails silently
     });
     return { status: 0, stdout, stderr: '' };
   } catch (err: unknown) {

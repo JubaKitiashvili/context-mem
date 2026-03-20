@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 3;
+export const LATEST_SCHEMA_VERSION = 4;
 
 export const migrations: Migration[] = [
   {
@@ -250,6 +250,15 @@ export const migrations: Migration[] = [
 
       INSERT INTO schema_version (version, applied_at, description)
       VALUES (3, unixepoch(), 'Add content_hash dedup, content store, knowledge base, budget, snapshots, events');
+    `,
+  },
+  {
+    version: 4,
+    description: 'Add correlation_id for causality tracking',
+    up: `
+      ALTER TABLE observations ADD COLUMN correlation_id TEXT;
+      CREATE INDEX IF NOT EXISTS idx_obs_correlation ON observations(correlation_id);
+      INSERT INTO schema_version (version, applied_at, description) VALUES (4, datetime('now'), 'Add correlation_id for causality tracking');
     `,
   },
 ];

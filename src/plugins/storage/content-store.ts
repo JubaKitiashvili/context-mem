@@ -94,9 +94,16 @@ export class ContentStore {
     const limit = opts.limit || 5;
 
     // FTS5 search
-    // Need to sanitize the query for FTS5 - remove special characters
-    const sanitized = query.replace(/[^\w\s]/g, ' ').trim();
-    if (!sanitized) return [];
+    // Remove special characters; also generate split variants for underscored/camelCase identifiers
+    // e.g., "_layout" → "layout", "getToken" → "getToken OR get OR Token"
+    const base = query.replace(/[^\w\s]/g, ' ').trim();
+    if (!base) return [];
+    const split = base
+      .replace(/_/g, ' ')
+      .replace(/([a-z])([A-Z])/g, '$1 $2');
+    // Combine original tokens with split tokens (OR for FTS5), deduped
+    const allTokens = [...new Set([...base.split(/\s+/), ...split.split(/\s+/)])].filter(Boolean);
+    const sanitized = allTokens.join(' OR ');
 
     let sql = `
       SELECT cc.heading, cc.content, cc.has_code, cs.source,
