@@ -724,8 +724,10 @@ const users = await fetch('/api/users');
       assert.ok((saved as { id: string }).id, 'Should return ID');
 
       const found = await handleSearchKnowledge({ query: 'singleton database connection' }, tk);
-      assert.ok(found.length >= 1, 'Should find the knowledge entry');
-      assert.equal(found[0].title, 'Singleton Pattern');
+      assert.ok(!('error' in found), 'Search should not error');
+      const results = found as Array<{ id: string; title: string }>;
+      assert.ok(results.length >= 1, 'Should find the knowledge entry');
+      assert.equal(results[0].title, 'Singleton Pattern');
     });
 
     it('handleBudgetStatus + handleBudgetConfigure — budget tools', async () => {

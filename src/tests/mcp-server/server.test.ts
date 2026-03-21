@@ -73,7 +73,7 @@ describe('createMcpServer', () => {
     const expected = [
       'observe', 'summarize', 'search', 'timeline', 'get', 'stats', 'configure', 'execute',
       'index_content', 'search_content', 'save_knowledge', 'search_knowledge',
-      'budget_status', 'budget_configure', 'restore_session', 'emit_event', 'query_events',
+      'update_profile', 'budget_status', 'budget_configure', 'restore_session', 'emit_event', 'query_events',
     ];
     assert.deepStrictEqual(names, expected);
 

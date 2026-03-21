@@ -6,6 +6,7 @@
  *
  * Injects last session's context on Claude Code startup.
  * Priority order:
+ *   0. Quick Profile — project summary from knowledge base
  *   1. Activity Journal (.context-mem/journal.md) — richest, most recent
  *   2. DB snapshot + observations — historical context
  *   3. Minimal stats — always available
@@ -18,6 +19,42 @@ const path = require('path');
 
 const cwd = process.cwd();
 const journalPath = path.join(cwd, '.context-mem', 'journal.md');
+
+// --- Shared DB helpers (hoisted to avoid double I/O) ---
+function findDb() {
+  const configPath = path.join(cwd, '.context-mem.json');
+  if (fs.existsSync(configPath)) {
+    try {
+      const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      const dbPath = cfg.db_path || '.context-mem/store.db';
+      const resolved = path.isAbsolute(dbPath) ? dbPath : path.join(cwd, dbPath);
+      if (fs.existsSync(resolved)) return resolved;
+    } catch {}
+  }
+  const defaultPath = path.join(cwd, '.context-mem', 'store.db');
+  if (fs.existsSync(defaultPath)) return defaultPath;
+  return null;
+}
+
+function loadDatabase() {
+  const paths = [
+    path.join(__dirname, '..', 'node_modules', 'better-sqlite3'),
+    'better-sqlite3',
+  ];
+  for (const p of paths) {
+    try { return require(p); } catch {}
+  }
+  return null;
+}
+
+// Resolve DB once for all functions
+const _dbPath = findDb();
+const _Database = loadDatabase();
+
+function openDb() {
+  if (!_dbPath || !_Database) return null;
+  try { return new _Database(_dbPath, { readonly: true }); } catch { return null; }
+}
 
 // --- Journal (primary source — richest context) ---
 function getJournal() {
@@ -85,16 +122,64 @@ function getJournal() {
   }
 }
 
+// --- Quick Profile (project summary from knowledge base) ---
+function getProfile() {
+  const db = openDb();
+  if (!db) return null;
+
+  try {
+    // Try stored profile first
+    try {
+      const profile = db.prepare('SELECT content, updated_at FROM project_profile WHERE id = 1').get();
+      if (profile && profile.content && profile.content.trim()) {
+        return profile.content.trim();
+      }
+    } catch {
+      // table might not exist yet (pre-v5)
+    }
+
+    // Auto-generate from knowledge base
+    try {
+      const lines = [];
+
+      const decisions = db.prepare(
+        "SELECT title FROM knowledge WHERE archived = 0 AND category = 'decision' ORDER BY created_at DESC LIMIT 5"
+      ).all();
+      if (decisions.length > 0) {
+        lines.push('Decisions: ' + decisions.map(d => d.title).join(', '));
+      }
+
+      const patterns = db.prepare(
+        "SELECT title FROM knowledge WHERE archived = 0 AND category = 'pattern' ORDER BY access_count DESC LIMIT 5"
+      ).all();
+      if (patterns.length > 0) {
+        lines.push('Patterns: ' + patterns.map(p => p.title).join(', '));
+      }
+
+      const errors = db.prepare(
+        "SELECT title FROM knowledge WHERE archived = 0 AND category = 'error' ORDER BY created_at DESC LIMIT 3"
+      ).all();
+      if (errors.length > 0) {
+        lines.push('Recent issues: ' + errors.map(e => e.title).join(', '));
+      }
+
+      if (lines.length === 0) return null;
+      return lines.join('\n');
+    } catch {
+      // knowledge table might not exist (pre-v3)
+      return null;
+    }
+  } catch {
+    return null;
+  } finally {
+    try { db.close(); } catch {}
+  }
+}
+
 // --- DB context (secondary — historical) ---
 function getDbContext() {
-  const dbPath = findDb();
-  if (!dbPath) return null;
-
-  const Database = loadDatabase();
-  if (!Database) return null;
-
-  let db;
-  try { db = new Database(dbPath, { readonly: true }); } catch { return null; }
+  const db = openDb();
+  if (!db) return null;
 
   try {
     const lines = [];
@@ -160,34 +245,16 @@ function getDbContext() {
   }
 }
 
-function findDb() {
-  const configPath = path.join(cwd, '.context-mem.json');
-  if (fs.existsSync(configPath)) {
-    try {
-      const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-      const dbPath = cfg.db_path || '.context-mem/store.db';
-      const resolved = path.isAbsolute(dbPath) ? dbPath : path.join(cwd, dbPath);
-      if (fs.existsSync(resolved)) return resolved;
-    } catch {}
-  }
-  const defaultPath = path.join(cwd, '.context-mem', 'store.db');
-  if (fs.existsSync(defaultPath)) return defaultPath;
-  return null;
-}
-
-function loadDatabase() {
-  const paths = [
-    path.join(__dirname, '..', 'node_modules', 'better-sqlite3'),
-    'better-sqlite3',
-  ];
-  for (const p of paths) {
-    try { return require(p); } catch {}
-  }
-  return null;
-}
-
 // --- Main ---
 const output = [];
+
+// 0. Quick Profile (project context — always first)
+const profile = getProfile();
+if (profile) {
+  output.push('## Project Profile');
+  output.push(profile);
+  output.push('');
+}
 
 // 1. Journal (primary — what was done)
 const journal = getJournal();

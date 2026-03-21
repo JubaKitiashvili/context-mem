@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 4;
+export const LATEST_SCHEMA_VERSION = 5;
 
 export const migrations: Migration[] = [
   {
@@ -259,6 +259,24 @@ export const migrations: Migration[] = [
       ALTER TABLE observations ADD COLUMN correlation_id TEXT;
       CREATE INDEX IF NOT EXISTS idx_obs_correlation ON observations(correlation_id);
       INSERT INTO schema_version (version, applied_at, description) VALUES (4, datetime('now'), 'Add correlation_id for causality tracking');
+    `,
+  },
+  {
+    version: 5,
+    description: 'Add source_type to knowledge entries and project_profile table',
+    up: `
+      ALTER TABLE knowledge ADD COLUMN source_type TEXT DEFAULT 'observed';
+
+      CREATE TABLE IF NOT EXISTS project_profile (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        content TEXT NOT NULL DEFAULT '',
+        updated_at INTEGER NOT NULL DEFAULT 0
+      );
+
+      INSERT OR IGNORE INTO project_profile (id, content, updated_at) VALUES (1, '', 0);
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (5, unixepoch(), 'Add source_type to knowledge entries and project_profile table');
     `,
   },
 ];

@@ -83,6 +83,7 @@ export interface BudgetStatus {
 
 // Knowledge types
 export type KnowledgeCategory = 'pattern' | 'decision' | 'error' | 'api' | 'component';
+export type SourceType = 'explicit' | 'inferred' | 'observed';
 
 export interface KnowledgeEntry {
   id: string;
@@ -95,6 +96,14 @@ export interface KnowledgeEntry {
   access_count: number;
   created_at: number;
   archived: boolean;
+  source_type: SourceType;
+}
+
+export interface ContradictionWarning {
+  id: string;
+  title: string;
+  content: string;
+  similarity_reason: string;
 }
 
 // Event types

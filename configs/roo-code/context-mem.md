@@ -18,13 +18,16 @@ context-mem is active in this project. It compresses tool outputs via 14 content
 - ALWAYS `observe` outputs over 500 tokens — keep context clean
 - NEVER call `get` without first finding the ID via `search` or `timeline`
 - When `budget_status` shows >80%: save your work, call `restore_session`
+- When `save_knowledge` returns `contradictions` — review them before proceeding. Do NOT silently overwrite conflicting knowledge. Ask the user or note the conflict.
+- Use `source_type` when saving knowledge: `explicit` (user stated directly), `inferred` (you derived from context), `observed` (captured automatically). Trust explicit > inferred > observed.
 
 ## Available MCP Tools
 
 - `observe` — store and compress content (auto-summarized)
 - `search` / `get` / `timeline` — retrieve stored context (use in this order)
 - `stats` — view compression statistics
-- `save_knowledge` / `search_knowledge` — persistent knowledge base
+- `save_knowledge` / `search_knowledge` — persistent knowledge base (with contradiction detection and source tracking)
+- `update_profile` — update the project quick profile shown at session start
 - `budget_status` / `budget_configure` — token budget management
 - `emit_event` / `query_events` — event tracking
 - `restore_session` — session continuity + context reclaim

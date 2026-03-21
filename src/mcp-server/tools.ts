@@ -8,6 +8,8 @@ import type {
   TokenEconomics,
   SearchResult,
   KnowledgeCategory,
+  SourceType,
+  ContradictionWarning,
   EventPriority,
 } from '../core/types.js';
 import { OBSERVATION_TYPES } from '../core/types.js';
@@ -220,7 +222,7 @@ export const toolDefinitions: ToolDefinition[] = [
   // Knowledge base tools
   {
     name: 'save_knowledge',
-    description: 'Save a knowledge entry (pattern, decision, error, api, or component).',
+    description: 'Save a knowledge entry with automatic contradiction detection. When contradictions are found, the save is blocked — resubmit with force: true to save anyway.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -229,6 +231,8 @@ export const toolDefinitions: ToolDefinition[] = [
         content: { type: 'string', description: 'Knowledge content' },
         tags: { type: 'array', items: { type: 'string' }, description: 'Tags for categorization' },
         shareable: { type: 'boolean', description: 'Whether this knowledge can be shared (default: true)' },
+        source_type: { type: 'string', enum: ['explicit', 'inferred', 'observed'], description: 'How this knowledge was obtained: explicit (user stated directly), inferred (AI derived from context), observed (captured automatically). Default: observed' },
+        force: { type: 'boolean', description: 'Force save even when contradictions exist (default: false)' },
       },
       required: ['category', 'title', 'content'],
     },
@@ -244,6 +248,18 @@ export const toolDefinitions: ToolDefinition[] = [
         limit: { type: 'number', description: 'Max results (default: 10)' },
       },
       required: ['query'],
+    },
+  },
+  // Profile tools
+  {
+    name: 'update_profile',
+    description: 'Update the project quick profile — a 3-5 line summary shown at every session start. Auto-generates from knowledge if no content provided.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        content: { type: 'string', description: 'Profile content (3-5 lines). If omitted, auto-generates from knowledge base.' },
+      },
+      required: [],
     },
   },
   // Budget tools
@@ -711,35 +727,75 @@ export async function handleSearchContent(
 
 const KNOWLEDGE_CATEGORIES = ['pattern', 'decision', 'error', 'api', 'component'] as const;
 
+const SOURCE_TYPES = ['explicit', 'inferred', 'observed'] as const;
+
 export async function handleSaveKnowledge(
-  params: { category: string; title: string; content: string; tags?: string[]; shareable?: boolean },
+  params: { category: string; title: string; content: string; tags?: string[]; shareable?: boolean; source_type?: string; force?: boolean },
   kernel: ToolKernel,
-): Promise<{ id: string; category: string; title: string } | { error: string }> {
+): Promise<{ id: string; category: string; title: string; source_type: string; contradictions: ContradictionWarning[] } | { blocked: boolean; contradictions: ContradictionWarning[]; message: string } | { error: string }> {
   if (!params.title || !params.content) {
     return { error: 'title and content are required' };
   }
-  const category = (KNOWLEDGE_CATEGORIES as readonly string[]).includes(params.category)
-    ? params.category as KnowledgeCategory
-    : 'pattern' as KnowledgeCategory;
+  if (!(KNOWLEDGE_CATEGORIES as readonly string[]).includes(params.category)) {
+    return { error: `Invalid category: "${params.category}". Must be one of: ${KNOWLEDGE_CATEGORIES.join(', ')}` };
+  }
+  const category = params.category as KnowledgeCategory;
 
-  const entry = kernel.knowledgeBase.save({
-    category,
-    title: params.title,
-    content: params.content,
-    tags: params.tags,
-    shareable: params.shareable,
-  });
+  const rawSourceType = (params.source_type || undefined) ?? 'observed';
+  if (!(SOURCE_TYPES as readonly string[]).includes(rawSourceType)) {
+    return { error: `Invalid source_type: "${rawSourceType}". Must be one of: ${SOURCE_TYPES.join(', ')}` };
+  }
+  const sourceType = rawSourceType as SourceType;
 
-  return { id: entry.id, category: entry.category, title: entry.title };
+  // Check for contradictions before saving
+  let contradictions: ContradictionWarning[] = [];
+  try {
+    contradictions = kernel.knowledgeBase.checkContradictions(params.title, params.content, category);
+  } catch (err) {
+    return { error: `Contradiction check failed: ${(err as Error).message}` };
+  }
+
+  // Block save when contradictions exist unless force is strictly true
+  const forceOverride = params.force === true;
+  if (contradictions.length > 0 && !forceOverride) {
+    return {
+      blocked: true,
+      contradictions,
+      message: 'Similar knowledge entries found. Review contradictions and resubmit with force: true to save anyway.',
+    };
+  }
+
+  try {
+    const entry = kernel.knowledgeBase.save({
+      category,
+      title: params.title,
+      content: params.content,
+      tags: params.tags,
+      shareable: params.shareable,
+      source_type: sourceType,
+    });
+
+    return {
+      id: entry.id,
+      category: entry.category,
+      title: entry.title,
+      source_type: entry.source_type,
+      contradictions,
+      ...(forceOverride && contradictions.length > 0 ? { forced: true } : {}),
+    };
+  } catch (err) {
+    return { error: `Failed to save knowledge entry: ${(err as Error).message}` };
+  }
 }
 
 export async function handleSearchKnowledge(
   params: { query: string; category?: string; limit?: number },
   kernel: ToolKernel,
-): Promise<Array<{ id: string; category: string; title: string; content: string; relevance_score: number; tags: string[] }>> {
-  const category = params.category && (KNOWLEDGE_CATEGORIES as readonly string[]).includes(params.category)
-    ? params.category as KnowledgeCategory
-    : undefined;
+): Promise<Array<{ id: string; category: string; title: string; content: string; relevance_score: number; tags: string[]; source_type: string }> | { error: string }> {
+  if (params.category !== undefined && !(KNOWLEDGE_CATEGORIES as readonly string[]).includes(params.category)) {
+    return { error: `Invalid category: "${params.category}". Must be one of: ${KNOWLEDGE_CATEGORIES.join(', ')}` };
+  }
+  const category = params.category as KnowledgeCategory | undefined;
 
   const results = kernel.knowledgeBase.search(params.query, {
     category,
@@ -753,7 +809,37 @@ export async function handleSearchKnowledge(
     content: r.content,
     relevance_score: r.relevance_score,
     tags: r.tags,
+    source_type: r.source_type,
   }));
+}
+
+// ---------------------------------------------------------------------------
+// Profile handlers
+// ---------------------------------------------------------------------------
+
+export async function handleUpdateProfile(
+  params: { content?: string },
+  kernel: ToolKernel,
+): Promise<{ profile: string; source: string }> {
+  if (params.content && params.content.trim()) {
+    const profileContent = params.content.trim();
+    kernel.knowledgeBase.saveProfile(profileContent);
+    return { profile: profileContent, source: 'manual' };
+  }
+
+  const generated = kernel.knowledgeBase.generateProfile();
+  if (generated) {
+    kernel.knowledgeBase.saveProfile(generated);
+    return { profile: generated, source: 'auto-generated' };
+  }
+
+  // Nothing to generate — return existing profile or empty
+  const existing = kernel.knowledgeBase.getProfile();
+  if (existing) {
+    return { profile: existing.content, source: 'existing (no knowledge to auto-generate)' };
+  }
+
+  return { profile: '', source: 'empty (no knowledge yet)' };
 }
 
 // ---------------------------------------------------------------------------

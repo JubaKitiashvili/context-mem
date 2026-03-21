@@ -43,11 +43,20 @@ Check token usage. If over 80%, call restore_session to save state and reclaim c
 budget_status()
 ```
 
-### `save_knowledge` — For reusable patterns
-Store decisions, error fixes, API patterns in the persistent knowledge base.
+### `save_knowledge` — For reusable patterns (with contradiction detection)
+Store decisions, error fixes, API patterns in the persistent knowledge base. Automatically checks for contradictions with existing entries.
 
 ```
-save_knowledge(category: "decision|error|pattern|api|component", title: "...", content: "...", tags: ["..."])
+save_knowledge(category: "decision|error|pattern|api|component", title: "...", content: "...", tags: ["..."], source_type: "explicit|inferred|observed")
+```
+
+**source_type:** `explicit` = user stated directly, `inferred` = AI derived from context, `observed` = captured automatically
+
+### `update_profile` — Project quick profile
+Update the 3-5 line project summary shown at every session start. Auto-generates from knowledge if no content provided.
+
+```
+update_profile(content?: "Tech: React Native\nFocus: insurance app")
 ```
 
 ## Rules
@@ -56,6 +65,8 @@ save_knowledge(category: "decision|error|pattern|api|component", title: "...", c
 - ALWAYS `observe` outputs over 500 tokens — keep context clean
 - NEVER call `get` without first finding the ID via `search` or `timeline`
 - When `budget_status` shows >80%: save work, call `restore_session`
+- When `save_knowledge` returns `contradictions` — review before proceeding, do NOT silently overwrite
+- Use `source_type` when saving knowledge — trust: explicit > inferred > observed
 
 ## Priority Order
 
@@ -63,4 +74,5 @@ save_knowledge(category: "decision|error|pattern|api|component", title: "...", c
 2. `search` — before reading files
 3. `observe` — after large outputs
 4. `save_knowledge` — for decisions and patterns
-5. `budget_status` — periodically when context grows
+5. `update_profile` — when project context changes significantly
+6. `budget_status` — periodically when context grows

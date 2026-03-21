@@ -21,6 +21,7 @@ import {
   handleRestoreSession,
   handleEmitEvent,
   handleQueryEvents,
+  handleUpdateProfile,
 } from './tools.js';
 
 export function createMcpServer(kernel: ToolKernel): Server {
@@ -97,6 +98,9 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'query_events':
           result = await handleQueryEvents(params as Parameters<typeof handleQueryEvents>[0], kernel);
+          break;
+        case 'update_profile':
+          result = await handleUpdateProfile(params as Parameters<typeof handleUpdateProfile>[0], kernel);
           break;
         default:
           return {
