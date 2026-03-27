@@ -170,6 +170,9 @@ export async function init(_args: string[]): Promise<void> {
     setupMarkdownRules(projectDir, mdRules);
   }
 
+  // Setup Claude Code hooks in .claude/settings.local.json
+  setupClaudeCodeHooks(projectDir);
+
   console.log('Initialized context-mem in', projectDir);
   console.log('Config: .context-mem.json');
   console.log('Database: .context-mem/store.db');
@@ -251,6 +254,104 @@ function setupMarkdownRules(projectDir: string, mdRules: MarkdownRulesConfig): v
   // Append to existing file
   fs.appendFileSync(fullPath, '\n\n' + CONTEXT_MEM_RULES);
   console.log(`  + ${mdRules.name}: appended context-mem rules to ${mdRules.filePath}`);
+}
+
+/**
+ * Setup Claude Code hooks in .claude/settings.local.json
+ * This is critical — without hooks, journal, observation capture, and proactive injection don't work.
+ * Hooks need absolute paths to the hook scripts (resolved via npx or global install).
+ */
+function setupClaudeCodeHooks(projectDir: string): void {
+  const claudeDir = path.join(projectDir, '.claude');
+  const settingsPath = path.join(claudeDir, 'settings.local.json');
+
+  // Find the hooks directory — check npm global, npx cache, or local node_modules
+  let hooksDir: string | null = null;
+
+  // 1. Check local node_modules (if npm i context-mem was run)
+  const localHooks = path.join(projectDir, 'node_modules', 'context-mem', 'hooks');
+  if (fs.existsSync(localHooks)) {
+    hooksDir = localHooks;
+  }
+
+  // 2. Check if we're running from the context-mem package itself
+  if (!hooksDir) {
+    const selfHooks = path.join(__dirname, '..', '..', '..', 'hooks');
+    if (fs.existsSync(path.join(selfHooks, 'hooks.json'))) {
+      hooksDir = selfHooks;
+    }
+  }
+
+  // 3. Try to resolve via require.resolve
+  if (!hooksDir) {
+    try {
+      const pkgPath = require.resolve('context-mem/package.json');
+      const pkgDir = path.dirname(pkgPath);
+      if (fs.existsSync(path.join(pkgDir, 'hooks', 'hooks.json'))) {
+        hooksDir = path.join(pkgDir, 'hooks');
+      }
+    } catch {}
+  }
+
+  if (!hooksDir) {
+    console.log('  ! Could not locate context-mem hooks directory. Hooks not configured.');
+    console.log('    Run: npm i context-mem   then re-run: npx context-mem init');
+    return;
+  }
+
+  // Build hooks config for settings.local.json
+  const hookScripts = [
+    { name: 'session-start-hook.js', event: 'SessionStart', timeout: 5 },
+    { name: 'dashboard-autostart.js', event: 'SessionStart', timeout: 10 },
+    { name: 'activity-journal.js', event: 'PostToolUse', timeout: 3, matcher: 'Bash|Read|Write|Edit|Grep|Glob' },
+    { name: 'context-mem-hook.js', event: 'PostToolUse', timeout: 5, matcher: 'Bash|Read|Write|Edit|Grep|Glob' },
+    { name: 'proactive-inject.js', event: 'PostToolUse', timeout: 3, matcher: 'Bash|Read|Write|Edit|Grep|Glob' },
+    { name: 'dashboard-stop.js', event: 'Stop', timeout: 5 },
+  ];
+
+  // Group by event
+  const hooksByEvent: Record<string, Array<{ matcher?: string; hooks: Array<{ type: string; command: string; timeout: number }> }>> = {};
+
+  for (const h of hookScripts) {
+    const scriptPath = path.join(hooksDir, h.name);
+    if (!fs.existsSync(scriptPath)) continue;
+
+    if (!hooksByEvent[h.event]) hooksByEvent[h.event] = [];
+
+    const entry = hooksByEvent[h.event].find(e => e.matcher === (h.matcher || undefined));
+    if (entry) {
+      entry.hooks.push({ type: 'command', command: `node "${scriptPath}"`, timeout: h.timeout });
+    } else {
+      const newEntry: any = { hooks: [{ type: 'command', command: `node "${scriptPath}"`, timeout: h.timeout }] };
+      if (h.matcher) newEntry.matcher = h.matcher;
+      hooksByEvent[h.event].push(newEntry);
+    }
+  }
+
+  // Read or create settings.local.json
+  if (!fs.existsSync(claudeDir)) fs.mkdirSync(claudeDir, { recursive: true });
+
+  let settings: any = {};
+  if (fs.existsSync(settingsPath)) {
+    try {
+      settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    } catch {}
+  }
+
+  // Check if hooks already configured
+  if (settings.hooks && Object.keys(settings.hooks).some(k => JSON.stringify(settings.hooks[k]).includes('context-mem'))) {
+    return; // Already configured
+  }
+
+  // Merge hooks
+  if (!settings.hooks) settings.hooks = {};
+  for (const [event, entries] of Object.entries(hooksByEvent)) {
+    if (!settings.hooks[event]) settings.hooks[event] = [];
+    settings.hooks[event].push(...entries);
+  }
+
+  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
+  console.log('  + Claude Code: configured hooks in .claude/settings.local.json');
 }
 
 function setupEditorConfig(projectDir: string, editor: EditorConfig): void {

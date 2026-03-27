@@ -29,10 +29,13 @@ Context optimization for AI coding assistants. Zero LLM calls, zero cloud, zero 
 ## Installation
 
 ```bash
-/plugin install JubaKitiashvili/context-mem
+cd your-project
+npx context-mem init
 ```
 
-Or for development:
+This auto-detects your editor, creates MCP config, AI rules, and configures Claude Code hooks.
+
+For plugin mode (all features + auto-updates):
 ```bash
 claude --plugin-dir /path/to/context-mem
 ```

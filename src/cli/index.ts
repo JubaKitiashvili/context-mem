@@ -22,7 +22,7 @@ async function main() {
     case 'import': await importCommand(args); break;
     case 'create-summarizer': await createSummarizer(args); break;
     default:
-      console.log(`context-mem v2.0.1 — Context optimization for AI coding assistants
+      console.log(`context-mem v2.0.2 — Context optimization for AI coding assistants
 
 Usage:
   context-mem serve       Start MCP server (stdio transport)
