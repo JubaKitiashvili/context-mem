@@ -27,6 +27,14 @@
     "levenshtein": 0.15,
     "vector": 0.05
   },
+  "proactive_injection": {
+    "enabled": true,
+    "max_injections_per_minute": 3,
+    "file_cooldown_seconds": 300,
+    "relevance_threshold": 0.6,
+    "max_injection_chars": 500,
+    "inject_on": ["Read", "Edit"]
+  },
   "port": 51893,
   "db_path": ".context-mem/store.db"
 }

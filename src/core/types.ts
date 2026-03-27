@@ -329,6 +329,16 @@ export interface GlobalKnowledgeStoreConfig {
   auto_suggest?: boolean;  // default true
 }
 
+// Proactive injection config
+export interface ProactiveInjectionConfig {
+  enabled?: boolean;                    // default true
+  max_injections_per_minute?: number;   // default 3
+  file_cooldown_seconds?: number;       // default 300
+  relevance_threshold?: number;         // default 0.6
+  max_injection_chars?: number;         // default 500
+  inject_on?: string[];                 // default ['Read', 'Edit']
+}
+
 // Config
 export interface ContextMemConfig {
   storage: string;
@@ -357,6 +367,7 @@ export interface ContextMemConfig {
   };
   search_weights?: SearchWeights;
   global_knowledge?: GlobalKnowledgeStoreConfig;
+  proactive_injection?: ProactiveInjectionConfig;
   port: number;
   api_port: number;
   db_path: string;

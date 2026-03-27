@@ -30,6 +30,11 @@
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/context-mem-hook.js\"",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/proactive-inject.js\"",
+            "timeout": 3
           }
         ]
       }
