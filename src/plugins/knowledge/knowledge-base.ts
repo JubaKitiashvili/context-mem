@@ -1,5 +1,6 @@
 import type { StoragePlugin, KnowledgeEntry, KnowledgeCategory, SourceType, ContradictionWarning } from '../../core/types.js';
 import { ulid } from '../../core/utils.js';
+import { sanitizeFTS5 } from '../search/fts5-utils.js';
 
 // Stopwords for contradiction detection word-overlap filter
 const STOPWORDS = new Set([
@@ -7,11 +8,6 @@ const STOPWORDS = new Set([
   'use', 'get', 'set', 'add', 'fix', 'has', 'had', 'its', 'let', 'say', 'she', 'too', 'new',
   'now', 'old', 'see', 'way', 'may', 'who', 'did', 'got', 'try', 'run', 'api', 'app',
 ]);
-
-// Sanitize FTS5 queries — remove all operator characters, preserve Unicode
-function sanitizeFTS5(query: string): string {
-  return query.replace(/["*()\-^:+{}]/g, ' ').replace(/\b(AND|OR|NOT|NEAR)\b/gi, ' ').trim();
-}
 
 export class KnowledgeBase {
   constructor(private storage: StoragePlugin) {}
@@ -86,7 +82,8 @@ export class KnowledgeBase {
         // Check if texts share significant non-stopword words (3+ chars)
         const newWords = sourceText.split(/\s+/).filter(w => w.length >= 3 && !STOPWORDS.has(w));
         const existingWords = compareText.split(/\s+/).filter(w => w.length >= 3 && !STOPWORDS.has(w));
-        const overlap = newWords.filter(w => existingWords.includes(w));
+        const existingWordSet = new Set(existingWords);
+        const overlap = newWords.filter(w => existingWordSet.has(w));
         return overlap.length >= 2;
       });
     }
@@ -166,7 +163,7 @@ export class KnowledgeBase {
   saveProfile(content: string): void {
     this.storage.exec(
       'INSERT OR REPLACE INTO project_profile (id, content, updated_at) VALUES (1, ?, ?)',
-      [content, Math.floor(Date.now() / 1000)]
+      [content, Date.now()]
     );
   }
 

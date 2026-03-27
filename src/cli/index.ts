@@ -10,16 +10,17 @@ import { importCommand } from './commands/import.js';
 const command = process.argv[2];
 const args = process.argv.slice(3);
 
-switch (command) {
-  case 'serve': serve(args); break;
-  case 'init': init(args); break;
-  case 'status': status(args); break;
-  case 'doctor': doctor(args); break;
-  case 'dashboard': dashboard(args); break;
-  case 'export': exportCommand(args); break;
-  case 'import': importCommand(args); break;
-  default:
-    console.log(`context-mem v0.4.0 — Context optimization for AI coding assistants
+async function main() {
+  switch (command) {
+    case 'serve': await serve(args); break;
+    case 'init': await init(args); break;
+    case 'status': await status(args); break;
+    case 'doctor': await doctor(args); break;
+    case 'dashboard': await dashboard(args); break;
+    case 'export': await exportCommand(args); break;
+    case 'import': await importCommand(args); break;
+    default:
+      console.log(`context-mem v0.6.0 — Context optimization for AI coding assistants
 
 Usage:
   context-mem serve       Start MCP server (stdio transport)
@@ -30,5 +31,11 @@ Usage:
   context-mem export      Export knowledge, snapshots, events as JSON
   context-mem import      Import data from JSON export file
 `);
-    break;
+      break;
+  }
 }
+
+main().catch(err => {
+  console.error('context-mem error:', err.message || err);
+  process.exit(1);
+});
