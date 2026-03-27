@@ -926,7 +926,7 @@ export async function handleRestoreSession(
 ): Promise<{ content: Array<{ type: string; text: string }> } | { error: string }> {
   const sessionId = (params.session_id as string) || kernel.sessionId;
 
-  const result = kernel.sessionManager.restoreSnapshot(sessionId);
+  const result = await kernel.sessionManager.restoreSnapshot(sessionId);
   if (!result) {
     return { content: [{ type: 'text', text: 'No saved session found. Starting fresh.' }] };
   }

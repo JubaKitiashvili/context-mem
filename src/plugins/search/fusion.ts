@@ -44,19 +44,17 @@ export class SearchFusion implements SearchOrchestrator {
    * Evict expired entries from the cache.
    */
   private evictExpired(now: number): void {
-    if (this.searchCache.size <= this.CACHE_MAX_ENTRIES) {
-      // Only do a full scan if cache is large or we want to be thorough
-      for (const [key, entry] of this.searchCache) {
-        if (now - entry.timestamp > this.CACHE_TTL_MS) {
-          this.searchCache.delete(key);
-        }
+    // Evict expired entries
+    for (const [key, entry] of this.searchCache) {
+      if (now - entry.timestamp > this.CACHE_TTL_MS) {
+        this.searchCache.delete(key);
       }
-    } else {
-      // Cache too large — evict all expired, then oldest if still over limit
-      for (const [key, entry] of this.searchCache) {
-        if (now - entry.timestamp > this.CACHE_TTL_MS) {
-          this.searchCache.delete(key);
-        }
+    }
+    // If still over cap, trim oldest entries
+    if (this.searchCache.size > this.CACHE_MAX_ENTRIES) {
+      const sorted = [...this.searchCache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
+      for (const [k] of sorted.slice(0, this.searchCache.size - this.CACHE_MAX_ENTRIES)) {
+        this.searchCache.delete(k);
       }
     }
   }
