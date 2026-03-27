@@ -1,6 +1,6 @@
 {
   "name": "context-mem",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Context optimization for AI coding assistants — 90%+ token savings via summarization, search, and progressive disclosure. Zero LLM calls, zero cloud, zero cost.",
   "author": "JubaKitiashvili",
   "repository": "https://github.com/JubaKitiashvili/context-mem",

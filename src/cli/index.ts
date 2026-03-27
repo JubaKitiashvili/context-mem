@@ -20,7 +20,7 @@ async function main() {
     case 'export': await exportCommand(args); break;
     case 'import': await importCommand(args); break;
     default:
-      console.log(`context-mem v0.7.0 — Context optimization for AI coding assistants
+      console.log(`context-mem v0.8.0 — Context optimization for AI coding assistants
 
 Usage:
   context-mem serve       Start MCP server (stdio transport)
