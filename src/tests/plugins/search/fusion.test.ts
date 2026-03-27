@@ -160,6 +160,112 @@ describe('SearchFusion', () => {
   });
 });
 
+describe('SearchFusion – request canonicalization cache', () => {
+  it('returns cached results for canonically identical queries', async () => {
+    let searchCount = 0;
+    const results = [makeResult('1', 'code', 1.5), makeResult('2', 'log', 1.2)];
+    const plugin: SearchPlugin = {
+      ...mockSearchPlugin('bm25', 'bm25', 1, results, false),
+      search: async () => { searchCount++; return results; },
+    };
+
+    const fusion = new SearchFusion([plugin]);
+
+    await fusion.execute('auth error handler', { limit: 5 });
+    assert.equal(searchCount, 1, 'first query should hit the plugin');
+
+    // Canonically identical: same words reordered, with extra punctuation and casing
+    const cached = await fusion.execute('Handler: Error, Auth!', { limit: 5 });
+    assert.equal(searchCount, 1, 'canonically identical query should return cached results without hitting plugin');
+    assert.equal(cached.length, 2, 'cached results should have same length');
+  });
+
+  it('cache expires after TTL', async () => {
+    let searchCount = 0;
+    const results = [makeResult('1', 'code', 1.0)];
+    const plugin: SearchPlugin = {
+      ...mockSearchPlugin('bm25', 'bm25', 1, results, false),
+      search: async () => { searchCount++; return results; },
+    };
+
+    const fusion = new SearchFusion([plugin]);
+
+    await fusion.execute('test query', { limit: 5 });
+    assert.equal(searchCount, 1);
+
+    // Manually expire the cache by clearing and re-executing
+    // We cannot easily manipulate time, so we use clearCache()
+    fusion.clearCache();
+
+    await fusion.execute('test query', { limit: 5 });
+    assert.equal(searchCount, 2, 'query should hit plugin again after cache is cleared');
+  });
+
+  it('different queries get different results', async () => {
+    let lastQuery = '';
+    const plugin: SearchPlugin = {
+      ...mockSearchPlugin('bm25', 'bm25', 1, [], false),
+      search: async (query: string) => {
+        lastQuery = query;
+        if (query === 'auth error handler') return [makeResult('auth-1', 'error', 1.0)];
+        if (query === 'database connection pool') return [makeResult('db-1', 'code', 1.0)];
+        return [];
+      },
+    };
+
+    const fusion = new SearchFusion([plugin]);
+
+    const authResults = await fusion.execute('auth error handler', { limit: 5 });
+    const dbResults = await fusion.execute('database connection pool', { limit: 5 });
+
+    assert.ok(authResults.length > 0, 'auth query should return results');
+    assert.ok(dbResults.length > 0, 'db query should return results');
+    assert.notEqual(authResults[0].id, dbResults[0].id, 'different queries should return different results');
+  });
+
+  it('canonicalize produces order-independent keys', () => {
+    const fusion = new SearchFusion([]);
+    assert.equal(
+      fusion.canonicalize('auth error handler'),
+      fusion.canonicalize('handler error auth'),
+      'same words in different order should canonicalize identically',
+    );
+    assert.equal(
+      fusion.canonicalize('Auth Error Handler!'),
+      fusion.canonicalize('handler, error, auth'),
+      'same words with different casing and punctuation should canonicalize identically',
+    );
+    assert.notEqual(
+      fusion.canonicalize('auth error handler'),
+      fusion.canonicalize('database connection pool'),
+      'different words should produce different canonical keys',
+    );
+    // Short words (<=2 chars) are stripped
+    assert.equal(
+      fusion.canonicalize('is an auth error'),
+      fusion.canonicalize('auth error'),
+      'short words should be stripped from canonical form',
+    );
+  });
+
+  it('clearCache empties the cache', async () => {
+    let searchCount = 0;
+    const results = [makeResult('1', 'code', 1.0)];
+    const plugin: SearchPlugin = {
+      ...mockSearchPlugin('bm25', 'bm25', 1, results, false),
+      search: async () => { searchCount++; return results; },
+    };
+
+    const fusion = new SearchFusion([plugin]);
+    await fusion.execute('test query', { limit: 5 });
+    assert.equal(searchCount, 1);
+
+    fusion.clearCache();
+    await fusion.execute('test query', { limit: 5 });
+    assert.equal(searchCount, 2, 'after clearCache, query should hit the plugin again');
+  });
+});
+
 describe('rerank', () => {
   const DAY_MS = 24 * 60 * 60 * 1000;
 

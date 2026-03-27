@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 7;
+export const LATEST_SCHEMA_VERSION = 8;
 
 export const migrations: Migration[] = [
   {
@@ -297,6 +297,16 @@ export const migrations: Migration[] = [
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (7, unixepoch(), 'Add last_accessed timestamp to knowledge entries for relevance decay');
+    `,
+  },
+  {
+    version: 8,
+    description: 'Add stale flag to knowledge entries for Dreamer background validation',
+    up: `
+      ALTER TABLE knowledge ADD COLUMN stale INTEGER NOT NULL DEFAULT 0;
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (8, unixepoch(), 'Add stale flag to knowledge entries for Dreamer background validation');
     `,
   },
 ];

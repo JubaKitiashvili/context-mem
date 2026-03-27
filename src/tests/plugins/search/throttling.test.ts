@@ -43,6 +43,7 @@ describe('SearchFusion throttling', () => {
 
   it('first 3 searches return full results', async () => {
     for (let i = 0; i < 3; i++) {
+      fusion.clearCache(); // clear cache so each call actually hits the throttle path
       const results = await fusion.execute('test query', opts);
       assert.strictEqual(results.length, 3, `search ${i + 1} should return 3 results`);
       assert.ok(results.every(r => !r.id.startsWith('__')), 'no synthetic results');
@@ -52,11 +53,13 @@ describe('SearchFusion throttling', () => {
   it('searches 4-8 return 1 result + warning', async () => {
     // Exhaust the first 3 full searches
     for (let i = 0; i < 3; i++) {
+      fusion.clearCache();
       await fusion.execute('test query', opts);
     }
 
     // Searches 4 through 8 should be limited
     for (let i = 4; i <= 8; i++) {
+      fusion.clearCache();
       const results = await fusion.execute('test query', opts);
       assert.strictEqual(results.length, 2, `search ${i} should return 2 entries (1 result + warning)`);
       assert.strictEqual(results[0].id, 'r1', 'first result is top-scored');
@@ -68,10 +71,12 @@ describe('SearchFusion throttling', () => {
   it('search 9+ returns blocked message', async () => {
     // Exhaust 8 searches
     for (let i = 0; i < 8; i++) {
+      fusion.clearCache();
       await fusion.execute('test query', opts);
     }
 
     // Search 9 should be blocked
+    fusion.clearCache();
     const results = await fusion.execute('test query', opts);
     assert.strictEqual(results.length, 1);
     assert.strictEqual(results[0].id, '__throttled__');
@@ -82,6 +87,7 @@ describe('SearchFusion throttling', () => {
   it('window resets after timeout', async () => {
     // Exhaust 8 searches so next would be blocked
     for (let i = 0; i < 8; i++) {
+      fusion.clearCache();
       await fusion.execute('test query', opts);
     }
 
@@ -89,6 +95,7 @@ describe('SearchFusion throttling', () => {
     (fusion as any).searchWindowStart = Date.now() - 61_000;
 
     // After window expires, counter should reset — full results again
+    fusion.clearCache();
     const results = await fusion.execute('test query', opts);
     assert.strictEqual(results.length, 3, 'full results after window expires');
     assert.ok(results.every(r => !r.id.startsWith('__')), 'no synthetic results after window reset');
@@ -97,15 +104,18 @@ describe('SearchFusion throttling', () => {
   it('resetThrottle clears counter', async () => {
     // Use up all searches
     for (let i = 0; i < 9; i++) {
+      fusion.clearCache();
       await fusion.execute('test query', opts);
     }
 
     // Verify blocked
+    fusion.clearCache();
     let results = await fusion.execute('test query', opts);
     assert.strictEqual(results[0].id, '__throttled__');
 
     // Reset and verify full results again
     fusion.resetThrottle();
+    fusion.clearCache();
     results = await fusion.execute('test query', opts);
     assert.strictEqual(results.length, 3);
     assert.ok(results.every(r => !r.id.startsWith('__')), 'full results after reset');

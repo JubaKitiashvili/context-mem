@@ -301,6 +301,7 @@ export interface ContextMemConfig {
   privacy: {
     strip_tags: boolean;
     redact_patterns: string[];
+    disabled_detectors?: string[];
   };
   token_economics: boolean;
   lifecycle: {

@@ -44,6 +44,7 @@ import { SessionManager } from './session.js';
 import { ContentStore } from '../plugins/storage/content-store.js';
 import { KnowledgeBase } from '../plugins/knowledge/knowledge-base.js';
 import { LifecycleManager } from './lifecycle.js';
+import { Dreamer } from './dreamer.js';
 import type { VectorSearch } from '../plugins/search/vector.js';
 import type {
   SessionContext,
@@ -68,6 +69,7 @@ export class Kernel {
   sessionManager!: SessionManager;
   contentStore!: ContentStore;
   knowledgeBase!: KnowledgeBase;
+  dreamer!: Dreamer;
 
   constructor(projectDir: string) {
     this.projectDir = projectDir;
@@ -99,6 +101,10 @@ export class Kernel {
     this.sessionManager = new SessionManager(this.storage, this.eventTracker);
     this.contentStore = new ContentStore(this.storage);
     this.knowledgeBase = new KnowledgeBase(this.storage);
+
+    // 3b. Dreamer background agent
+    this.dreamer = new Dreamer(this.knowledgeBase, this.storage);
+    this.dreamer.start();
 
     // 4. Pipeline (with budget + session integration)
     this.pipeline = new Pipeline(this.registry, this.storage, privacy, this.session.session_id);
@@ -342,6 +348,11 @@ export class Kernel {
   }
 
   async stop(): Promise<void> {
+    // Stop Dreamer background agent
+    if (this.dreamer) {
+      this.dreamer.stop();
+    }
+
     // Save session snapshot before shutdown
     if (this.storage && this.sessionManager) {
       try {
