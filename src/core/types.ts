@@ -321,6 +321,48 @@ export interface SessionContext {
   started_at: number;
 }
 
+// Session chaining
+export interface SessionChain {
+  chain_id: string;
+  session_id: string;
+  parent_session: string | null;
+  project_path: string;
+  created_at: string;
+  handoff_reason: 'auto' | 'manual' | 'compaction' | 'session_end';
+  summary: string | null;
+  token_estimate: number;
+}
+
+export interface HandoffResult {
+  continuation_prompt: string;
+  chain_id: string;
+  snapshot_id: string;
+  token_estimate: TokenEstimate;
+}
+
+export interface TokenEstimate {
+  used: number;
+  limit: number;
+  percentage: number;
+}
+
+export interface SessionContinuityConfig {
+  enabled: boolean;
+  auto_restore_threshold_hours: number;
+  light_restore_threshold_hours: number;
+  snapshot_max_bytes: number;
+  recovery_injection_max_bytes: number;
+  recovery_cooldown_minutes: number;
+}
+
+export interface TokenEstimationConfig {
+  model_context_limit: number;
+  bytes_per_token: number;
+  system_prompt_tokens: number;
+  tool_definitions_tokens: number;
+  per_message_overhead: number;
+}
+
 // Search fusion weight config
 export interface SearchWeights {
   bm25?: number;
@@ -381,6 +423,8 @@ export interface ContextMemConfig {
   search_weights?: SearchWeights;
   global_knowledge?: GlobalKnowledgeStoreConfig;
   proactive_injection?: ProactiveInjectionConfig;
+  session_continuity?: SessionContinuityConfig;
+  token_estimation?: TokenEstimationConfig;
   port: number;
   api_port: number;
   db_path: string;
@@ -418,4 +462,19 @@ export const DEFAULT_CONFIG: ContextMemConfig = deepFreeze({
   api_port: 51894,
   db_path: '.context-mem/store.db',
   execute_enabled: false,
+  session_continuity: {
+    enabled: true,
+    auto_restore_threshold_hours: 2,
+    light_restore_threshold_hours: 24,
+    snapshot_max_bytes: 16384,
+    recovery_injection_max_bytes: 2048,
+    recovery_cooldown_minutes: 10,
+  },
+  token_estimation: {
+    model_context_limit: 1_000_000,
+    bytes_per_token: 4,
+    system_prompt_tokens: 4000,
+    tool_definitions_tokens: 2000,
+    per_message_overhead: 500,
+  },
 });
