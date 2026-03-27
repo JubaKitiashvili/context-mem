@@ -499,7 +499,7 @@ function handleApi(req, res) {
         break;
       case '/api/timeline':
         data = getTimeline(
-          parseInt(url.searchParams.get('limit') || '50', 10),
+          Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 1000),
           url.searchParams.get('type') || null,
           url.searchParams.get('session') || null
         );
@@ -511,7 +511,7 @@ function handleApi(req, res) {
         data = getCompressionByType();
         break;
       case '/api/top-files':
-        data = getTopFiles(parseInt(url.searchParams.get('limit') || '10', 10));
+        data = getTopFiles(Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 1000));
         break;
       case '/api/privacy':
         data = getPrivacyBreakdown();
@@ -526,16 +526,16 @@ function handleApi(req, res) {
         res.writeHead(200, {
           'Content-Type': 'application/json',
           'Content-Disposition': 'attachment; filename="context-mem-export.json"',
-          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Origin': 'http://127.0.0.1:' + PORT,
         });
         res.end(JSON.stringify(exportObservations(
-          parseInt(url.searchParams.get('limit') || '1000', 10)
+          Math.min(parseInt(url.searchParams.get('limit') || '1000', 10), 10000)
         ), null, 2));
         return;
       case '/api/search':
         data = searchObservations(
           url.searchParams.get('q') || '',
-          parseInt(url.searchParams.get('limit') || '20', 10),
+          Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 1000),
           url.searchParams.get('type') || null
         );
         break;
@@ -547,7 +547,7 @@ function handleApi(req, res) {
         break;
       case '/api/knowledge':
         data = getKnowledgeEntries(
-          parseInt(url.searchParams.get('limit') || '20', 10),
+          Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 1000),
           url.searchParams.get('category') || null
         );
         break;
@@ -559,7 +559,7 @@ function handleApi(req, res) {
         break;
       case '/api/events':
         data = getEvents(
-          parseInt(url.searchParams.get('limit') || '50', 10),
+          Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 1000),
           url.searchParams.get('session') || null
         );
         break;
@@ -605,7 +605,7 @@ function handleApi(req, res) {
       }
       case '/api/run-init': {
         if (req.method !== 'POST') {
-          res.writeHead(405, { 'Content-Type': 'application/json' });
+          res.writeHead(405, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://127.0.0.1:' + PORT });
           res.end(JSON.stringify({ error: 'POST required' }));
           return;
         }
@@ -711,7 +711,7 @@ function handleApi(req, res) {
       }
       case '/api/enable-vector': {
         if (req.method !== 'POST') {
-          res.writeHead(405, { 'Content-Type': 'application/json' });
+          res.writeHead(405, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://127.0.0.1:' + PORT });
           res.end(JSON.stringify({ error: 'POST required' }));
           return;
         }
@@ -746,14 +746,14 @@ function handleApi(req, res) {
         break;
       }
       default:
-        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.writeHead(404, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://127.0.0.1:' + PORT });
         res.end(JSON.stringify({ error: 'Not found' }));
         return;
     }
-    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://127.0.0.1:' + PORT });
     res.end(JSON.stringify(data));
   } catch (err) {
-    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://127.0.0.1:' + PORT });
     res.end(JSON.stringify({ error: err.message }));
   }
 }
@@ -3614,11 +3614,9 @@ server.listen(PORT, '127.0.0.1', () => {
   // Auto-open in browser (unless --no-open)
   if (!NO_OPEN) {
     try {
-      const { execSync } = require('child_process');
-      const platform = process.platform;
-      if (platform === 'darwin') execSync(`open ${url}`);
-      else if (platform === 'linux') execSync(`xdg-open ${url}`);
-      else if (platform === 'win32') execSync(`start ${url}`);
+      const { spawn: spawnProc } = require('child_process');
+      const opener = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
+      spawnProc(opener, [url], { detached: true, stdio: 'ignore', shell: process.platform === 'win32' }).unref();
     } catch {}
   }
 });

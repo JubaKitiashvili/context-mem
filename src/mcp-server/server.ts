@@ -103,10 +103,8 @@ export function createMcpServer(kernel: ToolKernel): Server {
           result = await handleUpdateProfile(params as Parameters<typeof handleUpdateProfile>[0], kernel);
           break;
         default:
-          return {
-            content: [{ type: 'text', text: `Unknown tool: ${name}` }],
-            isError: true,
-          };
+          console.error(`context-mem: Unknown MCP tool requested: ${name}`);
+          return { content: [{ type: 'text', text: JSON.stringify({ error: `Unknown tool: ${name}` }) }], isError: true };
       }
 
       // If the handler returns a pre-formatted MCP content response, pass through directly
@@ -118,10 +116,9 @@ export function createMcpServer(kernel: ToolKernel): Server {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
       };
     } catch (err) {
-      return {
-        content: [{ type: 'text', text: `Error: ${(err as Error).message}` }],
-        isError: true,
-      };
+      const msg = err instanceof Error ? err.message : 'Internal error';
+      const sanitized = msg.replace(/\/(?:Users|home|var|tmp|opt|root|private)\/[\w\-\/.]+/g, '[path]');
+      return { content: [{ type: 'text', text: JSON.stringify({ error: sanitized }) }], isError: true };
     }
   });
 

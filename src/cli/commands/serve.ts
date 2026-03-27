@@ -240,13 +240,15 @@ export async function serve(_args: string[]): Promise<void> {
 }
 
 async function startDashboard(projectDir: string): Promise<ChildProcess | null> {
+  const dashPort = parseInt(process.env.CONTEXT_MEM_DASHBOARD_PORT || '51893', 10);
+
   // Check if dashboard is already running (singleton)
   try {
-    const res = await fetch('http://localhost:51893/api/health', {
+    const res = await fetch(`http://localhost:${dashPort}/api/health`, {
       signal: AbortSignal.timeout(2000),
     });
     if (res.ok) {
-      console.error('context-mem: Dashboard already running at http://localhost:51893');
+      console.error(`context-mem: Dashboard already running at http://localhost:${dashPort}`);
       return null;
     }
   } catch {
@@ -257,13 +259,13 @@ async function startDashboard(projectDir: string): Promise<ChildProcess | null> 
   const serverScript = path.join(__dirname, '..', '..', '..', 'dashboard', 'server.js');
   if (!fs.existsSync(serverScript)) return null;
 
-  const child = spawn('node', [serverScript, '--port', '51893', '--no-open', '--multi'], {
+  const child = spawn('node', [serverScript, '--port', String(dashPort), '--no-open', '--multi'], {
     stdio: 'ignore',
     env: { ...process.env },
   });
   child.unref();
   child.on('error', () => {}); // Prevent unhandled error if spawn fails
 
-  console.error('context-mem: Dashboard available at http://localhost:51893');
+  console.error(`context-mem: Dashboard available at http://localhost:${dashPort}`);
   return child;
 }

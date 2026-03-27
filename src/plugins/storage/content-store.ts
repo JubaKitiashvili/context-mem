@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { StoragePlugin } from '../../core/types.js';
+import { sanitizeFTS5 } from '../search/fts5-utils.js';
 
 const MAX_SEARCH_RESPONSE = 1536; // 1.5KB max per search response
 const SNIPPET_THRESHOLD = 350;     // Extract snippet if chunk > this size
@@ -94,9 +95,9 @@ export class ContentStore {
     const limit = opts.limit || 5;
 
     // FTS5 search
-    // Remove special characters; also generate split variants for underscored/camelCase identifiers
+    // Sanitize FTS5 operators, then generate split variants for underscored/camelCase identifiers
     // e.g., "_layout" → "layout", "getToken" → "getToken OR get OR Token"
-    const base = query.replace(/[^\w\s]/g, ' ').trim();
+    const base = sanitizeFTS5(query);
     if (!base) return [];
     const split = base
       .replace(/_/g, ' ')

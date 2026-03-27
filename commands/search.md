@@ -2,12 +2,12 @@
 name: search
 description: Search context-mem observations — find past code, errors, decisions, and context
 argument-hint: <query>
-allowed-tools: Bash, mcp__context-mem__search, mcp__context-mem__get
+allowed-tools: Bash
 ---
 
 Search stored observations using context-mem's 4-layer search (BM25 + Trigram + Levenshtein + Vector).
 
-Use the `search` MCP tool if available. If not, fall back to direct database query:
+Query the database directly using BM25 full-text search:
 
 ```bash
 node -e "
@@ -24,4 +24,4 @@ db.close();
 
 Replace `ARGUMENTS` with the user's search query.
 
-Present results clearly with type badges and snippets. If results are found, offer to show full content with the `get` MCP tool or `/context-mem:status` for more details.
+Present results clearly with type badges and snippets. If results are found, offer to show full content or `/context-mem:status` for more details.

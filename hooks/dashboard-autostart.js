@@ -61,6 +61,15 @@ async function main() {
     process.exit(0);
   }
 
+  // Atomic lock — only one process can create this file
+  const lockFile = PID_FILE + '.lock';
+  try {
+    fs.writeFileSync(lockFile, String(process.pid), { flag: 'wx' });
+  } catch {
+    // Another process is starting the dashboard
+    process.exit(0);
+  }
+
   // Start dashboard in background
   const child = spawn('node', [
     SERVER_SCRIPT,
@@ -79,6 +88,7 @@ async function main() {
   // Write PID
   fs.mkdirSync(path.dirname(PID_FILE), { recursive: true });
   fs.writeFileSync(PID_FILE, String(child.pid));
+  try { fs.unlinkSync(lockFile); } catch {}
 
   // Output for hook feedback
   console.log(JSON.stringify({
@@ -86,4 +96,7 @@ async function main() {
   }));
 }
 
-main().catch(() => process.exit(0));
+main().catch(() => {
+  try { fs.unlinkSync(PID_FILE + '.lock'); } catch {}
+  process.exit(0);
+});

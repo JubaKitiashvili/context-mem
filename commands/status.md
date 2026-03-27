@@ -1,20 +1,14 @@
 ---
 name: status
 description: Show context-mem status — observation count, token savings, search capabilities, and dashboard link
-allowed-tools: Bash, Read, mcp__context-mem__stats, mcp__context-mem__budget_status
+allowed-tools: Bash, Read
 ---
 
 Show the current context-mem status for this project.
 
 1. Read `.context-mem.json` to check configuration (search plugins, lifecycle settings)
 
-2. If the context-mem MCP server is running, call the `stats` MCP tool to get:
-   - Total observations stored
-   - Token savings percentage
-   - Searches performed
-   - Database size
-
-3. If the MCP server is not available, read the database directly:
+2. Read the database directly for stats:
    ```bash
    node -e "
    const Database = require('better-sqlite3');

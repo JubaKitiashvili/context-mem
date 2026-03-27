@@ -22,7 +22,8 @@ AI coding assistants waste 60–80% of their context window on raw tool outputs 
 | **LLM Calls** | None (free, deterministic) | Every observation (~$57/mo) | None | None |
 | **Activity Journal** | File edits, commands, reads | No | No | No |
 | **Cross-Session Memory** | Journal + snapshots + DB | LLM summaries | Yes | No |
-| **Knowledge Base** | 5 categories, auto-extraction, relevance decay | No | No | No |
+| **Knowledge Base** | 5 categories, auto-extraction, relevance decay, contradiction detection, source tracking | No | No | No |
+| **Quick Profile** | Auto-generated project profile on session start | No | No | No |
 | **Budget Management** | Configurable limits + overflow | No | Basic throttling | No |
 | **Event Tracking** | P1–P4, error-fix detection | No | Session events only | No |
 | **Dashboard** | Real-time web UI | Basic view | No | No |
@@ -149,7 +150,9 @@ extensions:
 
 **Plugin Commands** — `/context-mem:status` (stats + dashboard link), `/context-mem:search <query>` (search observations), `/context-mem:journal` (show activity log).
 
-**Knowledge Base** — Save and search patterns, decisions, errors, APIs, components. Time-decay relevance scoring with automatic archival. **Auto-extraction** — decisions, errors, commits, and frequently-accessed files are automatically saved to the knowledge base without manual intervention.
+**Knowledge Base** — Save and search patterns, decisions, errors, APIs, components. Time-decay relevance scoring with automatic archival. **Auto-extraction** — decisions, errors, commits, and frequently-accessed files are automatically saved to the knowledge base without manual intervention. **Contradiction detection** — automatically flags conflicting knowledge when saving new entries. **Source tracking** — records where each entry came from (manual, inferred, external).
+
+**Quick Profile** — Generates a concise project profile from accumulated knowledge. Injected on session start so the AI assistant has immediate project context without searching.
 
 **Export/Import** — Transfer knowledge between machines: `context-mem export` dumps knowledge, snapshots, and events as JSON; `context-mem import` restores them in another project. Merge or replace modes.
 
@@ -191,7 +194,7 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
 ## MCP Tools
 
 <details>
-<summary>17 tools available via MCP protocol</summary>
+<summary>18 tools available via MCP protocol</summary>
 
 | Tool | Description |
 |---|---|
@@ -212,6 +215,7 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
 | `restore_session` | Restore session from snapshot |
 | `emit_event` | Emit a context event |
 | `query_events` | Query events with filters |
+| `update_profile` | Generate or retrieve project profile |
 
 </details>
 

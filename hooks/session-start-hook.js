@@ -278,12 +278,13 @@ if (dbCtx) {
 }
 
 // 3. Dashboard
+const dashPort = parseInt(process.env.CONTEXT_MEM_DASHBOARD_PORT || '51893', 10);
 output.push('');
-output.push('Dashboard: http://localhost:51893');
+output.push(`Dashboard: http://localhost:${dashPort}`);
 
 if (output.length > 2) {
   console.log(output.join('\n'));
 } else {
   console.log('context-mem configured — no data yet.');
-  console.log('Dashboard: http://localhost:51893');
+  console.log(`Dashboard: http://localhost:${dashPort}`);
 }

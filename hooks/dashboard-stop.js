@@ -24,7 +24,13 @@ if (!pid) {
 }
 
 try {
-  process.kill(pid, 'SIGTERM');
+  if (process.platform === 'win32') {
+    try {
+      require('child_process').execSync(`taskkill /PID ${pid} /F`, { stdio: 'ignore' });
+    } catch {}
+  } else {
+    process.kill(pid, 'SIGTERM');
+  }
   fs.unlinkSync(PID_FILE);
 } catch {
   // Process already dead

@@ -293,7 +293,7 @@ export const toolDefinitions: ToolDefinition[] = [
       properties: {
         session_id: { type: 'string', description: 'Session ID to restore' },
       },
-      required: ['session_id'],
+      required: [],
     },
   },
   // Event tools
@@ -375,6 +375,9 @@ export async function handleSummarize(
   if (!params.content || typeof params.content !== 'string') {
     return { error: 'content is required and must be a non-empty string' };
   }
+  if (params.content.length > MAX_CONTENT_LENGTH) {
+    return { error: `content exceeds maximum length of ${MAX_CONTENT_LENGTH} characters` };
+  }
 
   const summarizers = kernel.registry.getAll('summarizer') as SummarizerPlugin[];
   const matching = summarizers.find(s => s.detect(params.content));
@@ -405,6 +408,10 @@ export async function handleSearch(
   params: { query: string; type?: string; limit?: number },
   kernel: ToolKernel,
 ): Promise<Array<{ id: string; title: string; snippet: string; relevance_score: number; timestamp: number }>> {
+  if (!params.query || typeof params.query !== 'string' || !params.query.trim()) {
+    return { content: [{ type: 'text', text: JSON.stringify({ error: 'query must be a non-empty string' }) }], isError: true } as any;
+  }
+
   const opts: { type_filter?: ObservationType[]; limit?: number } = {
     limit: validateLimit(params.limit ?? 5),
   };
@@ -529,6 +536,10 @@ export async function handleGet(
   params: { id: string },
   kernel: ToolKernel,
 ): Promise<ObservationDetail | { error: string }> {
+  if (!params.id || typeof params.id !== 'string') {
+    return { content: [{ type: 'text', text: JSON.stringify({ error: 'id is required and must be a non-empty string' }) }], isError: true } as any;
+  }
+
   const row = kernel.storage
     .prepare('SELECT id, type, content, summary, metadata FROM observations WHERE id = ?')
     .get(params.id) as { id: string; type: string; content: string; summary: string | null; metadata: string } | undefined;
@@ -625,10 +636,11 @@ export async function handleConfigure(
     return { error: `Key "${params.key}" is not in the mutable config allowlist` };
   }
 
-  // Apply mutable config updates via key path
+  // Apply mutable config updates via key path (deep clone to avoid mutating frozen config)
+  const configClone = JSON.parse(JSON.stringify(kernel.config));
   const keys = segments;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let cursor: any = kernel.config;
+  let cursor: any = configClone;
   for (let i = 0; i < keys.length - 1; i++) {
     if (typeof cursor[keys[i]] !== 'object' || cursor[keys[i]] === null) {
       cursor[keys[i]] = {};
@@ -636,6 +648,7 @@ export async function handleConfigure(
     cursor = cursor[keys[i]];
   }
   cursor[keys[keys.length - 1]] = params.value;
+  Object.assign(kernel, { config: configClone });
 
   return { updated: true, key: params.key, value: params.value };
 }
@@ -647,6 +660,10 @@ export async function handleExecute(
   params: { code: string; language?: string },
   kernel: ToolKernel,
 ): Promise<{ stdout: string; stderr: string; exit_code: number; duration_ms: number } | { error: string }> {
+  if (params.code && params.code.length > MAX_CONTENT_LENGTH) {
+    return { content: [{ type: 'text', text: JSON.stringify({ error: `Code exceeds maximum length of ${MAX_CONTENT_LENGTH} characters` }) }], isError: true } as any;
+  }
+
   // Safety check: execute tool must be explicitly enabled
   if (!kernel.config.execute_enabled) {
     return { error: 'Execute tool is disabled. Set execute_enabled: true in .context-mem.json' };
@@ -715,6 +732,10 @@ export async function handleSearchContent(
   params: { query: string; source?: string; limit?: number },
   kernel: ToolKernel,
 ): Promise<Array<{ heading: string | null; content: string; has_code: boolean; source: string; relevance: number }>> {
+  if (!params.query || typeof params.query !== 'string' || !params.query.trim()) {
+    return { content: [{ type: 'text', text: JSON.stringify({ error: 'query must be a non-empty string' }) }], isError: true } as any;
+  }
+
   return kernel.contentStore.search(params.query, {
     source: params.source,
     limit: validateLimit(params.limit ?? 5),
@@ -741,7 +762,7 @@ export async function handleSaveKnowledge(
   }
   const category = params.category as KnowledgeCategory;
 
-  const rawSourceType = (params.source_type || undefined) ?? 'observed';
+  const rawSourceType = params.source_type || 'observed';
   if (!(SOURCE_TYPES as readonly string[]).includes(rawSourceType)) {
     return { error: `Invalid source_type: "${rawSourceType}". Must be one of: ${SOURCE_TYPES.join(', ')}` };
   }
@@ -792,6 +813,9 @@ export async function handleSearchKnowledge(
   params: { query: string; category?: string; limit?: number },
   kernel: ToolKernel,
 ): Promise<Array<{ id: string; category: string; title: string; content: string; relevance_score: number; tags: string[]; source_type: string }> | { error: string }> {
+  if (!params.query || typeof params.query !== 'string' || !params.query.trim()) {
+    return { content: [{ type: 'text', text: JSON.stringify({ error: 'query must be a non-empty string' }) }], isError: true } as any;
+  }
   if (params.category !== undefined && !(KNOWLEDGE_CATEGORIES as readonly string[]).includes(params.category)) {
     return { error: `Invalid category: "${params.category}". Must be one of: ${KNOWLEDGE_CATEGORIES.join(', ')}` };
   }
@@ -859,7 +883,7 @@ export async function handleBudgetConfigure(
 ): Promise<{ updated: boolean } | { error: string }> {
   const config: Record<string, unknown> = {};
   if (params.session_limit !== undefined) {
-    if (typeof params.session_limit !== 'number' || params.session_limit <= 0) {
+    if (typeof params.session_limit !== 'number' || params.session_limit <= 0 || !Number.isFinite(params.session_limit)) {
       return { error: 'session_limit must be a positive number' };
     }
     config.session_limit = params.session_limit;
@@ -881,7 +905,7 @@ export async function handleBudgetConfigure(
 // ---------------------------------------------------------------------------
 
 export async function handleRestoreSession(
-  params: { session_id: string },
+  params: { session_id?: string },
   kernel: ToolKernel,
 ): Promise<{ content: Array<{ type: string; text: string }> } | { error: string }> {
   const sessionId = (params.session_id as string) || kernel.sessionId;
@@ -910,6 +934,7 @@ export async function handleRestoreSession(
     stats: 'Token Stats',
     search_history: 'Recent Searches',
     correlations: 'Correlation Groups',
+    changes: 'Recent Changes',
   };
 
   for (const [key, label] of Object.entries(CATEGORY_LABELS)) {
@@ -931,6 +956,9 @@ export async function handleEmitEvent(
   params: { event_type: string; data?: Record<string, unknown>; agent?: string },
   kernel: ToolKernel,
 ): Promise<{ id: string; event_type: string; priority: number }> {
+  if (!params.event_type || typeof params.event_type !== 'string' || !params.event_type.trim()) {
+    return { id: '', event_type: '', priority: 0, error: 'event_type is required and must be a non-empty string' } as any;
+  }
   const event = kernel.eventTracker.emit(
     kernel.sessionId,
     params.event_type,
@@ -945,6 +973,10 @@ export async function handleQueryEvents(
   params: { event_type?: string; priority?: number; limit?: number; from?: number; to?: number },
   kernel: ToolKernel,
 ): Promise<Array<{ id: string; event_type: string; priority: number; data: Record<string, unknown>; timestamp: number }>> {
+  if (params.priority !== undefined && ![1, 2, 3, 4].includes(params.priority as number)) {
+    return { content: [{ type: 'text', text: JSON.stringify({ error: 'priority must be 1, 2, 3, or 4' }) }], isError: true } as any;
+  }
+
   const events = kernel.eventTracker.query(kernel.sessionId, {
     event_type: params.event_type,
     priority: params.priority as EventPriority | undefined,

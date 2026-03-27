@@ -222,7 +222,7 @@ export const migrations: Migration[] = [
       );
 
       INSERT OR IGNORE INTO budget_settings (id, session_limit, overflow_strategy, agent_limits)
-      VALUES (1, 10000000, 'warn', '{}');
+      VALUES (1, 100000, 'warn', '{}');
 
       -- Session snapshots
       CREATE TABLE IF NOT EXISTS snapshots (
@@ -258,7 +258,7 @@ export const migrations: Migration[] = [
     up: `
       ALTER TABLE observations ADD COLUMN correlation_id TEXT;
       CREATE INDEX IF NOT EXISTS idx_obs_correlation ON observations(correlation_id);
-      INSERT INTO schema_version (version, applied_at, description) VALUES (4, datetime('now'), 'Add correlation_id for causality tracking');
+      INSERT INTO schema_version (version, applied_at, description) VALUES (4, unixepoch(), 'Add correlation_id for causality tracking');
     `,
   },
   {

@@ -104,6 +104,7 @@ export interface ContradictionWarning {
   title: string;
   content: string;
   similarity_reason: string;
+  source_type?: SourceType;
 }
 
 // Event types
