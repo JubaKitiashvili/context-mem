@@ -184,7 +184,7 @@ extensions:
 
 **Privacy Engine** — Everything local. `<private>` tag stripping, custom regex redaction, plus 9 built-in secret detectors: AWS keys, GitHub tokens, JWTs, private keys, Slack tokens, emails, IPs, generic API keys, and AWS secrets. Secrets are auto-redacted before storage. No telemetry, no cloud.
 
-**Security Hardening** — CORS restricted to localhost only, input validation on all 18 handlers, error sanitization to prevent information leakage. Windows compatibility for cross-platform deployments.
+**Security Hardening** — CORS restricted to localhost only, input validation on all 20 handlers, error sanitization to prevent information leakage. Windows compatibility for cross-platform deployments.
 
 **Smart Truncation** — 60/40 head/tail split for better error preservation at end of output. 4-tier fallback: JSON schema → Pattern → Head/Tail → Binary hash.
 
@@ -199,13 +199,13 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
                                                       ↓                                        ↓
                                     Privacy Engine (9 detectors)              Request Canonicalization (30s cache)
                                                       ↓                                        ↓
-                                    Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (18 tools)
+                                    Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (20 tools)
 ```
 
 ## MCP Tools
 
 <details>
-<summary>18 tools available via MCP protocol</summary>
+<summary>20 tools available via MCP protocol</summary>
 
 | Tool | Description |
 |---|---|
@@ -227,6 +227,8 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
 | `emit_event` | Emit a context event |
 | `query_events` | Query events with filters |
 | `update_profile` | Generate or retrieve project profile |
+| `promote_knowledge` | Promote project knowledge to global cross-project store |
+| `global_search` | Search global cross-project knowledge store |
 
 </details>
 

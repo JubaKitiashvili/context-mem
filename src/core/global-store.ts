@@ -31,7 +31,7 @@ export class GlobalKnowledgeStore {
   open(): void {
     const dir = path.dirname(this.dbPath);
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+      fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
     }
 
     this.db = new Database(this.dbPath);
