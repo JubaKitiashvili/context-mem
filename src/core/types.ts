@@ -174,6 +174,7 @@ export interface SearchResult {
   relevance_score: number;
   type: ObservationType;
   timestamp: number;
+  access_count?: number;
 }
 
 export interface SearchOpts {

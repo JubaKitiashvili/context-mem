@@ -19,7 +19,7 @@ export class LevenshteinSearch implements SearchPlugin {
     if (queryWords.length === 0) return [];
 
     // Operate on 100 most recent observations only
-    let sql = 'SELECT id, type, summary, content, indexed_at FROM observations';
+    let sql = 'SELECT id, type, summary, content, indexed_at, access_count FROM observations';
     const params: unknown[] = [];
 
     if (opts.type_filter && opts.type_filter.length > 0) {
@@ -30,7 +30,7 @@ export class LevenshteinSearch implements SearchPlugin {
     sql += ' ORDER BY indexed_at DESC LIMIT 100';
 
     const rows = this.storage.prepare(sql).all(...params) as Array<{
-      id: string; type: string; summary: string | null; content: string; indexed_at: number;
+      id: string; type: string; summary: string | null; content: string; indexed_at: number; access_count: number;
     }>;
 
     // Score each observation by minimum Levenshtein distance
@@ -71,6 +71,7 @@ export class LevenshteinSearch implements SearchPlugin {
       relevance_score: s.score,
       type: s.row.type as SearchResult['type'],
       timestamp: s.row.indexed_at,
+      access_count: s.row.access_count ?? 0,
     }));
   }
 
