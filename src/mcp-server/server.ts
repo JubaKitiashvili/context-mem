@@ -31,11 +31,13 @@ import {
   handleAgentStatus,
   handleClaimFiles,
   handleAgentBroadcast,
+  handleTimeTravel,
+  handleAsk,
 } from './tools.js';
 
 export function createMcpServer(kernel: ToolKernel): Server {
   const server = new Server(
-    { name: 'context-mem', version: '1.4.0' },
+    { name: 'context-mem', version: '2.0.0' },
     { capabilities: { tools: {} } },
   );
 
@@ -137,6 +139,12 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'agent_broadcast':
           result = await handleAgentBroadcast(params as Parameters<typeof handleAgentBroadcast>[0], kernel);
+          break;
+        case 'time_travel':
+          result = await handleTimeTravel(params as Parameters<typeof handleTimeTravel>[0], kernel);
+          break;
+        case 'ask':
+          result = await handleAsk(params as Parameters<typeof handleAsk>[0], kernel);
           break;
         default:
           console.error(`context-mem: Unknown MCP tool requested: ${name}`);

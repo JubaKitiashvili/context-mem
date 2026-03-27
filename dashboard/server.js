@@ -518,6 +518,98 @@ function getSessionList() {
   `).all();
 }
 
+// --- Dashboard 2.0 query helpers ---
+
+function getGraphData(entityFilter, depth) {
+  try {
+    const nodes = [];
+    const edges = [];
+    const visited = new Set();
+
+    // Get seed entities (all or filtered by name)
+    let seedSql = 'SELECT id, name, entity_type, metadata, knowledge_id, created_at FROM entities';
+    const seedParams = [];
+    if (entityFilter) {
+      seedSql += ' WHERE name LIKE ?';
+      seedParams.push('%' + entityFilter + '%');
+    }
+    seedSql += ' LIMIT 200';
+    const seeds = db.prepare(seedSql).all(...seedParams);
+
+    // BFS traversal up to depth
+    let frontier = seeds.map(e => e.id);
+    for (const e of seeds) {
+      if (!visited.has(e.id)) {
+        visited.add(e.id);
+        let meta = {};
+        try { meta = JSON.parse(e.metadata); } catch {}
+        nodes.push({ id: e.id, name: e.name, type: e.entity_type, metadata: meta, knowledge_id: e.knowledge_id, created_at: e.created_at });
+      }
+    }
+
+    for (let d = 0; d < depth && frontier.length > 0; d++) {
+      const nextFrontier = [];
+      for (const eid of frontier) {
+        // Outgoing relationships
+        const rels = db.prepare(
+          'SELECT id, from_entity, to_entity, relationship_type, weight, metadata FROM relationships WHERE from_entity = ? OR to_entity = ?'
+        ).all(eid, eid);
+
+        for (const r of rels) {
+          let rMeta = {};
+          try { rMeta = JSON.parse(r.metadata); } catch {}
+          edges.push({ id: r.id, source: r.from_entity, target: r.to_entity, type: r.relationship_type, weight: r.weight, metadata: rMeta });
+
+          const neighborId = r.from_entity === eid ? r.to_entity : r.from_entity;
+          if (!visited.has(neighborId)) {
+            visited.add(neighborId);
+            const neighbor = db.prepare('SELECT id, name, entity_type, metadata, knowledge_id, created_at FROM entities WHERE id = ?').get(neighborId);
+            if (neighbor) {
+              let nMeta = {};
+              try { nMeta = JSON.parse(neighbor.metadata); } catch {}
+              nodes.push({ id: neighbor.id, name: neighbor.name, type: neighbor.entity_type, metadata: nMeta, knowledge_id: neighbor.knowledge_id, created_at: neighbor.created_at });
+              nextFrontier.push(neighborId);
+            }
+          }
+        }
+      }
+      frontier = nextFrontier;
+    }
+
+    // Deduplicate edges by id
+    const uniqueEdges = [];
+    const edgeIds = new Set();
+    for (const e of edges) {
+      if (!edgeIds.has(e.id)) { edgeIds.add(e.id); uniqueEdges.push(e); }
+    }
+
+    return { nodes, edges: uniqueEdges };
+  } catch { return { nodes: [], edges: [] }; }
+}
+
+function getTimelineRange(from, to, type, limit) {
+  try {
+    let sql = `SELECT id, type, summary, substr(content, 1, 300) as content_preview,
+               indexed_at, privacy_level, session_id, metadata
+               FROM observations WHERE indexed_at >= ? AND indexed_at <= ?`;
+    const params = [from, to];
+    if (type) { sql += ' AND type = ?'; params.push(type); }
+    sql += ' ORDER BY indexed_at DESC LIMIT ?';
+    params.push(limit);
+    return db.prepare(sql).all(...params);
+  } catch { return []; }
+}
+
+function getAgents() {
+  try {
+    const agentsPath = path.join(path.dirname(dbPath), 'agents.json');
+    if (!fs.existsSync(agentsPath)) return [];
+    const raw = fs.readFileSync(agentsPath, 'utf8');
+    const agents = JSON.parse(raw);
+    return Array.isArray(agents) ? agents : [];
+  } catch { return []; }
+}
+
 // --- API router ---
 function handleApi(req, res) {
   const url = new URL(req.url, `http://localhost:${PORT}`);
@@ -783,6 +875,26 @@ function handleApi(req, res) {
           Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 1000)
         );
         break;
+      case '/api/graph': {
+        const entity = url.searchParams.get('entity') || '';
+        const depth = Math.min(parseInt(url.searchParams.get('depth') || '2', 10), 5);
+        data = getGraphData(entity, depth);
+        // Clamp total nodes+edges to 1000
+        if (data.nodes.length > 1000) data.nodes = data.nodes.slice(0, 1000);
+        if (data.edges.length > 1000) data.edges = data.edges.slice(0, 1000);
+        break;
+      }
+      case '/api/timeline-range': {
+        const from = parseInt(url.searchParams.get('from') || '0', 10);
+        const to = parseInt(url.searchParams.get('to') || String(Date.now()), 10);
+        const trType = url.searchParams.get('type') || '';
+        data = getTimelineRange(from, to, trType || null, Math.min(parseInt(url.searchParams.get('limit') || '100', 10), 1000));
+        break;
+      }
+      case '/api/agents': {
+        data = getAgents();
+        break;
+      }
       default:
         // Path-based observation lookup: /api/observation/<id>
         if (route.startsWith('/api/observation/')) {
@@ -1786,6 +1898,8 @@ function getDashboardHtml() {
 
   body.light .fullscreen-content { background: #fafafa; }
   body.light .toast { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+  body.light .graph-tooltip { background: #fff; border: 1px solid #ddd; color: #333; }
+  body.light .agent-card { background: #fff; border-color: #e0e0e8; }
 
   /* --- Savings calculator --- */
   .savings-callout {
@@ -2296,6 +2410,158 @@ function getDashboardHtml() {
   flex-shrink: 0;
   white-space: nowrap;
 }
+
+/* --- Knowledge Graph --- */
+.graph-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.graph-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.graph-controls input, .graph-controls select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text);
+  font-family: var(--font);
+}
+.graph-controls button {
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background 0.15s;
+}
+.graph-controls button:hover { background: var(--accent-dim); }
+.graph-canvas {
+  width: 100%;
+  height: 400px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  background: var(--bg);
+}
+.graph-canvas svg {
+  width: 100%;
+  height: 100%;
+}
+.graph-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.graph-tooltip {
+  position: absolute;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text);
+  pointer-events: none;
+  z-index: 50;
+  max-width: 280px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  display: none;
+}
+.graph-tooltip .tt-name { font-weight: 600; margin-bottom: 4px; }
+.graph-tooltip .tt-type { color: var(--text-dim); font-size: 11px; }
+.graph-node-label {
+  font-size: 10px;
+  fill: var(--text);
+  pointer-events: none;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.graph-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* --- Agents Panel --- */
+.agents-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+}
+.agent-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  transition: border-color 0.15s;
+}
+.agent-card:hover { border-color: var(--accent); }
+.agent-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.agent-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.agent-status-dot.active { background: var(--green); }
+.agent-status-dot.idle { background: var(--orange); }
+.agent-status-dot.offline { background: var(--text-muted); }
+.agent-detail {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+.agent-detail strong { color: var(--text); font-weight: 500; }
+.agent-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.agent-file-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  background: var(--blue-dim);
+  color: var(--blue);
+  border-radius: 10px;
+}
+.agents-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 20px 0;
+  text-align: center;
+}
 </style>
 </head>
 <body>
@@ -2575,6 +2841,45 @@ function getDashboardHtml() {
       <div class="shortcut-row"><span class="shortcut-desc" style="color:var(--text-muted);">Click card to expand details</span></div>
       <div class="shortcut-row"><span class="shortcut-desc" style="color:var(--text-muted);">Double-click content for fullscreen</span></div>
       <div class="shortcut-row"><span class="shortcut-desc" style="color:var(--text-muted);">Click session to filter by it</span></div>
+    </div>
+  </div>
+
+  <!-- Knowledge Graph -->
+  <div class="graph-section" id="graphSection">
+    <div class="section-title">
+      <div class="icon" style="background:var(--purple-dim);color:var(--purple);">G</div>
+      Knowledge Graph
+    </div>
+    <div class="graph-controls">
+      <input type="text" id="graphEntityFilter" placeholder="Filter entity..." />
+      <select id="graphDepth">
+        <option value="1">Depth 1</option>
+        <option value="2" selected>Depth 2</option>
+        <option value="3">Depth 3</option>
+        <option value="4">Depth 4</option>
+        <option value="5">Depth 5</option>
+      </select>
+      <button onclick="loadGraph()">Load Graph</button>
+    </div>
+    <div class="graph-canvas" id="graphCanvas">
+      <div class="graph-empty" id="graphEmpty">Load graph data to visualize entity relationships</div>
+    </div>
+    <div class="graph-tooltip" id="graphTooltip">
+      <div class="tt-name" id="ttName"></div>
+      <div class="tt-type" id="ttType"></div>
+    </div>
+    <div class="graph-stats" id="graphStats"></div>
+  </div>
+
+  <!-- Agents -->
+  <div class="agents-section" id="agentsSection">
+    <div class="section-title">
+      <div class="icon" style="background:var(--cyan-dim);color:var(--cyan);">A</div>
+      Active Agents
+      <span style="font-size:10px;color:var(--text-muted);margin-left:auto;" id="agentsRefreshHint">auto-refreshes</span>
+    </div>
+    <div id="agentsContainer">
+      <div class="agents-empty">No agents registered</div>
     </div>
   </div>
 
@@ -3428,6 +3733,298 @@ setTheme(currentTheme);
 document.getElementById('themeToggle').addEventListener('click', () => {
   setTheme(currentTheme === 'dark' ? 'light' : 'dark');
 });
+
+// --- Knowledge Graph (pure JS/SVG force-directed layout) ---
+const GRAPH_COLORS = {
+  person: '#ec4899',
+  technology: '#3b82f6',
+  concept: '#a855f7',
+  file: '#22c55e',
+  project: '#f59e0b',
+  organization: '#06b6d4',
+  default: '#6366f1',
+};
+
+let graphNodes = [];
+let graphEdges = [];
+let graphSim = null;
+
+function getNodeColor(type) {
+  return GRAPH_COLORS[type] || GRAPH_COLORS[(type || '').toLowerCase()] || GRAPH_COLORS.default;
+}
+
+async function loadGraph() {
+  const entity = document.getElementById('graphEntityFilter').value;
+  const depth = document.getElementById('graphDepth').value;
+  let url = '/api/graph?depth=' + depth;
+  if (entity) url += '&entity=' + encodeURIComponent(entity);
+  const data = await fetchJson(url);
+  graphNodes = data.nodes || [];
+  graphEdges = data.edges || [];
+  renderGraph();
+}
+
+function renderGraph() {
+  const canvas = document.getElementById('graphCanvas');
+  const empty = document.getElementById('graphEmpty');
+  const statsEl = document.getElementById('graphStats');
+  const tooltip = document.getElementById('graphTooltip');
+
+  if (graphNodes.length === 0) {
+    canvas.innerHTML = '';
+    canvas.appendChild(empty);
+    empty.style.display = 'flex';
+    statsEl.textContent = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const w = canvas.clientWidth || 600;
+  const h = canvas.clientHeight || 400;
+
+  // Build SVG
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('width', w);
+  svg.setAttribute('height', h);
+  svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+  canvas.innerHTML = '';
+  canvas.appendChild(svg);
+
+  // Arrow marker
+  const defs = document.createElementNS(ns, 'defs');
+  const marker = document.createElementNS(ns, 'marker');
+  marker.setAttribute('id', 'arrowhead');
+  marker.setAttribute('viewBox', '0 0 10 10');
+  marker.setAttribute('refX', '20');
+  marker.setAttribute('refY', '5');
+  marker.setAttribute('markerWidth', '6');
+  marker.setAttribute('markerHeight', '6');
+  marker.setAttribute('orient', 'auto-start-reverse');
+  const arrowPath = document.createElementNS(ns, 'path');
+  arrowPath.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+  arrowPath.setAttribute('fill', 'var(--text-muted)');
+  marker.appendChild(arrowPath);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+
+  // Create node id map
+  const nodeMap = {};
+  graphNodes.forEach((n, i) => {
+    nodeMap[n.id] = i;
+    n.x = w / 2 + (Math.random() - 0.5) * w * 0.6;
+    n.y = h / 2 + (Math.random() - 0.5) * h * 0.6;
+    n.vx = 0;
+    n.vy = 0;
+  });
+
+  // Draw edges
+  const edgeEls = [];
+  for (const e of graphEdges) {
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('stroke', 'var(--text-muted)');
+    line.setAttribute('stroke-width', Math.max(1, Math.min(e.weight || 1, 3)));
+    line.setAttribute('stroke-opacity', '0.4');
+    line.setAttribute('marker-end', 'url(#arrowhead)');
+    svg.appendChild(line);
+    edgeEls.push({ el: line, source: nodeMap[e.source], target: nodeMap[e.target], data: e });
+  }
+
+  // Draw nodes
+  const nodeEls = [];
+  for (let i = 0; i < graphNodes.length; i++) {
+    const n = graphNodes[i];
+    const g = document.createElementNS(ns, 'g');
+    g.style.cursor = 'pointer';
+    const circle = document.createElementNS(ns, 'circle');
+    circle.setAttribute('r', 8);
+    circle.setAttribute('fill', getNodeColor(n.type));
+    circle.setAttribute('stroke', 'var(--bg)');
+    circle.setAttribute('stroke-width', '2');
+    g.appendChild(circle);
+
+    const label = document.createElementNS(ns, 'text');
+    label.setAttribute('class', 'graph-node-label');
+    label.setAttribute('dy', '22');
+    label.textContent = (n.name || '').slice(0, 20);
+    g.appendChild(label);
+
+    // Tooltip on hover
+    g.addEventListener('mouseenter', function(ev) {
+      tooltip.style.display = 'block';
+      document.getElementById('ttName').textContent = n.name;
+      document.getElementById('ttType').textContent = n.type + (n.knowledge_id ? ' (linked to knowledge)' : '');
+      const rect = canvas.getBoundingClientRect();
+      tooltip.style.left = (ev.clientX - rect.left + 12) + 'px';
+      tooltip.style.top = (ev.clientY - rect.top - 10) + 'px';
+    });
+    g.addEventListener('mouseleave', function() { tooltip.style.display = 'none'; });
+
+    // Click for detail
+    g.addEventListener('click', function() {
+      if (n.knowledge_id) {
+        // Filter graph to this entity
+        document.getElementById('graphEntityFilter').value = n.name;
+        loadGraph();
+      }
+    });
+
+    svg.appendChild(g);
+    nodeEls.push({ el: g, data: n });
+  }
+
+  // Simple force simulation (inline, no D3)
+  let running = true;
+  let iterations = 0;
+  const maxIter = 200;
+
+  function tick() {
+    if (!running || iterations >= maxIter) return;
+    iterations++;
+
+    // Repulsion between all nodes
+    for (let i = 0; i < graphNodes.length; i++) {
+      for (let j = i + 1; j < graphNodes.length; j++) {
+        const dx = graphNodes[j].x - graphNodes[i].x;
+        const dy = graphNodes[j].y - graphNodes[i].y;
+        const dist = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+        const force = 800 / (dist * dist);
+        const fx = (dx / dist) * force;
+        const fy = (dy / dist) * force;
+        graphNodes[i].vx -= fx;
+        graphNodes[i].vy -= fy;
+        graphNodes[j].vx += fx;
+        graphNodes[j].vy += fy;
+      }
+    }
+
+    // Attraction along edges
+    for (const e of edgeEls) {
+      if (e.source == null || e.target == null) continue;
+      const s = graphNodes[e.source];
+      const t = graphNodes[e.target];
+      const dx = t.x - s.x;
+      const dy = t.y - s.y;
+      const dist = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+      const force = (dist - 100) * 0.01;
+      const fx = (dx / dist) * force;
+      const fy = (dy / dist) * force;
+      s.vx += fx;
+      s.vy += fy;
+      t.vx -= fx;
+      t.vy -= fy;
+    }
+
+    // Center gravity
+    for (const n of graphNodes) {
+      n.vx += (w / 2 - n.x) * 0.002;
+      n.vy += (h / 2 - n.y) * 0.002;
+    }
+
+    // Apply velocities with damping
+    const damping = 0.85;
+    for (const n of graphNodes) {
+      n.vx *= damping;
+      n.vy *= damping;
+      n.x += n.vx;
+      n.y += n.vy;
+      n.x = Math.max(20, Math.min(w - 20, n.x));
+      n.y = Math.max(20, Math.min(h - 20, n.y));
+    }
+
+    // Update DOM
+    for (const e of edgeEls) {
+      if (e.source == null || e.target == null) continue;
+      const s = graphNodes[e.source];
+      const t = graphNodes[e.target];
+      e.el.setAttribute('x1', s.x);
+      e.el.setAttribute('y1', s.y);
+      e.el.setAttribute('x2', t.x);
+      e.el.setAttribute('y2', t.y);
+    }
+    for (let i = 0; i < nodeEls.length; i++) {
+      nodeEls[i].el.setAttribute('transform', 'translate(' + graphNodes[i].x + ',' + graphNodes[i].y + ')');
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  requestAnimationFrame(tick);
+
+  // Enable drag
+  let dragNode = null;
+  svg.addEventListener('mousedown', function(ev) {
+    const target = ev.target.closest('g');
+    if (!target) return;
+    const idx = nodeEls.findIndex(n => n.el === target);
+    if (idx >= 0) { dragNode = idx; running = false; }
+  });
+  svg.addEventListener('mousemove', function(ev) {
+    if (dragNode == null) return;
+    const rect = svg.getBoundingClientRect();
+    graphNodes[dragNode].x = ev.clientX - rect.left;
+    graphNodes[dragNode].y = ev.clientY - rect.top;
+    // Update positions
+    for (const e of edgeEls) {
+      if (e.source == null || e.target == null) continue;
+      const s = graphNodes[e.source];
+      const t = graphNodes[e.target];
+      e.el.setAttribute('x1', s.x);
+      e.el.setAttribute('y1', s.y);
+      e.el.setAttribute('x2', t.x);
+      e.el.setAttribute('y2', t.y);
+    }
+    for (let i = 0; i < nodeEls.length; i++) {
+      nodeEls[i].el.setAttribute('transform', 'translate(' + graphNodes[i].x + ',' + graphNodes[i].y + ')');
+    }
+  });
+  svg.addEventListener('mouseup', function() {
+    if (dragNode != null) {
+      dragNode = null;
+      running = true;
+      iterations = Math.max(iterations, maxIter - 50);
+      requestAnimationFrame(tick);
+    }
+  });
+
+  statsEl.innerHTML = '<span>Nodes: ' + graphNodes.length + '</span><span>Edges: ' + graphEdges.length + '</span>';
+}
+
+// Load graph on startup
+loadGraph();
+
+// --- Agents Panel ---
+async function refreshAgents() {
+  try {
+    const agents = await fetchJson('/api/agents');
+    const container = document.getElementById('agentsContainer');
+    if (!agents || agents.length === 0) {
+      container.innerHTML = '<div class="agents-empty">No agents registered</div>';
+      return;
+    }
+    container.innerHTML = '<div class="agents-grid">' + agents.map(function(a) {
+      const now = Date.now();
+      const hb = a.last_heartbeat || a.lastHeartbeat || 0;
+      const stale = hb > 0 && (now - hb) > 30000;
+      const statusClass = stale ? 'idle' : (hb > 0 ? 'active' : 'offline');
+      const statusLabel = stale ? 'stale' : (hb > 0 ? 'active' : 'unknown');
+      const files = a.claimed_files || a.claimedFiles || [];
+      const filesHtml = files.length > 0
+        ? '<div class="agent-files">' + files.map(function(f) { return '<span class="agent-file-tag">' + escHtml(f) + '</span>'; }).join('') + '</div>'
+        : '';
+      return '<div class="agent-card">' +
+        '<div class="agent-name"><span class="agent-status-dot ' + statusClass + '"></span>' + escHtml(a.name || a.id || 'Agent') + '</div>' +
+        '<div class="agent-detail"><strong>Task:</strong> ' + escHtml(a.task || a.current_task || 'idle') + '</div>' +
+        (hb > 0 ? '<div class="agent-detail"><strong>Heartbeat:</strong> ' + timeAgo(hb) + ' (' + statusLabel + ')</div>' : '') +
+        filesHtml +
+        '</div>';
+    }).join('') + '</div>';
+  } catch { /* agents api optional */ }
+}
+
+// Poll agents every 5 seconds
+refreshAgents();
+setInterval(refreshAgents, 5000);
 
 // --- Fullscreen content viewer ---
 const fullscreenOverlay = document.getElementById('fullscreenOverlay');

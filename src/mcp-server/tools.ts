@@ -29,6 +29,8 @@ import type { ContentStore } from '../plugins/storage/content-store.js';
 import type { KnowledgeBase } from '../plugins/knowledge/knowledge-base.js';
 import type { GlobalKnowledgeStore } from '../core/global-store.js';
 import type { AgentRegistry } from '../core/agent-registry.js';
+import { TimeTraveler } from '../core/time-travel.js';
+import type { TimeSnapshot, TimeDelta } from '../core/time-travel.js';
 
 // ---------------------------------------------------------------------------
 // Input validation helpers
@@ -453,6 +455,32 @@ export const toolDefinitions: ToolDefinition[] = [
         priority: { type: 'number', enum: [1, 2, 3, 4], description: 'Message priority' },
       },
       required: ['message'],
+    },
+  },
+  // Time-Travel Debugging
+  {
+    name: 'time_travel',
+    description: 'View or compare the project state at any point in time. Shows observations, knowledge, and events as of a target date.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        date: { type: 'string', description: 'ISO date or relative ("3 days ago", "last week", "yesterday")' },
+        scope: { type: 'string', enum: ['knowledge', 'observations', 'events', 'all'], description: 'What to show (default: all)' },
+        compare: { type: 'boolean', description: 'Compare then vs now (show delta)' },
+      },
+      required: ['date'],
+    },
+  },
+  // Natural Language Query tool
+  {
+    name: 'ask',
+    description: 'Ask a natural language question about the project. Searches knowledge, observations, events, and graph entities.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        question: { type: 'string', description: 'Natural language question about the project' },
+      },
+      required: ['question'],
     },
   },
 ];
@@ -1514,4 +1542,49 @@ export async function handleAgentBroadcast(
   );
 
   return { event_id: event.id };
+}
+
+// Time-Travel Debugging
+export async function handleTimeTravel(
+  params: { date: string; scope?: string; compare?: boolean },
+  kernel: ToolKernel,
+): Promise<TimeSnapshot | TimeDelta | { error: string }> {
+  if (!params.date || typeof params.date !== 'string' || !params.date.trim()) {
+    return { error: 'date is required and must be a non-empty string' };
+  }
+
+  const scope = params.scope ?? 'all';
+  if (!['knowledge', 'observations', 'events', 'all'].includes(scope)) {
+    return { error: 'scope must be one of: knowledge, observations, events, all' };
+  }
+
+  const traveler = new TimeTraveler(kernel.storage);
+
+  let targetDate: number;
+  try {
+    targetDate = traveler.parseDate(params.date);
+  } catch {
+    return { error: `Cannot parse date: "${params.date}"` };
+  }
+
+  if (params.compare) {
+    return traveler.compare(targetDate);
+  }
+
+  return traveler.snapshot(targetDate, scope);
+}
+
+// Natural Language Query
+export async function handleAsk(
+  params: { question: string },
+  kernel: ToolKernel,
+): Promise<unknown> {
+  if (!params.question || typeof params.question !== 'string' || !params.question.trim()) {
+    return { error: 'question is required and must be a non-empty string' };
+  }
+
+  const { NaturalLanguageQuery } = await import('../core/nl-query.js');
+  const graph = kernel.knowledgeGraph ?? new (await import('../core/knowledge-graph.js')).KnowledgeGraph(kernel.storage);
+  const nlQuery = new NaturalLanguageQuery(kernel.storage, kernel.knowledgeBase, graph, kernel.eventTracker);
+  return nlQuery.ask(params.question.trim());
 }
