@@ -3,7 +3,7 @@
 > Context optimization for AI coding assistants — 99% token savings, zero configuration, no LLM dependency.
 
 [![npm version](https://img.shields.io/npm/v/context-mem)](https://www.npmjs.com/package/context-mem)
-[![tests](https://img.shields.io/badge/tests-356%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-409%20passing-brightgreen)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-green)]()
 
@@ -17,12 +17,14 @@ AI coding assistants waste 60–80% of their context window on raw tool outputs 
 |---|---|---|---|---|
 | **Approach** | 14 specialized summarizers | LLM-based compression | Sandbox + intent filter | External docs injection |
 | **Token Savings** | 99% (benchmarked) | ~95% (claimed) | 98% (claimed) | N/A |
-| **Search** | BM25 + Trigram + Fuzzy + **Vector** | Basic recall | BM25 + Trigram + Fuzzy | Doc lookup |
-| **Semantic Search** | Local embeddings (free) | LLM-based ($$$) | No | No |
+| **Search** | BM25 + Trigram + Fuzzy + **Vector** + reranking | Basic recall | BM25 + Trigram + Fuzzy | Doc lookup |
+| **Semantic Search** | Local embeddings (free) + vector contradiction detection | LLM-based ($$$) | No | No |
+| **Search Tuning** | Configurable BM25/Trigram/Levenshtein/Vector weights | No | No | No |
 | **LLM Calls** | None (free, deterministic) | Every observation (~$57/mo) | None | None |
 | **Activity Journal** | File edits, commands, reads | No | No | No |
 | **Cross-Session Memory** | Journal + snapshots + DB | LLM summaries | Yes | No |
-| **Knowledge Base** | 5 categories, auto-extraction, relevance decay, contradiction detection, source tracking | No | No | No |
+| **Knowledge Base** | 5 categories, auto-extraction, 14-day half-life decay, semantic contradiction detection, source tracking | No | No | No |
+| **Background Agent** | Dreamer: auto-validates, marks stale (30d), archives (90d) | No | No | No |
 | **Quick Profile** | Auto-generated project profile on session start | No | No | No |
 | **Budget Management** | Configurable limits + overflow | No | Basic throttling | No |
 | **Event Tracking** | P1–P4, error-fix detection | No | Session events only | No |
@@ -30,7 +32,8 @@ AI coding assistants waste 60–80% of their context window on raw tool outputs 
 | **Session Continuity** | Snapshot save/restore | Partial | Yes | No |
 | **Content Types** | 14 specialized detectors | Generic LLM | Generic sandbox | Docs only |
 | **Model Lock-in** | None (MCP protocol) | Claude-only | Claude-only | Any |
-| **Privacy** | Fully local, tag stripping | Local | Local | Cloud |
+| **Privacy** | Fully local, tag stripping, 9 secret detectors, auto-redaction | Local | Local | Cloud |
+| **Security** | CORS localhost-only, input validation, error sanitization | N/A | N/A | N/A |
 | **License** | MIT | AGPL-3.0 | Elastic v2 | Open |
 
 ## Quick Start
@@ -103,7 +106,7 @@ extensions:
 |---|---|---|
 | **Content summarizer** | Auto-detects 14 content types, produces statistical summaries | **97–100%** per output |
 | **Index + Search** | FTS5 BM25 retrieval returns only relevant chunks, code preserved exactly | **80%** per search |
-| **Smart truncation** | 4-tier fallback: JSON schema → Pattern → Head/Tail → Binary hash | **83–100%** per output |
+| **Smart truncation** | 4-tier fallback with 60/40 head/tail split for error preservation | **83–100%** per output |
 | **Session snapshots** | Captures full session state in <8 KB | **~50%** vs log replay |
 | **Budget enforcement** | Throttling at 80% prevents runaway token consumption | Prevents overflow |
 
@@ -144,15 +147,17 @@ extensions:
 
 ## Features
 
-**Search** — 4-layer hybrid: BM25 full-text → trigram fuzzy → Levenshtein typo-tolerant → optional vector/semantic search. Sub-millisecond latency with intent classification. Semantic search finds "auth problem" when stored as "login token expired" — local embeddings via all-MiniLM-L6-v2, no cloud, no cost.
+**Search** — 4-layer hybrid: BM25 full-text → trigram fuzzy → Levenshtein typo-tolerant → optional vector/semantic search. Sub-millisecond latency with intent classification. Semantic search finds "auth problem" when stored as "login token expired" — local embeddings via all-MiniLM-L6-v2, no cloud, no cost. **Observation reranking** scores results by 70% relevance + 20% recency + 10% access frequency. **Request canonicalization** deduplicates similar queries with a 30-second cache. Search weights (BM25/Trigram/Levenshtein/Vector ratios) are fully configurable in `.context-mem.json`.
 
 **Activity Journal** — Every file edit, bash command, and file read is logged to `.context-mem/journal.md` in human-readable format. Cross-session memory injects journal entries on startup — Claude knows exactly what changed in previous sessions without LLM calls.
 
 **Plugin Commands** — `/context-mem:status` (stats + dashboard link), `/context-mem:search <query>` (search observations), `/context-mem:journal` (show activity log).
 
-**Knowledge Base** — Save and search patterns, decisions, errors, APIs, components. Time-decay relevance scoring with automatic archival. **Auto-extraction** — decisions, errors, commits, and frequently-accessed files are automatically saved to the knowledge base without manual intervention. **Contradiction detection** — automatically flags conflicting knowledge when saving new entries. **Source tracking** — records where each entry came from (manual, inferred, external).
+**Knowledge Base** — Save and search patterns, decisions, errors, APIs, components. **Knowledge entry decay** with 14-day half-life — explicit entries decay slower, access frequency boosts relevance, automatic archival. **Auto-extraction** — decisions, errors, commits, and frequently-accessed files are automatically saved to the knowledge base without manual intervention. **Semantic contradiction detection** — vector-based similarity (when `@huggingface/transformers` available) in addition to keyword overlap, automatically flags conflicting knowledge when saving new entries. **Source tracking** — records where each entry came from (manual, inferred, external).
 
 **Quick Profile** — Generates a concise project profile from accumulated knowledge. Injected on session start so the AI assistant has immediate project context without searching.
+
+**Dreamer Background Agent** — Runs automatically to maintain knowledge quality. Auto-validates knowledge entries, marks them stale after 30 days of no access, and archives after 90 days. Keeps the knowledge base fresh without manual intervention.
 
 **Export/Import** — Transfer knowledge between machines: `context-mem export` dumps knowledge, snapshots, and events as JSON; `context-mem import` restores them in another project. Merge or replace modes.
 
@@ -162,7 +167,7 @@ extensions:
 
 **Session Snapshots** — Save/restore session state across restarts with progressive trimming.
 
-**Dashboard** — Real-time web UI at `http://localhost:51893` — auto-starts with `serve`, supports multi-project aggregation. Token economics, observations, search, knowledge base, events, system health. Switch between projects or see everything at once.
+**Dashboard** — Real-time web UI at `http://localhost:51893` — auto-starts with `serve`, supports multi-project aggregation. Token economics, observations, search, knowledge base, events, system health. Switch between projects or see everything at once. Full observation detail view and knowledge search with FTS5.
 
 <p align="center">
   <img src="docs/screenshots/dashboard-overview.png" width="600" alt="Dashboard — token economics and observation stats" />
@@ -177,18 +182,24 @@ extensions:
 
 **OpenClaw Native Plugin** — Full ContextEngine integration with lifecycle hooks (bootstrap, ingest, assemble, compact, afterTurn, dispose). See [openclaw-plugin/](openclaw-plugin/).
 
-**Privacy** — Everything local. `<private>` tag stripping, custom regex redaction. No telemetry, no cloud.
+**Privacy Engine** — Everything local. `<private>` tag stripping, custom regex redaction, plus 9 built-in secret detectors: AWS keys, GitHub tokens, JWTs, private keys, Slack tokens, emails, IPs, generic API keys, and AWS secrets. Secrets are auto-redacted before storage. No telemetry, no cloud.
+
+**Security Hardening** — CORS restricted to localhost only, input validation on all 18 handlers, error sanitization to prevent information leakage. Windows compatibility for cross-platform deployments.
+
+**Smart Truncation** — 60/40 head/tail split for better error preservation at end of output. 4-tier fallback: JSON schema → Pattern → Head/Tail → Binary hash.
 
 ## Architecture
 
 ```
 Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarizer (14 types) → SQLite + FTS5
                                     ↓                    ↓                                      ↓
-                              ObserveQueue         SHA256 Dedup                          3-Layer Search
-                             (burst protection)          ↓                                      ↓
-                                              4-Tier Truncation                    Progressive Disclosure
+                              ObserveQueue         SHA256 Dedup                    4-Layer Search + Reranking
+                             (burst protection)          ↓                          (70% relevance + 20% recency
+                                              60/40 Truncation                      + 10% access frequency)
                                                       ↓                                        ↓
-                                              Auto-Extract KB                   AI Assistant ← MCP Server
+                                    Privacy Engine (9 detectors)              Request Canonicalization (30s cache)
+                                                      ↓                                        ↓
+                                    Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (18 tools)
 ```
 
 ## MCP Tools
@@ -244,9 +255,18 @@ context-mem import      # Import data from JSON export file
     "search": ["bm25", "trigram", "vector"],
     "runtimes": ["javascript", "python"]
   },
+  "search": {
+    "weights": {
+      "bm25": 0.4,
+      "trigram": 0.3,
+      "levenshtein": 0.2,
+      "vector": 0.1
+    }
+  },
   "privacy": {
     "strip_tags": true,
-    "redact_patterns": []
+    "redact_patterns": [],
+    "secret_detection": true
   },
   "token_economics": true,
   "lifecycle": {
