@@ -22,12 +22,12 @@ Show the current context-mem status for this project.
    "
    ```
 
-4. Check if activity journal exists and report its size:
+3. Check if activity journal exists and report its size:
    ```bash
    wc -l .context-mem/journal.md 2>/dev/null || echo "No journal yet"
    ```
 
-5. Present results in a clean format:
+4. Present results in a clean format:
    ```
    context-mem status
    ─────────────────
