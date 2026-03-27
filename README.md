@@ -3,7 +3,7 @@
 > Context optimization for AI coding assistants — 99% token savings, zero configuration, no LLM dependency.
 
 [![npm version](https://img.shields.io/npm/v/context-mem)](https://www.npmjs.com/package/context-mem)
-[![tests](https://img.shields.io/badge/tests-409%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-491%20passing-brightgreen)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-green)]()
 
@@ -159,6 +159,14 @@ extensions:
 
 **Dreamer Background Agent** — Runs automatically to maintain knowledge quality. Auto-validates knowledge entries, marks them stale after 30 days of no access, and archives after 90 days. Keeps the knowledge base fresh without manual intervention.
 
+**Knowledge Graph** — Entity-relationship model that maps connections between project concepts, files, patterns, and decisions. Graph queries let you traverse relationships — find all entities related to a component, trace decision chains, or discover implicit connections across the codebase.
+
+**Multi-Agent Shared Memory** — Built-in coordination for multi-agent workflows. Agents register with `agent_register`, claim files with `claim_files` to prevent edit conflicts, check who's working on what with `agent_status`, and broadcast messages to all active agents with `agent_broadcast`. Shared memory ensures agents don't duplicate work or create merge conflicts.
+
+**Time-Travel Debugging** — View and compare project state at any point in time using `time_travel`. Inspect how knowledge, observations, and project context evolved across sessions — useful for understanding when a decision was made or tracking down when a regression was introduced.
+
+**Natural Language Query** — Ask questions naturally with `ask` — intent classification routes your question to the right subsystem (search, knowledge, timeline, graph, or stats) without needing to know which tool to call.
+
 **Export/Import** — Transfer knowledge between machines: `context-mem export` dumps knowledge, snapshots, and events as JSON; `context-mem import` restores them in another project. Merge or replace modes.
 
 **Budget Management** — Session token limits with three overflow strategies: aggressive truncation, warn, hard stop.
@@ -167,7 +175,7 @@ extensions:
 
 **Session Snapshots** — Save/restore session state across restarts with progressive trimming.
 
-**Dashboard** — Real-time web UI at `http://localhost:51893` — auto-starts with `serve`, supports multi-project aggregation. Token economics, observations, search, knowledge base, events, system health. Switch between projects or see everything at once. Full observation detail view and knowledge search with FTS5.
+**Dashboard 2.0** — Real-time web UI at `http://localhost:51893` — auto-starts with `serve`, supports multi-project aggregation. Token economics, observations, search, knowledge base, events, system health. Switch between projects or see everything at once. Full observation detail view and knowledge search with FTS5. New in v2.0: knowledge graph visualization, timeline explorer for time-travel debugging, and multi-agent coordination panel.
 
 <p align="center">
   <img src="docs/screenshots/dashboard-overview.png" width="600" alt="Dashboard — token economics and observation stats" />
@@ -184,7 +192,7 @@ extensions:
 
 **Privacy Engine** — Everything local. `<private>` tag stripping, custom regex redaction, plus 9 built-in secret detectors: AWS keys, GitHub tokens, JWTs, private keys, Slack tokens, emails, IPs, generic API keys, and AWS secrets. Secrets are auto-redacted before storage. No telemetry, no cloud.
 
-**Security Hardening** — CORS restricted to localhost only, input validation on all 20 handlers, error sanitization to prevent information leakage. Windows compatibility for cross-platform deployments.
+**Security Hardening** — CORS restricted to localhost only, input validation on all 29 handlers, error sanitization to prevent information leakage. Windows compatibility for cross-platform deployments.
 
 **Smart Truncation** — 60/40 head/tail split for better error preservation at end of output. 4-tier fallback: JSON schema → Pattern → Head/Tail → Binary hash.
 
@@ -199,13 +207,13 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
                                                       ↓                                        ↓
                                     Privacy Engine (9 detectors)              Request Canonicalization (30s cache)
                                                       ↓                                        ↓
-                                    Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (20 tools)
+                                    Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (29 tools)
 ```
 
 ## MCP Tools
 
 <details>
-<summary>20 tools available via MCP protocol</summary>
+<summary>29 tools available via MCP protocol</summary>
 
 | Tool | Description |
 |---|---|
@@ -229,6 +237,15 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
 | `update_profile` | Generate or retrieve project profile |
 | `promote_knowledge` | Promote project knowledge to global cross-project store |
 | `global_search` | Search global cross-project knowledge store |
+| `graph_query` | Query the knowledge graph for entities and relationships |
+| `add_relationship` | Add a relationship between entities in the knowledge graph |
+| `graph_neighbors` | Find neighboring entities connected to a given node |
+| `time_travel` | View/compare project state at any point in time |
+| `ask` | Natural language questions with intent classification |
+| `agent_register` | Register as named agent for multi-agent coordination |
+| `agent_status` | List active agents and their tasks |
+| `claim_files` | Claim files to prevent conflicts between agents |
+| `agent_broadcast` | Broadcast messages to all active agents |
 
 </details>
 

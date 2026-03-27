@@ -2,6 +2,39 @@
 
 All notable changes to context-mem are documented here.
 
+## [2.0.0] — 2026-03-27
+
+### Added
+- Time-Travel Debugging: view/compare project state at any date
+- Natural Language Query: `ask` tool with intent classification
+- Dashboard 2.0: knowledge graph visualization, timeline explorer, agent panel, dark theme
+
+## [1.4.0] — 2026-03-27
+
+### Added
+- Multi-Agent Shared Memory: agent registry, file claiming, broadcasting
+- 4 MCP tools: agent_register, agent_status, claim_files, agent_broadcast
+
+## [1.3.0] — 2026-03-27
+
+### Added
+- Proactive Context Injection: auto-inject relevant knowledge on file read/edit
+- Rate limiting: 3/min, 5-min file cooldown
+
+## [1.2.0] — 2026-03-27
+
+### Added
+- Knowledge Graph: entity-relationship model, 10 entity types, 8 relationship types
+- BFS graph traversal, auto-entity extraction
+- 3 MCP tools: graph_query, add_relationship, graph_neighbors
+
+## [1.1.0] — 2026-03-27
+
+### Added
+- WebSocket streaming: real-time dashboard updates
+- Cross-Project Knowledge Transfer: global store, promote_knowledge, global_search
+- Custom Summarizer Plugin API: npm convention, auto-discovery, scaffolding CLI
+
 ## [1.0.0] — 2026-03-27
 
 ### Added

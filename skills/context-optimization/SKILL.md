@@ -1,10 +1,10 @@
 ---
 name: context-optimization
-description: "This skill should be used when context-mem is available in the project. Guides efficient use of context-mem's 20 MCP tools: observe large outputs, search before re-reading files, restore sessions, manage token budget, save knowledge with contradiction detection, promote knowledge to global cross-project store, search across all projects, execute code safely, emit events. Triggers on: large tool outputs, repeated file reads, session start, budget warnings, context window filling up, knowledge management, cross-project knowledge transfer, global search, code execution requests."
-version: 2.1.0
+description: "This skill should be used when context-mem is available in the project. Guides efficient use of context-mem's 29 MCP tools: observe large outputs, search before re-reading files, restore sessions, manage token budget, save knowledge with contradiction detection, promote knowledge to global cross-project store, search across all projects, execute code safely, emit events, time travel through project history, ask natural language questions, coordinate multi-agent sessions. Triggers on: large tool outputs, repeated file reads, session start, budget warnings, context window filling up, knowledge management, cross-project knowledge transfer, global search, code execution requests, time travel, show project state, ask question, natural language query, register agent, claim files, agent status."
+version: 3.0.0
 ---
 
-Use context-mem to compress large tool outputs, search stored observations before re-reading files, and persist knowledge across sessions. Leverage its 14 content-aware summarizers (plus community plugins), 4-layer hybrid search (BM25 + Trigram + Levenshtein + Vector), cross-session memory, and cross-project knowledge transfer through 20 MCP tools. Dashboard receives real-time updates via WebSocket.
+Use context-mem to compress large tool outputs, search stored observations before re-reading files, and persist knowledge across sessions. Leverage its 14 content-aware summarizers (plus community plugins), 4-layer hybrid search (BM25 + Trigram + Levenshtein + Vector), cross-session memory, and cross-project knowledge transfer through 29 MCP tools. Dashboard receives real-time updates via WebSocket.
 
 ## Core Tools
 
@@ -79,6 +79,22 @@ emit_event(event_type: "error", data: { file: "auth.ts", message: "token expired
 query_events(event_type?: "error", priority?: 1, limit?: 50)
 ```
 
+### `time_travel` — View/compare project state at any point in time
+Parse relative dates ("3 days ago", "last week") or absolute timestamps. Compare then vs now to see what changed.
+
+```
+time_travel(target: "3 days ago")
+time_travel(target: "2025-12-01", compare: true)
+```
+
+### `ask` — Natural language questions about the project
+Intent classification (what/when/who/why/how) with parallel search across knowledge, observations, events, and graph.
+
+```
+ask(question: "why did we switch from REST to GraphQL?")
+ask(question: "what changed in the auth module last week?")
+```
+
 ## Additional Tools
 
 - `summarize` — Compress content and return the summary without storing. Use when the result is needed inline but not for later retrieval (unlike `observe` which stores).
@@ -90,6 +106,19 @@ query_events(event_type?: "error", priority?: 1, limit?: 50)
 - `budget_configure` — Set session token limits and overflow strategy (`warn`, `truncate`, or `block`). Use at session start to set budget constraints.
 - `promote_knowledge` — Promote a project knowledge entry to the global cross-project store. Privacy engine auto-redacts secrets before storing. Use for patterns that apply across multiple projects.
 - `global_search` — Search the global cross-project knowledge store. Returns entries promoted from any project, with source project tracking.
+- `agent_register` — Register current session as a named agent for multi-agent coordination. Provides identity for file claims and broadcasts.
+- `agent_status` — List all active agents, their current tasks, and claimed files. Use to see what other agents are working on before starting a task.
+- `claim_files` — Claim files being worked on to prevent conflicts with other agents. Detects and reports conflicts if another agent already claimed the same file.
+- `agent_broadcast` — Send priority messages to all active agents via the event system. Use for important findings, blockers, or coordination signals.
+
+## Multi-Agent Coordination
+
+When multiple agents work on the same project simultaneously:
+
+- Register as a named agent when working on a specific task (`agent_register`)
+- Claim files before editing to prevent conflicts (`claim_files`)
+- Check `agent_status` to see what others are doing before starting work
+- Broadcast important findings to all agents (`agent_broadcast`)
 
 ## Rules
 
@@ -112,6 +141,10 @@ The **Dreamer** background agent runs automatically (separate from the 14-day re
 - Auto-archives non-explicit entries after 90 days
 - Detects potential contradictions between entries in the same category
 - Explicit (`source_type: 'explicit'`) entries are never auto-archived
+
+## Dashboard 2.0
+
+The dashboard now includes: knowledge graph visualization, timeline explorer, agent panel for monitoring multi-agent sessions, and dark theme support.
 
 ## Priority Order
 
