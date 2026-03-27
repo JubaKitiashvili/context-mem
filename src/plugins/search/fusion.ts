@@ -1,4 +1,5 @@
-import type { SearchPlugin, SearchResult, SearchOpts, SearchOrchestrator, SearchIntent, ObservationType } from '../../core/types.js';
+import type { SearchPlugin, SearchResult, SearchOpts, SearchOrchestrator, SearchIntent, SearchWeights, ObservationType } from '../../core/types.js';
+import { DEFAULT_SEARCH_WEIGHTS } from '../../core/types.js';
 import { IntentClassifier } from './intent.js';
 
 const HALF_LIFE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -12,10 +13,12 @@ export class SearchFusion implements SearchOrchestrator {
   private classifier: IntentClassifier;
   private searchCallCount = 0;
   private searchWindowStart = Date.now();
+  private weights: Required<SearchWeights>;
 
-  constructor(plugins: SearchPlugin[]) {
+  constructor(plugins: SearchPlugin[], weights?: SearchWeights) {
     this.plugins = [...plugins].sort((a, b) => a.priority - b.priority);
     this.classifier = new IntentClassifier();
+    this.weights = { ...DEFAULT_SEARCH_WEIGHTS, ...weights };
   }
 
   classify(query: string): SearchIntent {
@@ -58,12 +61,13 @@ export class SearchFusion implements SearchOrchestrator {
 
     for (const plugin of this.plugins) {
       try {
+        const strategyWeight = this.weights[plugin.strategy] ?? 1;
         const results = await plugin.search(query, enrichedOpts);
         for (const r of results) {
           if (!seenIds.has(r.id)) {
             seenIds.add(r.id);
             const boost = enrichedOpts.type_boosts?.[r.type] || 0;
-            allResults.push({ ...r, relevance_score: r.relevance_score + boost });
+            allResults.push({ ...r, relevance_score: (r.relevance_score + boost) * strategyWeight });
           }
         }
         if (!plugin.shouldFallback(results)) break;

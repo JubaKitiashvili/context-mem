@@ -1,6 +1,7 @@
 import type { StoragePlugin, KnowledgeEntry, KnowledgeCategory, SourceType, ContradictionWarning } from '../../core/types.js';
 import { ulid } from '../../core/utils.js';
 import { sanitizeFTS5 } from '../search/fts5-utils.js';
+import { Embedder } from '../search/embedder.js';
 
 // Stopwords for contradiction detection word-overlap filter
 const STOPWORDS = new Set([
@@ -20,6 +21,7 @@ export class KnowledgeBase {
     shareable?: boolean;
     source_type?: SourceType;
   }): KnowledgeEntry {
+    const now = Date.now();
     const knowledge: KnowledgeEntry = {
       id: ulid(),
       category: entry.category,
@@ -29,20 +31,21 @@ export class KnowledgeBase {
       shareable: entry.shareable !== false,
       relevance_score: 1.0,
       access_count: 0,
-      created_at: Date.now(),
+      created_at: now,
+      last_accessed: now,
       archived: false,
       source_type: entry.source_type || 'observed',
     };
 
     this.storage.exec(
-      'INSERT INTO knowledge (id, category, title, content, tags, shareable, relevance_score, access_count, created_at, archived, source_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [knowledge.id, knowledge.category, knowledge.title, knowledge.content, JSON.stringify(knowledge.tags), knowledge.shareable ? 1 : 0, knowledge.relevance_score, knowledge.access_count, knowledge.created_at, knowledge.archived ? 1 : 0, knowledge.source_type]
+      'INSERT INTO knowledge (id, category, title, content, tags, shareable, relevance_score, access_count, created_at, last_accessed, archived, source_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [knowledge.id, knowledge.category, knowledge.title, knowledge.content, JSON.stringify(knowledge.tags), knowledge.shareable ? 1 : 0, knowledge.relevance_score, knowledge.access_count, knowledge.created_at, knowledge.last_accessed, knowledge.archived ? 1 : 0, knowledge.source_type]
     );
 
     return knowledge;
   }
 
-  checkContradictions(title: string, content: string, category: KnowledgeCategory): ContradictionWarning[] {
+  async checkContradictions(title: string, content: string, category: KnowledgeCategory): Promise<ContradictionWarning[]> {
     const raw = `${title} ${content}`;
     let searchText = raw;
     if (raw.length > 200) {
@@ -88,6 +91,20 @@ export class KnowledgeBase {
       });
     }
 
+    // Layer 3: Semantic vector similarity (optional — requires @huggingface/transformers)
+    const candidateIds = new Set(candidates.map(c => c.id as string));
+    try {
+      const vectorCandidates = await this.findSemanticCandidates(title, content, category);
+      for (const vc of vectorCandidates) {
+        if (!candidateIds.has(vc.id as string)) {
+          candidates.push(vc);
+          candidateIds.add(vc.id as string);
+        }
+      }
+    } catch {
+      // Vector search unavailable — skip silently
+    }
+
     if (candidates.length === 0) return [];
 
     // Build contradiction warnings
@@ -97,13 +114,15 @@ export class KnowledgeBase {
       const existingContent = ((c.content as string) ?? '').slice(0, 200);
 
       // Determine similarity reason
-      let reason = 'similar topic';
-      const titleLower = title.toLowerCase();
-      const existingLower = existingTitle.toLowerCase();
-      if (titleLower === existingLower) {
-        reason = 'identical title';
-      } else if (titleLower.includes(existingLower) || existingLower.includes(titleLower)) {
-        reason = 'overlapping title';
+      let reason = (c._similarity_reason as string) || 'similar topic';
+      if (!c._similarity_reason) {
+        const titleLower = title.toLowerCase();
+        const existingLower = existingTitle.toLowerCase();
+        if (titleLower === existingLower) {
+          reason = 'identical title';
+        } else if (titleLower.includes(existingLower) || existingLower.includes(titleLower)) {
+          reason = 'overlapping title';
+        }
       }
 
       warnings.push({
@@ -115,6 +134,46 @@ export class KnowledgeBase {
     }
 
     return warnings;
+  }
+
+  /**
+   * Use vector embeddings to find semantically similar knowledge entries.
+   * Returns entries with cosine similarity >= 0.75.
+   * Silently returns [] if embeddings are unavailable.
+   */
+  private async findSemanticCandidates(
+    title: string,
+    content: string,
+    category: KnowledgeCategory,
+  ): Promise<Array<Record<string, unknown>>> {
+    if (!(await Embedder.isAvailable())) return [];
+
+    const newEmbedding = await Embedder.embed(`${title} ${content}`);
+    if (!newEmbedding) return [];
+
+    // Fetch existing entries in the same category to compare
+    const existingEntries = this.storage.prepare(
+      'SELECT id, title, content FROM knowledge WHERE archived = 0 AND category = ? ORDER BY created_at DESC LIMIT 50'
+    ).all(category) as Array<Record<string, unknown>>;
+
+    const SEMANTIC_THRESHOLD = 0.75;
+    const results: Array<Record<string, unknown>> = [];
+
+    for (const entry of existingEntries) {
+      const entryText = `${(entry.title as string) ?? ''} ${(entry.content as string) ?? ''}`;
+      const entryEmbedding = await Embedder.embed(entryText);
+      if (!entryEmbedding) continue;
+
+      const similarity = Embedder.cosineSimilarity(newEmbedding, entryEmbedding);
+      if (similarity >= SEMANTIC_THRESHOLD) {
+        results.push({
+          ...entry,
+          _similarity_reason: `semantic similarity (vector: ${similarity.toFixed(2)})`,
+        });
+      }
+    }
+
+    return results;
   }
 
   generateProfile(): string {
@@ -197,11 +256,28 @@ export class KnowledgeBase {
       results = this.searchScan(query, opts.category, limit);
     }
 
-    // Increment access counts for results
+    // Apply relevance decay based on age and access frequency
+    const now = Date.now();
+    const DECAY_HALF_LIFE_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+
+    results = results.map(entry => {
+      const age = now - entry.created_at;
+      // Explicit entries decay at 0.8x the rate (slower decay)
+      const effectiveAge = entry.source_type === 'explicit' ? age * 0.8 : age;
+      const decayFactor = Math.pow(0.5, effectiveAge / DECAY_HALF_LIFE_MS);
+      const accessBoost = Math.log2((entry.access_count || 0) + 2);
+      // Combine: base relevance * decay, boosted by access frequency
+      return {
+        ...entry,
+        relevance_score: (entry.relevance_score || 1) * (0.5 + 0.3 * decayFactor + 0.2 * (accessBoost / 10)),
+      };
+    }).sort((a, b) => (b.relevance_score || 0) - (a.relevance_score || 0));
+
+    // Increment access counts and update last_accessed for results
     for (const entry of results) {
       this.storage.exec(
-        'UPDATE knowledge SET access_count = access_count + 1 WHERE id = ?',
-        [entry.id]
+        'UPDATE knowledge SET access_count = access_count + 1, last_accessed = ? WHERE id = ?',
+        [now, entry.id]
       );
     }
 
@@ -215,10 +291,10 @@ export class KnowledgeBase {
 
     if (!row) return null;
 
-    // Increment access count
+    // Increment access count and update last_accessed
     this.storage.exec(
-      'UPDATE knowledge SET access_count = access_count + 1 WHERE id = ?',
-      [id]
+      'UPDATE knowledge SET access_count = access_count + 1, last_accessed = ? WHERE id = ?',
+      [Date.now(), id]
     );
 
     return this.rowToEntry(row);
@@ -340,6 +416,7 @@ export class KnowledgeBase {
       relevance_score: row.relevance_score as number,
       access_count: row.access_count as number,
       created_at: row.created_at as number,
+      last_accessed: (row.last_accessed as number) || (row.created_at as number),
       archived: !!(row.archived as number),
       source_type: (['explicit', 'inferred', 'observed'].includes(row.source_type as string)
         ? row.source_type as SourceType

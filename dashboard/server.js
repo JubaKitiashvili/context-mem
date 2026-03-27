@@ -373,6 +373,38 @@ function getKnowledgeEntries(limit = 20, category = null) {
   } catch { return []; }
 }
 
+function searchKnowledge(query, limit = 50) {
+  if (!query || !query.trim()) return [];
+  limit = Math.min(limit, 1000);
+  try {
+    // Try knowledge_fts if available
+    try {
+      const sanitized = query.trim()
+        .replace(/[^\w\s-]/g, '')
+        .split(/\s+/)
+        .filter(t => t.length > 0)
+        .map(t => `"${t}"`)
+        .join(' OR ');
+      if (sanitized) {
+        return db.prepare(
+          `SELECT k.id, k.category, k.title, k.content, k.tags, k.relevance_score, k.access_count, k.created_at, k.archived
+           FROM knowledge_fts f
+           JOIN knowledge k ON k.rowid = f.rowid
+           WHERE knowledge_fts MATCH ? AND k.archived = 0
+           ORDER BY k.access_count DESC LIMIT ?`
+        ).all(sanitized, limit);
+      }
+    } catch {}
+    // Fallback to LIKE search
+    const like = `%${query.trim()}%`;
+    return db.prepare(
+      `SELECT id, category, title, content, tags, relevance_score, access_count, created_at, archived
+       FROM knowledge WHERE archived = 0 AND (title LIKE ? OR content LIKE ?)
+       ORDER BY access_count DESC LIMIT ?`
+    ).all(like, like, limit);
+  } catch { return []; }
+}
+
 function getKnowledgeStats() {
   try {
     const byCategory = db.prepare('SELECT category, COUNT(*) as count FROM knowledge WHERE archived = 0 GROUP BY category ORDER BY count DESC').all();
@@ -745,7 +777,19 @@ function handleApi(req, res) {
         }
         break;
       }
+      case '/api/knowledge/search':
+        data = searchKnowledge(
+          url.searchParams.get('q') || '',
+          Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 1000)
+        );
+        break;
       default:
+        // Path-based observation lookup: /api/observation/<id>
+        if (route.startsWith('/api/observation/')) {
+          const obsId = decodeURIComponent(route.split('/').pop());
+          data = getObservation(obsId);
+          break;
+        }
         res.writeHead(404, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://127.0.0.1:' + PORT });
         res.end(JSON.stringify({ error: 'Not found' }));
         return;
@@ -2436,6 +2480,10 @@ function getDashboardHtml() {
         Knowledge Base
         <span style="font-size:10px;color:var(--text-muted);margin-left:auto;" id="knowledgeCount">0 entries</span>
       </div>
+      <div style="position:relative;margin-bottom:8px;">
+        <input id="knowledgeSearchInput" type="text" placeholder="Search knowledge..." style="width:100%;padding:6px 28px 6px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:11px;outline:none;" />
+        <span id="knowledgeSearchClear" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted);font-size:12px;display:none;">&times;</span>
+      </div>
       <div id="knowledgeCategories" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;"></div>
       <div id="knowledgeList" style="max-height:250px;overflow-y:auto;"></div>
     </div>
@@ -2974,26 +3022,9 @@ async function refresh() {
       '</div>'
     ).join('');
 
-    const kListEl = document.getElementById('knowledgeList');
-    if (knowledge.length === 0) {
-      kListEl.innerHTML = '<div class="empty-state"><p>No knowledge entries yet</p></div>';
-    } else {
-      kListEl.innerHTML = knowledge.map(k => {
-        const catClass = catColors[k.category] || '';
-        const catBg = k.category === 'pattern' ? 'var(--blue-dim)' : k.category === 'decision' ? 'var(--purple-dim)' : k.category === 'error' ? 'var(--red-dim)' : k.category === 'api' ? 'var(--cyan-dim)' : 'var(--green-dim)';
-        return '<div class="knowledge-item">' +
-          '<div class="knowledge-item-header">' +
-            '<span class="knowledge-item-cat ' + catClass + '" style="background:' + catBg + ';">' + k.category + '</span>' +
-            '<span class="knowledge-item-title">' + escHtml(k.title) + '</span>' +
-          '</div>' +
-          '<div class="knowledge-item-content">' + escHtml(k.content.slice(0, 120)) + '</div>' +
-          '<div class="knowledge-item-meta">' +
-            '<span>score: ' + (k.relevance_score || 0).toFixed(2) + '</span>' +
-            '<span>accessed: ' + (k.access_count || 0) + 'x</span>' +
-            (k.tags ? '<span>tags: ' + escHtml(k.tags) + '</span>' : '') +
-          '</div>' +
-        '</div>';
-      }).join('');
+    // Only update the knowledge list if no active search query
+    if (!knowledgeSearchQuery) {
+      renderKnowledgeList(knowledge);
     }
 
     // --- Content Sources ---
@@ -3292,6 +3323,87 @@ searchClearBtn.addEventListener('click', () => {
   currentSearch = '';
   refresh();
   searchInput.focus();
+});
+
+// --- Knowledge search ---
+const knowledgeSearchInput = document.getElementById('knowledgeSearchInput');
+const knowledgeSearchClear = document.getElementById('knowledgeSearchClear');
+let knowledgeSearchQuery = '';
+let knowledgeSearchTimer = null;
+
+function renderKnowledgeList(items) {
+  const catColors = { pattern: 'cat-pattern', decision: 'cat-decision', error: 'cat-error', api: 'cat-api', component: 'cat-component' };
+  const kListEl = document.getElementById('knowledgeList');
+  if (items.length === 0) {
+    kListEl.innerHTML = '<div class="empty-state"><p>' + (knowledgeSearchQuery ? 'No results for "' + escHtml(knowledgeSearchQuery) + '"' : 'No knowledge entries yet') + '</p></div>';
+  } else {
+    kListEl.innerHTML = items.map(k => {
+      const catClass = catColors[k.category] || '';
+      const catBg = k.category === 'pattern' ? 'var(--blue-dim)' : k.category === 'decision' ? 'var(--purple-dim)' : k.category === 'error' ? 'var(--red-dim)' : k.category === 'api' ? 'var(--cyan-dim)' : 'var(--green-dim)';
+      let contentText = escHtml(k.content.slice(0, 120));
+      if (knowledgeSearchQuery) {
+        const terms = knowledgeSearchQuery.split(/\\s+/).filter(t => t.length > 0);
+        for (const term of terms) {
+          const re = new RegExp('(' + term.replace(/[.*+?^\${}()|[\\]\\\\]/g, '\\\\$&') + ')', 'gi');
+          contentText = contentText.replace(re, '<span class="highlight">$1</span>');
+        }
+      }
+      return '<div class="knowledge-item">' +
+        '<div class="knowledge-item-header">' +
+          '<span class="knowledge-item-cat ' + catClass + '" style="background:' + catBg + ';">' + k.category + '</span>' +
+          '<span class="knowledge-item-title">' + escHtml(k.title) + '</span>' +
+        '</div>' +
+        '<div class="knowledge-item-content">' + contentText + '</div>' +
+        '<div class="knowledge-item-meta">' +
+          '<span>score: ' + (k.relevance_score || 0).toFixed(2) + '</span>' +
+          '<span>accessed: ' + (k.access_count || 0) + 'x</span>' +
+          (k.tags ? '<span>tags: ' + escHtml(k.tags) + '</span>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+}
+
+async function doKnowledgeSearch() {
+  const q = knowledgeSearchInput.value.trim();
+  knowledgeSearchQuery = q;
+  knowledgeSearchClear.style.display = q ? 'block' : 'none';
+  if (!q) {
+    // Restore default knowledge list from last refresh
+    const items = await fetchJson('/api/knowledge?limit=20');
+    renderKnowledgeList(items);
+    return;
+  }
+  const results = await fetchJson('/api/knowledge/search?q=' + encodeURIComponent(q) + '&limit=50');
+  renderKnowledgeList(results);
+}
+
+knowledgeSearchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    clearTimeout(knowledgeSearchTimer);
+    doKnowledgeSearch();
+  }
+  if (e.key === 'Escape') {
+    knowledgeSearchInput.value = '';
+    knowledgeSearchQuery = '';
+    knowledgeSearchClear.style.display = 'none';
+    doKnowledgeSearch();
+    knowledgeSearchInput.blur();
+  }
+});
+
+knowledgeSearchInput.addEventListener('input', () => {
+  clearTimeout(knowledgeSearchTimer);
+  knowledgeSearchTimer = setTimeout(doKnowledgeSearch, 300);
+});
+
+knowledgeSearchClear.addEventListener('click', () => {
+  knowledgeSearchInput.value = '';
+  knowledgeSearchQuery = '';
+  knowledgeSearchClear.style.display = 'none';
+  doKnowledgeSearch();
+  knowledgeSearchInput.focus();
 });
 
 // --- Toast notifications ---

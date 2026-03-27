@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 6;
+export const LATEST_SCHEMA_VERSION = 7;
 
 export const migrations: Migration[] = [
   {
@@ -287,6 +287,16 @@ export const migrations: Migration[] = [
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (6, unixepoch(), 'Add access_count to observations for search reranking');
+    `,
+  },
+  {
+    version: 7,
+    description: 'Add last_accessed timestamp to knowledge entries for relevance decay',
+    up: `
+      ALTER TABLE knowledge ADD COLUMN last_accessed INTEGER NOT NULL DEFAULT 0;
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (7, unixepoch(), 'Add last_accessed timestamp to knowledge entries for relevance decay');
     `,
   },
 ];

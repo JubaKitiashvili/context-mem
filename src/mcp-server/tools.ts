@@ -787,7 +787,7 @@ export async function handleSaveKnowledge(
   // Check for contradictions before saving
   let contradictions: ContradictionWarning[] = [];
   try {
-    contradictions = kernel.knowledgeBase.checkContradictions(params.title, params.content, category);
+    contradictions = await kernel.knowledgeBase.checkContradictions(params.title, params.content, category);
   } catch (err) {
     return { error: `Contradiction check failed: ${(err as Error).message}` };
   }

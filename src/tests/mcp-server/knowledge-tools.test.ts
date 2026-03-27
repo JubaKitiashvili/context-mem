@@ -12,7 +12,7 @@ import { BM25Search } from '../../plugins/search/bm25.js';
 import { DEFAULT_CONFIG } from '../../core/types.js';
 import { handleSaveKnowledge, handleUpdateProfile } from '../../mcp-server/tools.js';
 import type { ToolKernel } from '../../mcp-server/tools.js';
-import type { ContradictionWarning } from '../../core/types.js';
+import type { ContradictionWarning, KnowledgeCategory } from '../../core/types.js';
 import { createTestDb } from '../helpers.js';
 
 async function buildKernel(storage: BetterSqlite3Storage, sessionId: string): Promise<ToolKernel> {
@@ -153,5 +153,97 @@ describe('handleSaveKnowledge — contradiction flow', () => {
     assert.ok(!('blocked' in result), 'should not be blocked');
     const saved = result as { id: string; contradictions: ContradictionWarning[] };
     assert.equal(saved.contradictions.length, 0, 'should have no contradiction warnings');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// KnowledgeBase.checkContradictions — semantic (vector) layer unit tests
+// ---------------------------------------------------------------------------
+
+describe('KnowledgeBase.checkContradictions — semantic layer', () => {
+  let storage: BetterSqlite3Storage;
+  let knowledgeBase: import('../../plugins/knowledge/knowledge-base.js').KnowledgeBase;
+
+  before(async () => {
+    storage = await createTestDb();
+    const { KnowledgeBase } = await import('../../plugins/knowledge/knowledge-base.js');
+    knowledgeBase = new KnowledgeBase(storage);
+  });
+
+  after(async () => { await storage.close(); });
+
+  it('checkContradictions returns a promise', async () => {
+    // The method should now be async
+    const result = knowledgeBase.checkContradictions('test', 'test content', 'decision' as KnowledgeCategory);
+    assert.ok(result instanceof Promise, 'checkContradictions should return a Promise');
+    const warnings = await result;
+    assert.ok(Array.isArray(warnings), 'resolved value should be an array');
+  });
+
+  it('still detects keyword-overlap contradictions (backward compat)', async () => {
+    // Save an entry
+    knowledgeBase.save({
+      category: 'decision' as KnowledgeCategory,
+      title: 'Database choice',
+      content: 'Use PostgreSQL as the primary database',
+      tags: ['database'],
+    });
+
+    // Check with overlapping keywords
+    const warnings = await knowledgeBase.checkContradictions(
+      'Database choice',
+      'Use MySQL as the primary database',
+      'decision' as KnowledgeCategory,
+    );
+
+    assert.ok(warnings.length > 0, 'should detect contradiction via keyword overlap or FTS');
+    assert.ok(
+      warnings.some((w: ContradictionWarning) => w.title === 'Database choice'),
+      'should find the existing entry with matching title',
+    );
+  });
+
+  it('does not crash when vector embeddings are unavailable', async () => {
+    // This test verifies that when @huggingface/transformers is not installed,
+    // the method still works using keyword-based detection only.
+    const warnings = await knowledgeBase.checkContradictions(
+      'Something completely new',
+      'Entirely different content that shares no keywords',
+      'pattern' as KnowledgeCategory,
+    );
+    // Should return empty array gracefully, not throw
+    assert.ok(Array.isArray(warnings), 'should return an array even without vector support');
+  });
+
+  it('semantic candidates include _similarity_reason when vector matches exist', async () => {
+    // We test the private findSemanticCandidates method indirectly:
+    // If Embedder is available, semantic matches will have 'semantic similarity' in their reason.
+    // If not available, this test just verifies no crash.
+    knowledgeBase.save({
+      category: 'decision' as KnowledgeCategory,
+      title: 'Frontend framework',
+      content: 'Use React for the frontend of our web application',
+      tags: ['frontend'],
+    });
+
+    // Use different words but same semantic meaning
+    const warnings = await knowledgeBase.checkContradictions(
+      'UI library selection',
+      'Switch to Vue for the frontend of our web application',
+      'decision' as KnowledgeCategory,
+    );
+
+    // Whether vector is available or not, this should not crash.
+    assert.ok(Array.isArray(warnings), 'should return array regardless of vector availability');
+
+    // If any warning has semantic similarity reason, verify format
+    for (const w of warnings as ContradictionWarning[]) {
+      if (w.similarity_reason.includes('semantic similarity')) {
+        assert.ok(
+          w.similarity_reason.includes('vector'),
+          'semantic similarity reason should mention vector',
+        );
+      }
+    }
   });
 });

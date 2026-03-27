@@ -17,6 +17,12 @@
     "cleanup_schedule": "on_startup",
     "preserve_types": ["decision", "commit"]
   },
+  "search_weights": {
+    "bm25": 0.5,
+    "trigram": 0.3,
+    "levenshtein": 0.15,
+    "vector": 0.05
+  },
   "port": 51893,
   "db_path": ".context-mem/store.db"
 }

@@ -156,7 +156,7 @@ export class Kernel {
 
     const searchPlugins: SearchPlugin[] = [bm25, trigram, levenshtein];
     if (vectorPlugin) searchPlugins.push(vectorPlugin);
-    this.searchFusion = new SearchFusion(searchPlugins);
+    this.searchFusion = new SearchFusion(searchPlugins, this.config.search_weights);
 
     // 7. Runtime plugins
     const runtimes = [

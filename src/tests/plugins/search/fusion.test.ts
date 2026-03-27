@@ -116,6 +116,48 @@ describe('SearchFusion', () => {
     assert.ok(results.length > 0, 'results should be returned even when one plugin throws');
     assert.equal(results.length, 3, 'all results from working plugin should be returned');
   });
+
+  it('applies custom search weights to relevance scores', async () => {
+    const bm25Result = makeResult('bm25-1', 'code', 1.0);
+    const trigramResult = makeResult('tri-1', 'log', 1.0);
+
+    const bm25 = mockSearchPlugin('bm25', 'bm25', 1, [bm25Result], true);
+    const trigram = mockSearchPlugin('trigram', 'trigram', 2, [trigramResult], false);
+
+    // Default weights: bm25=0.5, trigram=0.3
+    const defaultFusion = new SearchFusion([bm25, trigram]);
+    const defaultResults = await defaultFusion.execute('test', { limit: 5 });
+
+    // Custom weights: flip them so trigram weighs more
+    const customFusion = new SearchFusion([bm25, trigram], { bm25: 0.2, trigram: 0.8 });
+    const customResults = await customFusion.execute('test', { limit: 5 });
+
+    const defaultBm25Score = defaultResults.find(r => r.id === 'bm25-1')!.relevance_score;
+    const customBm25Score = customResults.find(r => r.id === 'bm25-1')!.relevance_score;
+    const defaultTrigramScore = defaultResults.find(r => r.id === 'tri-1')!.relevance_score;
+    const customTrigramScore = customResults.find(r => r.id === 'tri-1')!.relevance_score;
+
+    // With custom weights, bm25 score should be lower and trigram score should be higher
+    assert.ok(customBm25Score < defaultBm25Score, 'bm25 score should decrease with lower weight');
+    assert.ok(customTrigramScore > defaultTrigramScore, 'trigram score should increase with higher weight');
+
+    // With custom weights, trigram should rank above bm25
+    assert.equal(customResults[0].id, 'tri-1', 'trigram result should rank first with higher custom weight');
+  });
+
+  it('uses default weights when none provided', async () => {
+    const result = makeResult('r1', 'code', 2.0);
+    const bm25 = mockSearchPlugin('bm25', 'bm25', 1, [result], false);
+
+    const fusion = new SearchFusion([bm25]);
+    const results = await fusion.execute('test', { limit: 5 });
+
+    // With default bm25 weight of 0.5, score 2.0 becomes 2.0 * 0.5 = 1.0 before reranking
+    // Reranking applies: score * (0.7 + 0.2 * recencyBoost + 0.1 * accessBoost)
+    // For a fresh result: ~1.0 * (0.7 + 0.2 * 1.0 + 0.1 * log2(2)/10) = ~0.91
+    assert.ok(results[0].relevance_score > 0, 'should produce valid scores with default weights');
+    assert.ok(results[0].relevance_score < 2.0, 'score should be scaled down by default weight');
+  });
 });
 
 describe('rerank', () => {

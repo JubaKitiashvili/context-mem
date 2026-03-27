@@ -95,6 +95,7 @@ export interface KnowledgeEntry {
   relevance_score: number;
   access_count: number;
   created_at: number;
+  last_accessed: number;
   archived: boolean;
   source_type: SourceType;
 }
@@ -273,6 +274,21 @@ export interface SessionContext {
   started_at: number;
 }
 
+// Search fusion weight config
+export interface SearchWeights {
+  bm25?: number;
+  trigram?: number;
+  levenshtein?: number;
+  vector?: number;
+}
+
+export const DEFAULT_SEARCH_WEIGHTS: Required<SearchWeights> = {
+  bm25: 0.5,
+  trigram: 0.3,
+  levenshtein: 0.15,
+  vector: 0.05,
+};
+
 // Config
 export interface ContextMemConfig {
   storage: string;
@@ -294,6 +310,7 @@ export interface ContextMemConfig {
     cleanup_schedule: 'on_startup' | 'hourly' | 'manual';
     preserve_types: ObservationType[];
   };
+  search_weights?: SearchWeights;
   port: number;
   api_port: number;
   db_path: string;
