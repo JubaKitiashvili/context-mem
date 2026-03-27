@@ -20,6 +20,7 @@ import type { EventTracker } from '../core/events.js';
 import type { SessionManager } from '../core/session.js';
 import type { ContentStore } from '../plugins/storage/content-store.js';
 import type { KnowledgeBase } from '../plugins/knowledge/knowledge-base.js';
+import type { GlobalKnowledgeStore } from '../core/global-store.js';
 
 // ---------------------------------------------------------------------------
 // Input validation helpers
@@ -60,6 +61,7 @@ export interface ToolKernel {
   sessionManager: SessionManager;
   contentStore: ContentStore;
   knowledgeBase: KnowledgeBase;
+  globalStore?: GlobalKnowledgeStore;
 }
 
 // ---------------------------------------------------------------------------
@@ -239,7 +241,33 @@ export const toolDefinitions: ToolDefinition[] = [
   },
   {
     name: 'search_knowledge',
-    description: 'Search the knowledge base using 3-layer search (FTS5 → trigram → scan).',
+    description: 'Search the knowledge base using 3-layer search (FTS5 → trigram → scan). Optionally include global cross-project knowledge.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search query' },
+        category: { type: 'string', enum: ['pattern', 'decision', 'error', 'api', 'component'], description: 'Filter by category' },
+        limit: { type: 'number', description: 'Max results (default: 10)' },
+        include_global: { type: 'boolean', description: 'Also search global cross-project knowledge store and merge results (project results first). Default: false' },
+      },
+      required: ['query'],
+    },
+  },
+  // Global knowledge tools
+  {
+    name: 'promote_knowledge',
+    description: 'Promote a project knowledge entry to the global cross-project knowledge store. Privacy engine sanitizes content before storing.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Knowledge entry ID to promote from project to global store' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'global_search',
+    description: 'Search the global cross-project knowledge store.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -826,9 +854,9 @@ export async function handleSaveKnowledge(
 }
 
 export async function handleSearchKnowledge(
-  params: { query: string; category?: string; limit?: number },
+  params: { query: string; category?: string; limit?: number; include_global?: boolean },
   kernel: ToolKernel,
-): Promise<Array<{ id: string; category: string; title: string; content: string; relevance_score: number; tags: string[]; source_type: string }> | { error: string }> {
+): Promise<Array<{ id: string; category: string; title: string; content: string; relevance_score: number; tags: string[]; source_type: string; source_project?: string }> | { error: string }> {
   if (!params.query || typeof params.query !== 'string' || !params.query.trim()) {
     return { content: [{ type: 'text', text: JSON.stringify({ error: 'query must be a non-empty string' }) }], isError: true } as any;
   }
@@ -836,8 +864,116 @@ export async function handleSearchKnowledge(
     return { error: `Invalid category: "${params.category}". Must be one of: ${KNOWLEDGE_CATEGORIES.join(', ')}` };
   }
   const category = params.category as KnowledgeCategory | undefined;
+  const limit = validateLimit(params.limit ?? 10);
 
   const results = kernel.knowledgeBase.search(params.query, {
+    category,
+    limit,
+  });
+
+  const mapped = results.map(r => ({
+    id: r.id,
+    category: r.category,
+    title: r.title,
+    content: r.content,
+    relevance_score: r.relevance_score,
+    tags: r.tags,
+    source_type: r.source_type,
+  }));
+
+  // Merge global results when requested
+  if (params.include_global && kernel.globalStore && kernel.config.global_knowledge?.enabled !== false) {
+    try {
+      const globalResults = kernel.globalStore.search(params.query, { category, limit });
+      const projectIds = new Set(mapped.map(r => r.id));
+      for (const gr of globalResults) {
+        if (!projectIds.has(gr.id) && mapped.length < limit) {
+          mapped.push({
+            id: gr.id,
+            category: gr.category,
+            title: gr.title,
+            content: gr.content,
+            relevance_score: gr.relevance_score,
+            tags: gr.tags,
+            source_type: gr.source_type,
+            source_project: gr.source_project,
+          } as typeof mapped[number]);
+        }
+      }
+    } catch {
+      // Global store unavailable — return project results only
+    }
+  }
+
+  return mapped;
+}
+
+// ---------------------------------------------------------------------------
+// Global Knowledge handlers
+// ---------------------------------------------------------------------------
+
+export async function handlePromoteKnowledge(
+  params: { id: string },
+  kernel: ToolKernel,
+): Promise<{ id: string; global_id: string; source_project: string } | { error: string }> {
+  if (!params.id || typeof params.id !== 'string') {
+    return { error: 'id is required and must be a non-empty string' };
+  }
+
+  if (!kernel.globalStore) {
+    return { error: 'Global knowledge store is not enabled' };
+  }
+
+  if (kernel.config.global_knowledge?.enabled === false) {
+    return { error: 'Global knowledge is disabled in configuration' };
+  }
+
+  // Find entry in project knowledge base
+  const entry = kernel.knowledgeBase.access(params.id);
+  if (!entry) {
+    return { error: `Knowledge entry not found: ${params.id}` };
+  }
+
+  // Determine project name from db_path
+  const projectName = kernel.config.db_path
+    ? kernel.config.db_path.split('/').slice(-3, -2)[0] || 'unknown'
+    : 'unknown';
+
+  try {
+    const globalEntry = kernel.globalStore.promote(entry, projectName);
+    return {
+      id: params.id,
+      global_id: globalEntry.id,
+      source_project: globalEntry.source_project,
+    };
+  } catch (err) {
+    return { error: `Failed to promote knowledge: ${(err as Error).message}` };
+  }
+}
+
+export async function handleGlobalSearch(
+  params: { query: string; category?: string; limit?: number },
+  kernel: ToolKernel,
+): Promise<Array<{ id: string; category: string; title: string; content: string; relevance_score: number; tags: string[]; source_type: string; source_project: string }> | { error: string }> {
+  if (!params.query || typeof params.query !== 'string' || !params.query.trim()) {
+    return { content: [{ type: 'text', text: JSON.stringify({ error: 'query must be a non-empty string' }) }], isError: true } as any;
+  }
+
+  if (!kernel.globalStore) {
+    return { error: 'Global knowledge store is not enabled' };
+  }
+
+  if (kernel.config.global_knowledge?.enabled === false) {
+    return { error: 'Global knowledge is disabled in configuration' };
+  }
+
+  if (params.category !== undefined && !(KNOWLEDGE_CATEGORIES as readonly string[]).includes(params.category)) {
+    return { error: `Invalid category: "${params.category}". Must be one of: ${KNOWLEDGE_CATEGORIES.join(', ')}` };
+  }
+
+  const category = params.category as KnowledgeCategory | undefined;
+
+  const results = kernel.globalStore.search(params.query, {
     category,
     limit: validateLimit(params.limit ?? 10),
   });
@@ -850,6 +986,7 @@ export async function handleSearchKnowledge(
     relevance_score: r.relevance_score,
     tags: r.tags,
     source_type: r.source_type,
+    source_project: r.source_project,
   }));
 }
 

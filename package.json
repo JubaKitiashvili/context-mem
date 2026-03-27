@@ -15,14 +15,31 @@
     "lint": "tsc --noEmit",
     "prepublishOnly": "npm run build && npm test"
   },
-  "keywords": ["mcp", "context", "llm", "token-optimization", "claude-code", "ai-coding"],
+  "keywords": [
+    "mcp",
+    "context",
+    "llm",
+    "token-optimization",
+    "claude-code",
+    "ai-coding"
+  ],
   "author": "Juba Kitiashvili",
   "license": "MIT",
-  "files": ["dist", "!dist/tests", "hooks", "dashboard", "configs", ".context-mem.json.example"],
-  "engines": { "node": ">=18" },
+  "files": [
+    "dist",
+    "!dist/tests",
+    "hooks",
+    "dashboard",
+    "configs",
+    ".context-mem.json.example"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "better-sqlite3": "^11.0.0"
+    "better-sqlite3": "^11.0.0",
+    "ws": "^8.20.0"
   },
   "optionalDependencies": {
     "@huggingface/transformers": "^3.0.0"
@@ -30,6 +47,7 @@
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^20.0.0",
+    "@types/ws": "^8.18.1",
     "typescript": "^5.5.0"
   }
 }

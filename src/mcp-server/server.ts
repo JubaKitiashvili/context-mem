@@ -22,6 +22,8 @@ import {
   handleEmitEvent,
   handleQueryEvents,
   handleUpdateProfile,
+  handlePromoteKnowledge,
+  handleGlobalSearch,
 } from './tools.js';
 
 export function createMcpServer(kernel: ToolKernel): Server {
@@ -101,6 +103,12 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'update_profile':
           result = await handleUpdateProfile(params as Parameters<typeof handleUpdateProfile>[0], kernel);
+          break;
+        case 'promote_knowledge':
+          result = await handlePromoteKnowledge(params as Parameters<typeof handlePromoteKnowledge>[0], kernel);
+          break;
+        case 'global_search':
+          result = await handleGlobalSearch(params as Parameters<typeof handleGlobalSearch>[0], kernel);
           break;
         default:
           console.error(`context-mem: Unknown MCP tool requested: ${name}`);

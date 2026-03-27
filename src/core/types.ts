@@ -165,6 +165,8 @@ export interface SummarizerPlugin extends Plugin {
   contentTypes: string[];
   detect(content: string): boolean;
   summarize(content: string, opts: SummarizeOpts): Promise<SummaryResult>;
+  /** Priority ordering (lower = checked first). Built-ins use 100-900. Plugins: 50 (before) or 950 (after). */
+  priority?: number;
 }
 
 // Search plugin
@@ -289,6 +291,12 @@ export const DEFAULT_SEARCH_WEIGHTS: Required<SearchWeights> = {
   vector: 0.05,
 };
 
+// Global knowledge store config
+export interface GlobalKnowledgeStoreConfig {
+  enabled?: boolean;  // default true
+  auto_suggest?: boolean;  // default true
+}
+
 // Config
 export interface ContextMemConfig {
   storage: string;
@@ -297,6 +305,10 @@ export interface ContextMemConfig {
     search: string[];
     runtimes: string[];
     custom?: string[];
+    external_summarizers?: Record<string, {
+      enabled?: boolean;
+      priority?: number;
+    }>;
   };
   privacy: {
     strip_tags: boolean;
@@ -312,6 +324,7 @@ export interface ContextMemConfig {
     preserve_types: ObservationType[];
   };
   search_weights?: SearchWeights;
+  global_knowledge?: GlobalKnowledgeStoreConfig;
   port: number;
   api_port: number;
   db_path: string;

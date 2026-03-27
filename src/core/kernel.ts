@@ -45,6 +45,8 @@ import { ContentStore } from '../plugins/storage/content-store.js';
 import { KnowledgeBase } from '../plugins/knowledge/knowledge-base.js';
 import { LifecycleManager } from './lifecycle.js';
 import { Dreamer } from './dreamer.js';
+import { GlobalKnowledgeStore } from './global-store.js';
+import { PluginLoader } from './plugin-loader.js';
 import type { VectorSearch } from '../plugins/search/vector.js';
 import type {
   SessionContext,
@@ -70,6 +72,7 @@ export class Kernel {
   contentStore!: ContentStore;
   knowledgeBase!: KnowledgeBase;
   dreamer!: Dreamer;
+  globalStore?: GlobalKnowledgeStore;
 
   constructor(projectDir: string) {
     this.projectDir = projectDir;
@@ -106,6 +109,15 @@ export class Kernel {
     this.dreamer = new Dreamer(this.knowledgeBase, this.storage);
     this.dreamer.start();
 
+    // 3c. Global knowledge store
+    if (this.config.global_knowledge?.enabled !== false) {
+      try {
+        this.globalStore = new GlobalKnowledgeStore();
+      } catch {
+        // Non-critical — continue without global store
+      }
+    }
+
     // 4. Pipeline (with budget + session integration)
     this.pipeline = new Pipeline(this.registry, this.storage, privacy, this.session.session_id);
     this.pipeline.setBudgetManager(this.budgetManager);
@@ -130,6 +142,17 @@ export class Kernel {
     ];
     for (const s of summarizers) {
       await this.registry.register(s);
+    }
+
+    // 5b. External summarizer plugins
+    try {
+      const loader = new PluginLoader();
+      const external = loader.loadSummarizers(this.projectDir, this.config);
+      for (const ext of external) {
+        await this.registry.register(ext);
+      }
+    } catch {
+      // Non-critical — continue without external plugins
     }
 
     // 6. Search plugins (with Levenshtein fallback + optional vector)

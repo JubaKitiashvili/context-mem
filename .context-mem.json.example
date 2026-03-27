@@ -3,7 +3,11 @@
   "plugins": {
     "summarizers": ["shell", "json", "error", "log", "code"],
     "search": ["bm25", "trigram"],
-    "runtimes": ["javascript", "python"]
+    "runtimes": ["javascript", "python"],
+    "external_summarizers": {
+      "context-mem-summarizer-k8s": { "enabled": true, "priority": 50 },
+      "context-mem-summarizer-terraform": { "enabled": true }
+    }
   },
   "privacy": {
     "strip_tags": true,

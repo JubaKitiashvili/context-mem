@@ -3678,11 +3678,99 @@ async function runInit() {
 // Check init status once on load
 checkInitStatus();
 
-// Auto-refresh every 3 seconds (pause during active search typing)
+// Auto-refresh: 3s default, 10s when WebSocket is connected
+let pollInterval = 3000;
+let pollTimer = null;
+
+function startPolling(interval) {
+  if (pollTimer) clearInterval(pollTimer);
+  pollInterval = interval;
+  pollTimer = setInterval(() => {
+    if (document.activeElement !== searchInput) refresh();
+  }, pollInterval);
+}
+
 refresh();
-setInterval(() => {
-  if (document.activeElement !== searchInput) refresh();
-}, 3000);
+startPolling(3000);
+
+// --- WebSocket real-time connection ---
+(function initWebSocket() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = proto + '//127.0.0.1:' + location.port + '/ws';
+  let reconnectDelay = 1000;
+  let ws = null;
+  let reconnectTimer = null;
+
+  function connect() {
+    try { ws = new WebSocket(wsUrl); } catch { return; }
+
+    ws.onopen = function() {
+      reconnectDelay = 1000; // reset backoff
+      // Reduce HTTP polling when WS is active
+      startPolling(10000);
+      document.getElementById('statusText').textContent = 'live';
+    };
+
+    ws.onmessage = function(evt) {
+      try {
+        const event = JSON.parse(evt.data);
+        if (event.type === 'observation:new' && event.data) {
+          // Prepend to timeline without full refresh
+          const tlEl = document.getElementById('timeline');
+          if (tlEl) {
+            const obs = event.data;
+            const time = new Date(obs.indexed_at || Date.now()).toLocaleTimeString();
+            const summary = escHtml(obs.summary || (obs.content || '').substring(0, 120));
+            const html = '<div class="obs-row" onclick="toggleDetail(\\'' + escHtml(obs.id || '') + '\\')" style="opacity:0;transition:opacity 0.3s;">' +
+              '<div class="obs-header">' +
+                '<span class="obs-type-badge badge-' + escHtml(obs.type || 'unknown') + '">' + escHtml(obs.type || '?') + '</span>' +
+                '<span class="obs-time">' + time + '</span>' +
+              '</div>' +
+              '<div class="obs-summary">' + summary + '</div>' +
+            '</div>';
+            tlEl.insertAdjacentHTML('afterbegin', html);
+            // Fade in
+            const first = tlEl.firstElementChild;
+            if (first) requestAnimationFrame(() => { first.style.opacity = '1'; });
+          }
+        }
+        if (event.type === 'stats:update' && event.data) {
+          const stats = event.data;
+          const el = (id) => document.getElementById(id);
+          if (el('statObs')) el('statObs').textContent = fmt(stats.observations);
+          if (el('statSaved')) el('statSaved').textContent = fmt(stats.tokens_saved);
+          if (el('statPct')) el('statPct').textContent = stats.savings_pct + '%';
+          if (el('statSearches')) el('statSearches').textContent = fmt(stats.searches);
+          if (el('refreshInfo')) el('refreshInfo').textContent = 'ws ' + new Date().toLocaleTimeString();
+        }
+      } catch { /* ignore malformed messages */ }
+    };
+
+    ws.onclose = function() {
+      ws = null;
+      // Restore fast HTTP polling
+      startPolling(3000);
+      document.getElementById('statusText').textContent = 'connected';
+      scheduleReconnect();
+    };
+
+    ws.onerror = function() {
+      // onclose will fire after onerror
+      try { ws.close(); } catch {}
+    };
+  }
+
+  function scheduleReconnect() {
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+    reconnectTimer = setTimeout(() => {
+      connect();
+      // Exponential backoff: 1s, 2s, 4s, 8s, max 30s
+      reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+    }, reconnectDelay);
+  }
+
+  connect();
+})();
 </script>
 </body>
 </html>`;
@@ -3699,21 +3787,54 @@ const server = http.createServer((req, res) => {
 });
 
 // --- WebSocket for real-time push (optional, requires 'ws' package) ---
+// Uses ObservationStream-compatible protocol: { type: string, data: unknown }
+// Event types: 'observation:new', 'stats:update'
+let wsClients = new Set();
+let wsHeartbeatInterval = null;
+
 if (WebSocketServer) {
   try {
-    const wss = new WebSocketServer({ server });
+    const wss = new WebSocketServer({ server, path: '/ws' });
+
     wss.on('connection', (ws) => {
-      try { ws.send(JSON.stringify({ type: 'stats', data: getStats() })); } catch {}
+      wsClients.add(ws);
+      // Send initial stats on connect
+      try { ws.send(JSON.stringify({ type: 'stats:update', data: getStats() })); } catch {}
+
+      ws.isAlive = true;
+      ws.on('pong', () => { ws.isAlive = true; });
+      ws.on('close', () => { wsClients.delete(ws); });
+      ws.on('error', () => {
+        wsClients.delete(ws);
+        try { ws.close(); } catch {}
+      });
     });
-    setInterval(() => {
-      if (wss.clients.size === 0) return;
+
+    // Heartbeat ping/pong every 30s (RFC 6455)
+    wsHeartbeatInterval = setInterval(() => {
+      for (const ws of wsClients) {
+        if (!ws.isAlive) {
+          wsClients.delete(ws);
+          try { ws.terminate(); } catch {}
+          continue;
+        }
+        ws.isAlive = false;
+        try { ws.ping(); } catch {}
+      }
+    }, 30000);
+    wsHeartbeatInterval.unref();
+
+    // Broadcast stats every 3s to connected WS clients
+    const statsPushInterval = setInterval(() => {
+      if (wsClients.size === 0) return;
       try {
-        const data = JSON.stringify({ type: 'stats', data: getStats() });
-        for (const client of wss.clients) {
-          if (client.readyState === 1) client.send(data);
+        const data = JSON.stringify({ type: 'stats:update', data: getStats() });
+        for (const ws of wsClients) {
+          if (ws.readyState === 1) ws.send(data);
         }
       } catch {}
     }, 3000);
+    statsPushInterval.unref();
   } catch {}
 }
 
@@ -3734,5 +3855,12 @@ server.listen(PORT, '127.0.0.1', () => {
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => { db.close(); process.exit(0); });
-process.on('SIGINT', () => { db.close(); process.exit(0); });
+function shutdown() {
+  if (wsHeartbeatInterval) clearInterval(wsHeartbeatInterval);
+  for (const ws of wsClients) { try { ws.close(1000, 'server stopping'); } catch {} }
+  wsClients.clear();
+  db.close();
+  process.exit(0);
+}
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);

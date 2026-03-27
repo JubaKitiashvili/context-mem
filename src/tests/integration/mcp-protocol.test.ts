@@ -79,14 +79,15 @@ describe('MCP Protocol E2E', () => {
     await teardown();
   });
 
-  // Test 1: listTools returns all 18 tools with correct names
-  it('listTools returns all 18 tools with correct names', async () => {
+  // Test 1: listTools returns all 20 tools with correct names
+  it('listTools returns all 20 tools with correct names', async () => {
     const { tools } = await client.listTools();
-    assert.equal(tools.length, 18);
+    assert.equal(tools.length, 20);
     const names = tools.map(t => t.name);
     const expected = [
       'observe', 'summarize', 'search', 'timeline', 'get', 'stats', 'configure', 'execute',
       'index_content', 'search_content', 'save_knowledge', 'search_knowledge',
+      'promote_knowledge', 'global_search',
       'update_profile', 'budget_status', 'budget_configure', 'restore_session', 'emit_event', 'query_events',
     ];
     assert.deepStrictEqual(names, expected);

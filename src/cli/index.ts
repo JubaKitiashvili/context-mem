@@ -6,6 +6,7 @@ import { doctor } from './commands/doctor.js';
 import { dashboard } from './commands/dashboard.js';
 import { exportCommand } from './commands/export.js';
 import { importCommand } from './commands/import.js';
+import { createSummarizer } from './commands/create-summarizer.js';
 
 const command = process.argv[2];
 const args = process.argv.slice(3);
@@ -19,6 +20,7 @@ async function main() {
     case 'dashboard': await dashboard(args); break;
     case 'export': await exportCommand(args); break;
     case 'import': await importCommand(args); break;
+    case 'create-summarizer': await createSummarizer(args); break;
     default:
       console.log(`context-mem v1.0.0 — Context optimization for AI coding assistants
 
@@ -30,6 +32,7 @@ Usage:
   context-mem dashboard   Open real-time dashboard (web UI)
   context-mem export      Export knowledge, snapshots, events as JSON
   context-mem import      Import data from JSON export file
+  context-mem create-summarizer <name>  Scaffold a custom summarizer plugin
 `);
       break;
   }
