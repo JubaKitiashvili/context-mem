@@ -175,9 +175,9 @@ export class NaturalLanguageQuery {
 
       let sql = `
         SELECT o.id, o.type, o.content, o.summary, o.indexed_at
-        FROM observations_fts
-        JOIN observations o ON o.rowid = observations_fts.rowid
-        WHERE observations_fts MATCH ?
+        FROM obs_fts
+        JOIN observations o ON o.rowid = obs_fts.rowid
+        WHERE obs_fts MATCH ?
       `;
       const params: unknown[] = [sanitized];
 
@@ -186,7 +186,7 @@ export class NaturalLanguageQuery {
         params.push(typeFilter);
       }
 
-      sql += ' ORDER BY bm25(observations_fts) ASC LIMIT 10';
+      sql += ' ORDER BY bm25(obs_fts) ASC LIMIT 10';
 
       const rows = this.storage.prepare(sql).all(...params) as Array<Record<string, unknown>>;
       return rows.map(r => ({

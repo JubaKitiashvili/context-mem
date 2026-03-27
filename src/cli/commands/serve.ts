@@ -193,6 +193,9 @@ export async function serve(_args: string[]): Promise<void> {
     sessionManager: kernel.getSessionManager(),
     contentStore: kernel.getContentStore(),
     knowledgeBase: kernel.getKnowledgeBase(),
+    globalStore: kernel.globalStore,
+    knowledgeGraph: kernel.knowledgeGraph,
+    agentRegistry: kernel.agentRegistry,
   };
 
   const server = createMcpServer(toolKernel);
