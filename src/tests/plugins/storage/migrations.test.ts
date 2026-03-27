@@ -4,12 +4,12 @@ import Database from 'better-sqlite3';
 import { LATEST_SCHEMA_VERSION, migrations } from '../../../plugins/storage/migrations.js';
 
 describe('migrations', () => {
-  it('LATEST_SCHEMA_VERSION is 9', () => {
-    assert.equal(LATEST_SCHEMA_VERSION, 9);
+  it('LATEST_SCHEMA_VERSION is 10', () => {
+    assert.equal(LATEST_SCHEMA_VERSION, 10);
   });
 
-  it('migrations array has 9 entries', () => {
-    assert.equal(migrations.length, 9);
+  it('migrations array has 10 entries', () => {
+    assert.equal(migrations.length, 10);
   });
 
   it('each migration has version, description, and up', () => {
@@ -60,6 +60,26 @@ describe('migrations', () => {
     });
   });
 
+  it('v10 creates session_chains table with correct columns', () => {
+    const sql = migrations[9].up;
+    assert.ok(sql.includes('CREATE TABLE IF NOT EXISTS session_chains'));
+    assert.ok(sql.includes('chain_id TEXT NOT NULL'));
+    assert.ok(sql.includes('session_id TEXT NOT NULL UNIQUE'));
+    assert.ok(sql.includes('parent_session TEXT'));
+    assert.ok(sql.includes('project_path TEXT NOT NULL'));
+    assert.ok(sql.includes('handoff_reason TEXT NOT NULL'));
+    assert.ok(sql.includes('summary TEXT'));
+    assert.ok(sql.includes('token_estimate INTEGER'));
+  });
+
+  it('v10 creates required indexes', () => {
+    const sql = migrations[9].up;
+    assert.ok(sql.includes('idx_chains_session'));
+    assert.ok(sql.includes('idx_chains_parent'));
+    assert.ok(sql.includes('idx_chains_created'));
+    assert.ok(sql.includes('idx_chains_project'));
+  });
+
   describe('running migrations on in-memory database', () => {
     it('applies all migrations without error', () => {
       const db = new Database(':memory:');
@@ -69,7 +89,7 @@ describe('migrations', () => {
 
       // Verify schema_version has all entries
       const versions = db.prepare('SELECT version FROM schema_version ORDER BY version').all() as Array<{ version: number }>;
-      assert.equal(versions.length, 9);
+      assert.equal(versions.length, 10);
       assert.equal(versions[0].version, 1);
       assert.equal(versions[1].version, 2);
       assert.equal(versions[2].version, 3);
@@ -79,6 +99,7 @@ describe('migrations', () => {
       assert.equal(versions[6].version, 7);
       assert.equal(versions[7].version, 8);
       assert.equal(versions[8].version, 9);
+      assert.equal(versions[9].version, 10);
 
       // Verify observations table exists and is insertable
       db.exec(`INSERT INTO observations (id, type, content, summary, metadata, indexed_at)

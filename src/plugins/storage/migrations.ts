@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 9;
+export const LATEST_SCHEMA_VERSION = 10;
 
 export const migrations: Migration[] = [
   {
@@ -346,6 +346,32 @@ export const migrations: Migration[] = [
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (9, unixepoch(), 'Knowledge graph: entities and relationships');
+    `,
+  },
+  {
+    version: 10,
+    description: 'Session chains for context continuity across sessions',
+    up: `
+      CREATE TABLE IF NOT EXISTS session_chains (
+        chain_id TEXT NOT NULL,
+        session_id TEXT NOT NULL UNIQUE,
+        parent_session TEXT,
+        project_path TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        handoff_reason TEXT NOT NULL DEFAULT 'auto',
+        summary TEXT,
+        token_estimate INTEGER DEFAULT 0,
+        PRIMARY KEY (chain_id, session_id),
+        FOREIGN KEY (parent_session) REFERENCES session_chains(session_id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_chains_session ON session_chains(session_id);
+      CREATE INDEX IF NOT EXISTS idx_chains_parent ON session_chains(parent_session);
+      CREATE INDEX IF NOT EXISTS idx_chains_created ON session_chains(created_at);
+      CREATE INDEX IF NOT EXISTS idx_chains_project ON session_chains(project_path);
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (10, unixepoch(), 'Session chains for context continuity across sessions');
     `,
   },
 ];
