@@ -17,7 +17,7 @@ export class BM25Search implements SearchPlugin {
   async search(query: string, opts: SearchOpts): Promise<SearchResult[]> {
     const limit = opts.limit || 5;
     let sql = `
-      SELECT o.id, o.type, o.summary, o.content, o.indexed_at,
+      SELECT o.id, o.type, o.summary, o.content, o.indexed_at, o.access_count,
              bm25(obs_fts) as relevance
       FROM obs_fts
       JOIN observations o ON o.rowid = obs_fts.rowid
@@ -44,7 +44,7 @@ export class BM25Search implements SearchPlugin {
     try {
       const rows = this.storage.prepare(sql).all(...params) as Array<{
         id: string; type: string; summary: string; content: string;
-        indexed_at: number; relevance: number;
+        indexed_at: number; access_count: number; relevance: number;
       }>;
 
       return rows.map(row => ({
@@ -54,6 +54,7 @@ export class BM25Search implements SearchPlugin {
         relevance_score: Math.abs(row.relevance),
         type: row.type as SearchResult['type'],
         timestamp: row.indexed_at,
+        access_count: row.access_count ?? 0,
       }));
     } catch {
       return [];

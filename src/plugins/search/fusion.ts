@@ -1,6 +1,7 @@
 import type { SearchPlugin, SearchResult, SearchOpts, SearchOrchestrator, SearchIntent, ObservationType } from '../../core/types.js';
 import { IntentClassifier } from './intent.js';
 
+const HALF_LIFE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const SEARCH_WINDOW_MS = 60_000;       // 60-second sliding window
 const SEARCH_MAX_FULL = 3;             // calls 1-3: full results
 const SEARCH_MAX_LIMITED = 8;          // calls 4-8: 1 result + warning
@@ -71,7 +72,7 @@ export class SearchFusion implements SearchOrchestrator {
       }
     }
 
-    allResults.sort((a, b) => b.relevance_score - a.relevance_score);
+    allResults = rerank(allResults);
     allResults = allResults.slice(0, opts.limit || 5);
 
     if (this.searchCallCount > SEARCH_MAX_FULL && allResults.length > 0) {
@@ -89,4 +90,24 @@ export class SearchFusion implements SearchOrchestrator {
 
     return allResults;
   }
+}
+
+/**
+ * Rerank search results by combining original relevance with recency and access frequency.
+ * Weights: 70% original relevance, 20% recency (exponential decay, 7-day half-life),
+ * 10% access frequency (logarithmic).
+ */
+export function rerank(results: SearchResult[]): SearchResult[] {
+  const now = Date.now();
+
+  return results.map(r => {
+    const age = now - (r.timestamp || now);
+    const recencyBoost = Math.pow(0.5, age / HALF_LIFE_MS); // 1.0 for new, 0.5 after 7 days
+    const accessBoost = Math.log2((r.access_count || 0) + 2) / 10; // small boost for frequently accessed
+
+    return {
+      ...r,
+      relevance_score: r.relevance_score * (0.7 + 0.2 * recencyBoost + 0.1 * accessBoost),
+    };
+  }).sort((a, b) => b.relevance_score - a.relevance_score);
 }

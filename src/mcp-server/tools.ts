@@ -421,6 +421,22 @@ export async function handleSearch(
 
   const results: SearchResult[] = await kernel.search.execute(params.query, opts);
 
+  // Increment access_count for returned observations
+  if (results.length > 0) {
+    const ids = results.map(r => r.id).filter(id => !id.startsWith('__'));
+    if (ids.length > 0) {
+      try {
+        const placeholders = ids.map(() => '?').join(',');
+        kernel.storage.exec(
+          `UPDATE observations SET access_count = access_count + 1 WHERE id IN (${placeholders})`,
+          ids,
+        );
+      } catch {
+        // Non-critical: don't fail search if access_count update fails
+      }
+    }
+  }
+
   return results.map(r => ({
     id: r.id,
     title: r.title,

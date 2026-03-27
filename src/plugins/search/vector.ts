@@ -24,7 +24,7 @@ export class VectorSearch implements SearchPlugin {
     const limit = opts.limit || 5;
 
     let sql = `
-      SELECT id, type, summary, content, indexed_at, embeddings
+      SELECT id, type, summary, content, indexed_at, access_count, embeddings
       FROM observations
       WHERE embeddings IS NOT NULL
     `;
@@ -49,7 +49,7 @@ export class VectorSearch implements SearchPlugin {
     try {
       const rows = this.storage.prepare(sql).all(...params) as Array<{
         id: string; type: string; summary: string | null; content: string;
-        indexed_at: number; embeddings: Buffer;
+        indexed_at: number; access_count: number; embeddings: Buffer;
       }>;
 
       const scored: Array<{ row: typeof rows[0]; similarity: number }> = [];
@@ -71,6 +71,7 @@ export class VectorSearch implements SearchPlugin {
         relevance_score: similarity,
         type: row.type as SearchResult['type'],
         timestamp: row.indexed_at,
+        access_count: row.access_count ?? 0,
       }));
     } catch {
       return [];

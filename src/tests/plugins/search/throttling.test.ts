@@ -79,6 +79,21 @@ describe('SearchFusion throttling', () => {
     assert.strictEqual(results[0].type, 'context');
   });
 
+  it('window resets after timeout', async () => {
+    // Exhaust 8 searches so next would be blocked
+    for (let i = 0; i < 8; i++) {
+      await fusion.execute('test query', opts);
+    }
+
+    // Simulate window expiry by reaching into private state
+    (fusion as any).searchWindowStart = Date.now() - 61_000;
+
+    // After window expires, counter should reset — full results again
+    const results = await fusion.execute('test query', opts);
+    assert.strictEqual(results.length, 3, 'full results after window expires');
+    assert.ok(results.every(r => !r.id.startsWith('__')), 'no synthetic results after window reset');
+  });
+
   it('resetThrottle clears counter', async () => {
     // Use up all searches
     for (let i = 0; i < 9; i++) {

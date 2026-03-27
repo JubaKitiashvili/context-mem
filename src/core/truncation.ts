@@ -129,13 +129,14 @@ export function truncate(content: string, aggressive = false): TruncationResult 
 
   if (lines.length <= headSize + tailSize) {
     // Char-level truncation — only truncate if content actually exceeds the char budget
-    const charBudget = aggressive ? 1600 : 4000;
+    // Budget = total lines * 8 chars/line average
+    const charBudget = aggressive ? AGGRESSIVE_TOTAL * 8 : TOTAL_LINES * 8;
     if (originalLength <= charBudget) {
       // Content fits in budget — return as-is
       return { content, tier: 3, original_length: originalLength, truncated_length: originalLength };
     }
-    const headBudget = aggressive ? Math.floor(1600 * HEAD_RATIO) : Math.floor(4000 * HEAD_RATIO);
-    const tailBudget = aggressive ? 1600 - headBudget : 4000 - headBudget;
+    const headBudget = aggressive ? AGGRESSIVE_HEAD * 8 : HEAD * 8;
+    const tailBudget = aggressive ? AGGRESSIVE_TAIL * 8 : TAIL * 8;
     const head = content.slice(0, headBudget);
     const tail = content.slice(-tailBudget);
     const omitted = originalLength - head.length - tail.length;
