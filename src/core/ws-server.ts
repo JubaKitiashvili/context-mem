@@ -18,9 +18,17 @@ export class ObservationStream {
   private clients: Set<WebSocket> = new Set();
   private heartbeatInterval: NodeJS.Timeout;
 
+  private static readonly MAX_CLIENTS = 50;
+
   constructor(server: http.Server) {
-    this.wss = new WebSocketServer({ server, path: '/ws' });
-    this.wss.on('connection', (ws) => this.handleConnection(ws));
+    this.wss = new WebSocketServer({ server, path: '/ws', maxPayload: 64 * 1024 });
+    this.wss.on('connection', (ws) => {
+      if (this.clients.size >= ObservationStream.MAX_CLIENTS) {
+        ws.close(1013, 'Too many clients');
+        return;
+      }
+      this.handleConnection(ws);
+    });
 
     // Heartbeat every 30s (RFC 6455) — unref so it doesn't keep the process alive
     this.heartbeatInterval = setInterval(() => this.ping(), 30_000);

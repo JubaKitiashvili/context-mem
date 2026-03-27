@@ -1,10 +1,10 @@
 ---
 name: context-optimization
-description: "This skill should be used when context-mem is available in the project. Guides efficient use of context-mem's 18 MCP tools: observe large outputs, search before re-reading files, restore sessions, manage token budget, save knowledge with contradiction detection, execute code safely, emit events. Triggers on: large tool outputs, repeated file reads, session start, budget warnings, context window filling up, knowledge management, code execution requests."
-version: 2.0.0
+description: "This skill should be used when context-mem is available in the project. Guides efficient use of context-mem's 20 MCP tools: observe large outputs, search before re-reading files, restore sessions, manage token budget, save knowledge with contradiction detection, promote knowledge to global cross-project store, search across all projects, execute code safely, emit events. Triggers on: large tool outputs, repeated file reads, session start, budget warnings, context window filling up, knowledge management, cross-project knowledge transfer, global search, code execution requests."
+version: 2.1.0
 ---
 
-Use context-mem to compress large tool outputs, search stored observations before re-reading files, and persist knowledge across sessions. Leverage its 14 content-aware summarizers, 4-layer hybrid search (BM25 + Trigram + Levenshtein + Vector), and cross-session memory through MCP.
+Use context-mem to compress large tool outputs, search stored observations before re-reading files, and persist knowledge across sessions. Leverage its 14 content-aware summarizers (plus community plugins), 4-layer hybrid search (BM25 + Trigram + Levenshtein + Vector), cross-session memory, and cross-project knowledge transfer through 20 MCP tools. Dashboard receives real-time updates via WebSocket.
 
 ## Core Tools
 
@@ -88,6 +88,8 @@ query_events(event_type?: "error", priority?: 1, limit?: 50)
 - `index_content` — Chunk and index source code for later search. Use on large files before searching them. Pairs with `search_content`.
 - `search_content` — Search code previously indexed with `index_content`. Returns matching chunks with file context.
 - `budget_configure` — Set session token limits and overflow strategy (`warn`, `truncate`, or `block`). Use at session start to set budget constraints.
+- `promote_knowledge` — Promote a project knowledge entry to the global cross-project store. Privacy engine auto-redacts secrets before storing. Use for patterns that apply across multiple projects.
+- `global_search` — Search the global cross-project knowledge store. Returns entries promoted from any project, with source project tracking.
 
 ## Rules
 

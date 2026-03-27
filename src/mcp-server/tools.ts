@@ -934,10 +934,8 @@ export async function handlePromoteKnowledge(
     return { error: `Knowledge entry not found: ${params.id}` };
   }
 
-  // Determine project name from db_path
-  const projectName = kernel.config.db_path
-    ? kernel.config.db_path.split('/').slice(-3, -2)[0] || 'unknown'
-    : 'unknown';
+  // Determine project name from working directory
+  const projectName = require('node:path').basename(process.cwd()) || 'unknown';
 
   try {
     const globalEntry = kernel.globalStore.promote(entry, projectName);

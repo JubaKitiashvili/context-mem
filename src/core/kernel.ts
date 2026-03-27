@@ -113,6 +113,7 @@ export class Kernel {
     if (this.config.global_knowledge?.enabled !== false) {
       try {
         this.globalStore = new GlobalKnowledgeStore();
+        this.globalStore.open();
       } catch {
         // Non-critical — continue without global store
       }
@@ -393,6 +394,11 @@ export class Kernel {
         [this.session.session_id]
       );
     }
+    // Close global store
+    if (this.globalStore) {
+      try { this.globalStore.close(); } catch {}
+    }
+
     await this.registry.shutdown();
   }
 
