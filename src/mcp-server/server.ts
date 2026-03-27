@@ -27,11 +27,15 @@ import {
   handleGraphQuery,
   handleAddRelationship,
   handleGraphNeighbors,
+  handleAgentRegister,
+  handleAgentStatus,
+  handleClaimFiles,
+  handleAgentBroadcast,
 } from './tools.js';
 
 export function createMcpServer(kernel: ToolKernel): Server {
   const server = new Server(
-    { name: 'context-mem', version: '1.3.0' },
+    { name: 'context-mem', version: '1.4.0' },
     { capabilities: { tools: {} } },
   );
 
@@ -121,6 +125,18 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'graph_neighbors':
           result = await handleGraphNeighbors(params as Parameters<typeof handleGraphNeighbors>[0], kernel);
+          break;
+        case 'agent_register':
+          result = await handleAgentRegister(params as Parameters<typeof handleAgentRegister>[0], kernel);
+          break;
+        case 'agent_status':
+          result = await handleAgentStatus(params as Parameters<typeof handleAgentStatus>[0], kernel);
+          break;
+        case 'claim_files':
+          result = await handleClaimFiles(params as Parameters<typeof handleClaimFiles>[0], kernel);
+          break;
+        case 'agent_broadcast':
+          result = await handleAgentBroadcast(params as Parameters<typeof handleAgentBroadcast>[0], kernel);
           break;
         default:
           console.error(`context-mem: Unknown MCP tool requested: ${name}`);

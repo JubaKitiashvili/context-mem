@@ -140,6 +140,19 @@ export interface GraphResult {
   relationships: Relationship[];
 }
 
+// Agent types
+export interface AgentInfo {
+  id: string;
+  name: string;
+  session_id: string;
+  pid: number;
+  started_at: number;
+  last_heartbeat: number;
+  status: 'active' | 'idle' | 'stopped';
+  current_task: string;
+  files_claimed: string[];
+}
+
 // Event types
 export type EventPriority = 1 | 2 | 3 | 4;
 

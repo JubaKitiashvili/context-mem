@@ -48,6 +48,7 @@ import { Dreamer } from './dreamer.js';
 import { GlobalKnowledgeStore } from './global-store.js';
 import { PluginLoader } from './plugin-loader.js';
 import { KnowledgeGraph } from './knowledge-graph.js';
+import { AgentRegistry } from './agent-registry.js';
 import type { VectorSearch } from '../plugins/search/vector.js';
 import type {
   SessionContext,
@@ -75,6 +76,7 @@ export class Kernel {
   dreamer!: Dreamer;
   globalStore?: GlobalKnowledgeStore;
   knowledgeGraph!: KnowledgeGraph;
+  agentRegistry?: AgentRegistry;
 
   constructor(projectDir: string) {
     this.projectDir = projectDir;
@@ -123,6 +125,9 @@ export class Kernel {
         // Non-critical — continue without global store
       }
     }
+
+    // 3e. Agent registry for multi-agent coordination
+    this.agentRegistry = new AgentRegistry(this.projectDir, this.session.session_id);
 
     // 4. Pipeline (with budget + session integration)
     this.pipeline = new Pipeline(this.registry, this.storage, privacy, this.session.session_id);
@@ -380,6 +385,11 @@ export class Kernel {
     // Stop Dreamer background agent
     if (this.dreamer) {
       this.dreamer.stop();
+    }
+
+    // Deregister agent from multi-agent registry
+    if (this.agentRegistry) {
+      try { this.agentRegistry.deregister(); } catch {}
     }
 
     // Save session snapshot before shutdown
