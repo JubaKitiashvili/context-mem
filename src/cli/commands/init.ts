@@ -258,23 +258,28 @@ function setupMarkdownRules(projectDir: string, mdRules: MarkdownRulesConfig): v
 
 /**
  * Setup Claude Code hooks in .claude/settings.local.json
- * This is critical — without hooks, journal, observation capture, and proactive injection don't work.
- * Hooks need absolute paths to the hook scripts (resolved via npx or global install).
+ *
+ * CRITICAL: Without hooks, journal, observation capture, proactive injection, and
+ * session restore DO NOT WORK. The hooks need stable absolute paths to scripts
+ * that can resolve better-sqlite3.
+ *
+ * Priority: local node_modules > self (package dir) > require.resolve
+ * node_modules is preferred because better-sqlite3 is guaranteed available there.
  */
 function setupClaudeCodeHooks(projectDir: string): void {
   const claudeDir = path.join(projectDir, '.claude');
   const settingsPath = path.join(claudeDir, 'settings.local.json');
 
-  // Find the hooks directory — check npm global, npx cache, or local node_modules
   let hooksDir: string | null = null;
 
-  // 1. Check local node_modules (if npm i context-mem was run)
+  // 1. PREFERRED: local node_modules (npm i context-mem)
+  // This is the most stable path — better-sqlite3 is guaranteed here
   const localHooks = path.join(projectDir, 'node_modules', 'context-mem', 'hooks');
   if (fs.existsSync(localHooks)) {
     hooksDir = localHooks;
   }
 
-  // 2. Check if we're running from the context-mem package itself
+  // 2. Self: running from the package directory (dev mode or global install)
   if (!hooksDir) {
     const selfHooks = path.join(__dirname, '..', '..', '..', 'hooks');
     if (fs.existsSync(path.join(selfHooks, 'hooks.json'))) {
@@ -282,7 +287,7 @@ function setupClaudeCodeHooks(projectDir: string): void {
     }
   }
 
-  // 3. Try to resolve via require.resolve
+  // 3. Fallback: try require.resolve (npx cache — less stable)
   if (!hooksDir) {
     try {
       const pkgPath = require.resolve('context-mem/package.json');
@@ -294,8 +299,12 @@ function setupClaudeCodeHooks(projectDir: string): void {
   }
 
   if (!hooksDir) {
-    console.log('  ! Could not locate context-mem hooks directory. Hooks not configured.');
-    console.log('    Run: npm i context-mem   then re-run: npx context-mem init');
+    console.log('');
+    console.log('  ⚠ Hooks not configured — context-mem not found in node_modules.');
+    console.log('  To enable hooks (journal, session restore, proactive injection):');
+    console.log('    npm install context-mem');
+    console.log('    npx context-mem init');
+    console.log('');
     return;
   }
 

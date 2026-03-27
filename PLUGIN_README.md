@@ -30,10 +30,11 @@ Context optimization for AI coding assistants. Zero LLM calls, zero cloud, zero 
 
 ```bash
 cd your-project
+npm install context-mem
 npx context-mem init
 ```
 
-This auto-detects your editor, creates MCP config, AI rules, and configures Claude Code hooks.
+This installs context-mem locally (with all dependencies including better-sqlite3), auto-detects your editor, creates MCP config, AI rules, and configures Claude Code hooks.
 
 For plugin mode (all features + auto-updates):
 ```bash

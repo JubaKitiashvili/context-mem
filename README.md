@@ -38,21 +38,15 @@ AI coding assistants waste 60–80% of their context window on raw tool outputs 
 
 ## Quick Start
 
-**Option 1 — npx (recommended, zero install):**
 ```bash
 cd your-project
+npm install context-mem
 npx context-mem init
 ```
-This auto-detects your editor (Claude Code, Cursor, Windsurf, VS Code, Cline), creates MCP config, AI rules, and configures hooks. No global install needed.
 
-**Option 2 — npm global:**
-```bash
-npm install -g context-mem
-cd your-project
-context-mem init
-```
+This installs context-mem locally, auto-detects your editor (Claude Code, Cursor, Windsurf, VS Code, Cline), creates MCP config, AI rules, and configures hooks for session restore, activity journal, and proactive context injection.
 
-**Option 3 — Claude Code plugin (all features + auto-updates):**
+**Alternative — Claude Code plugin mode:**
 ```bash
 claude --plugin-dir /path/to/context-mem
 ```
@@ -335,7 +329,7 @@ AI Rules teach the AI **when and how** to use context-mem tools automatically �
 
 ## Available On
 
-- **npm** — `npx context-mem init` (zero install) or `npm install -g context-mem`
+- **npm** — `npm install context-mem && npx context-mem init`
 - **VS Code Marketplace** — [Context Mem](https://marketplace.visualstudio.com/items?itemName=JubaKitiashvili.context-mem)
 - **Claude Code Plugin** — `claude --plugin-dir /path/to/context-mem`
 
