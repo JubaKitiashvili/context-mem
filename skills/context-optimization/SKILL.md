@@ -4,7 +4,7 @@ description: "This skill should be used when context-mem is available in the pro
 version: 2.0.0
 ---
 
-Use context-mem to compress large tool outputs, search stored observations before re-reading files, and persist knowledge across sessions. Provides 14 content-aware summarizers, 4-layer hybrid search (BM25 + Trigram + Levenshtein + Vector), and cross-session memory through MCP.
+Use context-mem to compress large tool outputs, search stored observations before re-reading files, and persist knowledge across sessions. Leverage its 14 content-aware summarizers, 4-layer hybrid search (BM25 + Trigram + Levenshtein + Vector), and cross-session memory through MCP.
 
 ## Core Tools
 
@@ -37,7 +37,7 @@ restore_session(session_id?: "<optional-specific-session>")
 ```
 
 ### `save_knowledge` — For reusable patterns (with contradiction detection)
-Store decisions, error fixes, API patterns. Auto-checks for contradictions via keyword overlap AND semantic vector similarity (when available). Knowledge entries decay over time (14-day half-life) unless actively accessed. Explicit entries decay slower.
+Store decisions, error fixes, API patterns. Auto-checks for contradictions via keyword overlap AND semantic vector similarity (when available). Note that knowledge entries decay in search ranking (14-day half-life) unless actively accessed. Explicit entries decay slower.
 
 ```
 save_knowledge(category: "decision|error|pattern|api|component", title: "...", content: "...", tags: ["..."], source_type: "explicit|inferred|observed")
@@ -97,11 +97,15 @@ query_events(event_type?: "error", priority?: 1, limit?: 50)
 - When `budget_status` shows >80%: save work, call `restore_session`
 - When `save_knowledge` returns `contradictions` — review before proceeding, do NOT silently overwrite
 - Use `source_type` when saving knowledge — trust: explicit > inferred > observed
-- Knowledge entries have relevance decay — frequently accessed entries stay relevant longer
+- Expect knowledge entries to have relevance decay — frequently accessed entries stay relevant longer
+
+## Activity Journal
+
+The PostToolUse hook automatically logs every edit, command, and file read to `.context-mem/journal.md`. This journal persists across sessions and is injected at session start for continuity.
 
 ## Background Processes
 
-The **Dreamer** background agent runs automatically (separate from the 14-day relevance decay in search results):
+The **Dreamer** background agent runs automatically (separate from the 14-day relevance-decay half-life used in search ranking):
 - Marks knowledge entries as stale after 30 days without access
 - Auto-archives non-explicit entries after 90 days
 - Detects potential contradictions between entries in the same category
@@ -109,7 +113,7 @@ The **Dreamer** background agent runs automatically (separate from the 14-day re
 
 ## Priority Order
 
-1. `restore_session` — at session start
+1. `restore_session` + `budget_configure` — at session start
 2. `search` — before reading files
 3. `observe` — after large outputs
 4. `save_knowledge` — for decisions and patterns
