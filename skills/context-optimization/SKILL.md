@@ -1,6 +1,6 @@
 ---
 name: context-optimization
-description: "This skill should be used when context-mem is available in the project. Guides efficient use of context-mem's 29 MCP tools: observe large outputs, search before re-reading files, restore sessions, manage token budget, save knowledge with contradiction detection, promote knowledge to global cross-project store, search across all projects, execute code safely, emit events, time travel through project history, ask natural language questions, coordinate multi-agent sessions. Triggers on: large tool outputs, repeated file reads, session start, budget warnings, context window filling up, knowledge management, cross-project knowledge transfer, global search, code execution requests, time travel, show project state, ask question, natural language query, register agent, claim files, agent status."
+description: "This skill should be used when context-mem is available in the project. Guides efficient use of context-mem's 29 MCP tools: observe large outputs, search before re-reading files, restore sessions, manage token budget, save knowledge with contradiction detection, promote knowledge to global cross-project store, search across all projects, execute code safely, emit events, time travel through project history, ask natural language questions, coordinate multi-agent sessions. Triggers on: large tool outputs, repeated file reads, session start, budget warnings, context window filling up, knowledge management, cross-project knowledge transfer, global search, code execution requests, time travel, show project state, ask question, natural language query, register agent, claim files, agent status, knowledge graph, graph query, entity relationships, add relationship, graph neighbors."
 version: 3.0.0
 ---
 
@@ -110,6 +110,9 @@ ask(question: "what changed in the auth module last week?")
 - `agent_status` — List all active agents, their current tasks, and claimed files. Use to see what other agents are working on before starting a task.
 - `claim_files` — Claim files being worked on to prevent conflicts with other agents. Detects and reports conflicts if another agent already claimed the same file.
 - `agent_broadcast` — Send priority messages to all active agents via the event system. Use for important findings, blockers, or coordination signals.
+- `graph_query` — Query entities and their relationships. Filter by entity type, relationship type, direction (`in`/`out`/`both`), and traversal depth (1-5).
+- `add_relationship` — Create a relationship between two entities. Auto-creates entities if missing. Accepts optional weight (0-1).
+- `graph_neighbors` — Find all entities connected to a given entity. Faster than `graph_query` for simple one-hop lookups.
 
 ## Multi-Agent Coordination
 

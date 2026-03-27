@@ -1513,6 +1513,12 @@ export async function handleClaimFiles(
     }
   }
 
+  // Ensure agent is registered before claiming
+  const active = kernel.agentRegistry.getActive(true);
+  if (!active.find(a => a.id === kernel.agentRegistry!.getId())) {
+    return { error: 'Agent must be registered with agent_register before claiming files' };
+  }
+
   const result = kernel.agentRegistry.claimFiles(params.files.map(f => f.trim()));
   return result;
 }
@@ -1532,6 +1538,12 @@ export async function handleAgentBroadcast(
   }
 
   const priority = (params.priority ?? 2) as 1 | 2 | 3 | 4;
+
+  // Ensure agent is registered before broadcasting
+  const active = kernel.agentRegistry.getActive(true);
+  if (!active.find(a => a.id === kernel.agentRegistry!.getId())) {
+    return { error: 'Agent must be registered with agent_register before broadcasting' };
+  }
 
   // Use eventTracker.emit() to broadcast as an agent_broadcast event
   const event = kernel.eventTracker.emit(
