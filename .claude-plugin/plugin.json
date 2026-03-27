@@ -1,6 +1,6 @@
 {
   "name": "context-mem",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Context optimization for AI coding assistants — token savings via 14 content-aware summarizers, 4-layer search (BM25 + Trigram + Levenshtein + Vector), activity journal, and progressive disclosure. Zero LLM calls, zero cloud, zero cost.",
   "author": {
     "name": "Juba Kitiashvili",

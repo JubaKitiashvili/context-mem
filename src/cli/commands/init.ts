@@ -158,6 +158,9 @@ export async function init(_args: string[]): Promise<void> {
     }
   }
 
+  // Create root .mcp.json for Claude Code MCP server
+  setupRootMcpJson(projectDir);
+
   // Auto-detect editors and create MCP configs + rules
   const detected = detectEditors(projectDir);
   for (const editor of detected) {
@@ -361,6 +364,29 @@ function setupClaudeCodeHooks(projectDir: string): void {
 
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
   console.log('  + Claude Code: configured hooks in .claude/settings.local.json');
+}
+
+/** Create root .mcp.json for Claude Code's MCP server discovery */
+function setupRootMcpJson(projectDir: string): void {
+  const mcpPath = path.join(projectDir, '.mcp.json');
+
+  if (fs.existsSync(mcpPath)) {
+    // Check if context-mem already in it
+    try {
+      const existing = JSON.parse(fs.readFileSync(mcpPath, 'utf8'));
+      if (existing.mcpServers?.['context-mem']) return; // Already configured
+      // Add context-mem to existing config
+      if (!existing.mcpServers) existing.mcpServers = {};
+      existing.mcpServers['context-mem'] = MCP_SERVER_CONFIG;
+      fs.writeFileSync(mcpPath, JSON.stringify(existing, null, 2) + '\n');
+      console.log('  + Claude Code: added context-mem to existing .mcp.json');
+    } catch {
+      return; // Can't parse, skip
+    }
+  } else {
+    fs.writeFileSync(mcpPath, JSON.stringify({ mcpServers: { 'context-mem': MCP_SERVER_CONFIG } }, null, 2) + '\n');
+    console.log('  + Claude Code: created .mcp.json');
+  }
 }
 
 function setupEditorConfig(projectDir: string, editor: EditorConfig): void {
