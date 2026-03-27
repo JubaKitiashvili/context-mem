@@ -47,6 +47,7 @@ import { LifecycleManager } from './lifecycle.js';
 import { Dreamer } from './dreamer.js';
 import { GlobalKnowledgeStore } from './global-store.js';
 import { PluginLoader } from './plugin-loader.js';
+import { KnowledgeGraph } from './knowledge-graph.js';
 import type { VectorSearch } from '../plugins/search/vector.js';
 import type {
   SessionContext,
@@ -73,6 +74,7 @@ export class Kernel {
   knowledgeBase!: KnowledgeBase;
   dreamer!: Dreamer;
   globalStore?: GlobalKnowledgeStore;
+  knowledgeGraph!: KnowledgeGraph;
 
   constructor(projectDir: string) {
     this.projectDir = projectDir;
@@ -105,11 +107,14 @@ export class Kernel {
     this.contentStore = new ContentStore(this.storage);
     this.knowledgeBase = new KnowledgeBase(this.storage);
 
-    // 3b. Dreamer background agent
+    // 3b. Knowledge graph
+    this.knowledgeGraph = new KnowledgeGraph(this.storage);
+
+    // 3c. Dreamer background agent
     this.dreamer = new Dreamer(this.knowledgeBase, this.storage);
     this.dreamer.start();
 
-    // 3c. Global knowledge store
+    // 3d. Global knowledge store
     if (this.config.global_knowledge?.enabled !== false) {
       try {
         this.globalStore = new GlobalKnowledgeStore();

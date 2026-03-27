@@ -24,11 +24,14 @@ import {
   handleUpdateProfile,
   handlePromoteKnowledge,
   handleGlobalSearch,
+  handleGraphQuery,
+  handleAddRelationship,
+  handleGraphNeighbors,
 } from './tools.js';
 
 export function createMcpServer(kernel: ToolKernel): Server {
   const server = new Server(
-    { name: 'context-mem', version: '1.1.0' },
+    { name: 'context-mem', version: '1.2.0' },
     { capabilities: { tools: {} } },
   );
 
@@ -109,6 +112,15 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'global_search':
           result = await handleGlobalSearch(params as Parameters<typeof handleGlobalSearch>[0], kernel);
+          break;
+        case 'graph_query':
+          result = await handleGraphQuery(params as Parameters<typeof handleGraphQuery>[0], kernel);
+          break;
+        case 'add_relationship':
+          result = await handleAddRelationship(params as Parameters<typeof handleAddRelationship>[0], kernel);
+          break;
+        case 'graph_neighbors':
+          result = await handleGraphNeighbors(params as Parameters<typeof handleGraphNeighbors>[0], kernel);
           break;
         default:
           console.error(`context-mem: Unknown MCP tool requested: ${name}`);

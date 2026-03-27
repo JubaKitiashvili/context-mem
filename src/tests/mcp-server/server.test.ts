@@ -75,6 +75,7 @@ describe('createMcpServer', () => {
       'index_content', 'search_content', 'save_knowledge', 'search_knowledge',
       'promote_knowledge', 'global_search',
       'update_profile', 'budget_status', 'budget_configure', 'restore_session', 'emit_event', 'query_events',
+      'graph_query', 'add_relationship', 'graph_neighbors',
     ];
     assert.deepStrictEqual(names, expected);
 

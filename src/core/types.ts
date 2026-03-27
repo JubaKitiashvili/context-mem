@@ -108,6 +108,38 @@ export interface ContradictionWarning {
   source_type?: SourceType;
 }
 
+// Knowledge Graph types
+export const ENTITY_TYPES = ['file', 'module', 'pattern', 'decision', 'bug', 'person', 'library', 'service', 'api', 'config'] as const;
+export type EntityType = typeof ENTITY_TYPES[number];
+
+export const RELATIONSHIP_TYPES = ['uses', 'depends-on', 'fixed-by', 'contradicts', 'supersedes', 'implements', 'tests', 'documents'] as const;
+export type RelationshipType = typeof RELATIONSHIP_TYPES[number];
+
+export interface Entity {
+  id: string;
+  name: string;
+  entity_type: EntityType;
+  metadata: Record<string, unknown>;
+  knowledge_id?: string;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface Relationship {
+  id: string;
+  from_entity: string;
+  to_entity: string;
+  relationship_type: RelationshipType;
+  weight: number;
+  metadata: Record<string, unknown>;
+  created_at: number;
+}
+
+export interface GraphResult {
+  entities: Entity[];
+  relationships: Relationship[];
+}
+
 // Event types
 export type EventPriority = 1 | 2 | 3 | 4;
 

@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 8;
+export const LATEST_SCHEMA_VERSION = 9;
 
 export const migrations: Migration[] = [
   {
@@ -307,6 +307,45 @@ export const migrations: Migration[] = [
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (8, unixepoch(), 'Add stale flag to knowledge entries for Dreamer background validation');
+    `,
+  },
+  {
+    version: 9,
+    description: 'Knowledge graph: entities and relationships',
+    up: `
+      CREATE TABLE IF NOT EXISTS entities (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        entity_type TEXT NOT NULL,
+        metadata TEXT DEFAULT '{}',
+        knowledge_id TEXT,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(entity_type);
+      CREATE INDEX IF NOT EXISTS idx_entities_name ON entities(name);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_entities_name_type ON entities(name, entity_type);
+
+      CREATE TABLE IF NOT EXISTS relationships (
+        id TEXT PRIMARY KEY,
+        from_entity TEXT NOT NULL,
+        to_entity TEXT NOT NULL,
+        relationship_type TEXT NOT NULL,
+        weight REAL DEFAULT 1.0,
+        metadata TEXT DEFAULT '{}',
+        created_at INTEGER NOT NULL,
+        FOREIGN KEY (from_entity) REFERENCES entities(id),
+        FOREIGN KEY (to_entity) REFERENCES entities(id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_rel_from ON relationships(from_entity);
+      CREATE INDEX IF NOT EXISTS idx_rel_to ON relationships(to_entity);
+      CREATE INDEX IF NOT EXISTS idx_rel_type ON relationships(relationship_type);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_rel_unique ON relationships(from_entity, to_entity, relationship_type);
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (9, unixepoch(), 'Knowledge graph: entities and relationships');
     `,
   },
 ];
