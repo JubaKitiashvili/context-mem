@@ -185,7 +185,7 @@ extensions:
 
 **VS Code Extension** — Sidebar dashboard, status bar with live savings, command palette (start/stop/search/stats). Install from marketplace: `context-mem`.
 
-**Auto-Detection** — `context-mem init` detects your editor (Cursor, Windsurf, VS Code, Cline, Roo Code) and creates MCP config + AI rules automatically. First `serve` run also triggers lightweight auto-setup (`.gitignore`, rules) — zero manual config needed.
+**Auto-Detection** — `context-mem init` detects your editor (Cursor, Windsurf, VS Code, Cline, Roo Code) and creates MCP config, AI rules, and Claude Code hooks automatically.
 
 **OpenClaw Native Plugin** — Full ContextEngine integration with lifecycle hooks (bootstrap, ingest, assemble, compact, afterTurn, dispose). See [openclaw-plugin/](openclaw-plugin/).
 
@@ -223,7 +223,7 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
 | `stats` | Token economics for current session |
 | `summarize` | Summarize content without storing |
 | `configure` | Update runtime configuration |
-| `execute` | Run code snippets (JS/Python) |
+| `execute` | Run code snippets (JS, TS, Python, Shell, Ruby, Go, Rust, PHP, Perl, R, Elixir) |
 | `index_content` | Index content with code-aware chunking |
 | `search_content` | Search indexed content chunks |
 | `save_knowledge` | Save to knowledge base |
@@ -273,18 +273,16 @@ context-mem import      # Import data from JSON export file
     "search": ["bm25", "trigram", "vector"],
     "runtimes": ["javascript", "python"]
   },
-  "search": {
-    "weights": {
-      "bm25": 0.4,
-      "trigram": 0.3,
-      "levenshtein": 0.2,
-      "vector": 0.1
-    }
+  "search_weights": {
+    "bm25": 0.5,
+    "trigram": 0.3,
+    "levenshtein": 0.15,
+    "vector": 0.05
   },
   "privacy": {
     "strip_tags": true,
     "redact_patterns": [],
-    "secret_detection": true
+    "disabled_detectors": []
   },
   "token_economics": true,
   "lifecycle": {
