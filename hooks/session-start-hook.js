@@ -245,6 +245,78 @@ function getDbContext() {
   }
 }
 
+// --- Session chain auto-restore ---
+let chainContext = '';
+try {
+  const db = openDb();
+  if (db) {
+    try {
+      // Load config for thresholds
+      let config = {};
+      const cfgPath = path.join(cwd, '.context-mem.json');
+      if (fs.existsSync(cfgPath)) {
+        try { config = JSON.parse(fs.readFileSync(cfgPath, 'utf8')); } catch {}
+      }
+
+      // Check if session_chains table exists
+      const tableExists = db.prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='session_chains'"
+      ).get();
+
+      if (tableExists) {
+        const projectDir = cwd;
+        const latestChain = db.prepare(
+          'SELECT * FROM session_chains WHERE project_path = ? ORDER BY created_at DESC LIMIT 1'
+        ).get(projectDir);
+
+        if (latestChain && latestChain.session_id) {
+          const chainCreated = new Date(latestChain.created_at).getTime();
+          const hoursSince = (Date.now() - chainCreated) / (1000 * 60 * 60);
+
+          const autoThreshold = (config.session_continuity && config.session_continuity.auto_restore_threshold_hours) || 2;
+          const lightThreshold = (config.session_continuity && config.session_continuity.light_restore_threshold_hours) || 24;
+
+          if (hoursSince < autoThreshold) {
+            // Full auto-restore
+            const snapshot = db.prepare(
+              'SELECT snapshot FROM snapshots WHERE session_id = ?'
+            ).get(latestChain.session_id);
+
+            const lines = [`[Session Continuity — continuing from previous session (${Math.round(hoursSince * 60)}m ago)]`];
+
+            if (latestChain.summary) {
+              lines.push(`Previous session: ${latestChain.summary}`);
+            }
+
+            if (snapshot) {
+              try {
+                const data = JSON.parse(snapshot.snapshot);
+                if (data.tasks) lines.push(`Pending tasks:\n${data.tasks}`);
+                if (data.plan) lines.push(`Active plan: ${String(data.plan).slice(0, 300)}`);
+                if (data.decisions) lines.push(`Key decisions:\n${data.decisions}`);
+                if (data.files) lines.push(`Working files:\n${data.files}`);
+              } catch {}
+            }
+
+            chainContext = lines.join('\n');
+          } else if (hoursSince < lightThreshold) {
+            // Light restore — just chain summary
+            if (latestChain.summary) {
+              chainContext = `[Previous session (${Math.round(hoursSince)}h ago)]: ${latestChain.summary}`;
+            }
+          }
+          // > lightThreshold: clean start, no chain context
+        }
+      }
+    } finally {
+      try { db.close(); } catch {}
+    }
+  }
+} catch {
+  // Chain restore is non-critical
+}
+// --- End session chain auto-restore ---
+
 // --- Main ---
 const output = [];
 
@@ -281,6 +353,11 @@ if (dbCtx) {
 const dashPort = parseInt(process.env.CONTEXT_MEM_DASHBOARD_PORT || '51893', 10);
 output.push('');
 output.push(`Dashboard: http://localhost:${dashPort}`);
+
+if (chainContext) {
+  output.push('');
+  output.push(chainContext);
+}
 
 if (output.length > 2) {
   console.log(output.join('\n'));
