@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, beforeEach, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
 import { BudgetManager } from '../../core/budget.js';
 import { BetterSqlite3Storage } from '../../plugins/storage/better-sqlite3.js';
 import { tmpdir } from 'os';
@@ -24,38 +25,38 @@ describe('BudgetManager — token estimation', () => {
 
   it('estimates tokens for Read tool', () => {
     const tokens = budget.estimateToolTokens('Read', 4000, 0);
-    expect(tokens).toBe(1000);
+    assert.strictEqual(tokens, 1000);
   });
 
   it('estimates tokens for Edit tool (old + new)', () => {
     const tokens = budget.estimateToolTokens('Edit', 400, 600);
-    expect(tokens).toBe(250);
+    assert.strictEqual(tokens, 250);
   });
 
   it('estimates tokens for Bash tool', () => {
     const tokens = budget.estimateToolTokens('Bash', 100, 2000);
-    expect(tokens).toBe(525);
+    assert.strictEqual(tokens, 525);
   });
 
   it('estimates tokens for Agent tool (input only)', () => {
     const tokens = budget.estimateToolTokens('Agent', 2000, 5000);
-    expect(tokens).toBe(500);
+    assert.strictEqual(tokens, 500);
   });
 
   it('records tool usage and tracks cumulative estimate', () => {
     budget.recordToolUsage('test-session', 'Read', 8000, 0);
     budget.recordToolUsage('test-session', 'Edit', 200, 300);
     const estimate = budget.getTokenEstimate('test-session');
-    expect(estimate.used).toBeGreaterThan(0);
-    expect(estimate.limit).toBe(1_000_000);
-    expect(estimate.percentage).toBeGreaterThanOrEqual(0);
+    assert.ok(estimate.used > 0);
+    assert.strictEqual(estimate.limit, 1_000_000);
+    assert.ok(estimate.percentage >= 0);
   });
 
   it('detects compaction flag', () => {
-    expect(budget.wasCompacted('test-session')).toBe(false);
+    assert.strictEqual(budget.wasCompacted('test-session'), false);
     budget.markCompacted('test-session');
-    expect(budget.wasCompacted('test-session')).toBe(true);
+    assert.strictEqual(budget.wasCompacted('test-session'), true);
     budget.clearCompacted('test-session');
-    expect(budget.wasCompacted('test-session')).toBe(false);
+    assert.strictEqual(budget.wasCompacted('test-session'), false);
   });
 });

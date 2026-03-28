@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, beforeEach, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
 import { SessionManager } from '../../core/session.js';
 import { BetterSqlite3Storage } from '../../plugins/storage/better-sqlite3.js';
 import { createTestDb } from '../helpers.js';
@@ -18,30 +19,30 @@ describe('SessionManager — chain operations', () => {
 
   it('creates a new chain for the first session', () => {
     const chain = session.createChainEntry('sess-1', '/project/path', null, 'auto');
-    expect(chain.chain_id).toBeTruthy();
-    expect(chain.session_id).toBe('sess-1');
-    expect(chain.parent_session).toBeNull();
-    expect(chain.project_path).toBe('/project/path');
-    expect(chain.handoff_reason).toBe('auto');
+    assert.ok(chain.chain_id);
+    assert.strictEqual(chain.session_id, 'sess-1');
+    assert.strictEqual(chain.parent_session, null);
+    assert.strictEqual(chain.project_path, '/project/path');
+    assert.strictEqual(chain.handoff_reason, 'auto');
   });
 
   it('links sessions in a chain', () => {
     const first = session.createChainEntry('sess-1', '/project', null, 'auto');
     const second = session.createChainEntry('sess-2', '/project', 'sess-1', 'auto');
-    expect(second.chain_id).toBe(first.chain_id);
-    expect(second.parent_session).toBe('sess-1');
+    assert.strictEqual(second.chain_id, first.chain_id);
+    assert.strictEqual(second.parent_session, 'sess-1');
   });
 
   it('gets the latest chain entry for a project', () => {
     session.createChainEntry('sess-1', '/project', null, 'auto');
     session.createChainEntry('sess-2', '/project', 'sess-1', 'auto');
     const latest = session.getLatestChainEntry('/project');
-    expect(latest?.session_id).toBe('sess-2');
+    assert.strictEqual(latest?.session_id, 'sess-2');
   });
 
   it('returns null for unknown project', () => {
     const latest = session.getLatestChainEntry('/unknown');
-    expect(latest).toBeNull();
+    assert.strictEqual(latest, null);
   });
 
   it('gets chain history', () => {
@@ -49,17 +50,17 @@ describe('SessionManager — chain operations', () => {
     session.createChainEntry('sess-2', '/project', 'sess-1', 'manual');
     session.createChainEntry('sess-3', '/project', 'sess-2', 'compaction');
     const history = session.getChainHistory('sess-3');
-    expect(history).toHaveLength(3);
-    expect(history[0].session_id).toBe('sess-3');
-    expect(history[2].session_id).toBe('sess-1');
+    assert.strictEqual(history.length, 3);
+    assert.strictEqual(history[0].session_id, 'sess-3');
+    assert.strictEqual(history[2].session_id, 'sess-1');
   });
 
   it('updates chain summary and token estimate', () => {
     session.createChainEntry('sess-1', '/project', null, 'auto');
     session.updateChainEntry('sess-1', { summary: 'Built feature X', token_estimate: 340000 });
     const entry = session.getLatestChainEntry('/project');
-    expect(entry?.summary).toBe('Built feature X');
-    expect(entry?.token_estimate).toBe(340000);
+    assert.strictEqual(entry?.summary, 'Built feature X');
+    assert.strictEqual(entry?.token_estimate, 340000);
   });
 
   it('generates continuation prompt from snapshot', () => {
@@ -76,11 +77,11 @@ describe('SessionManager — chain operations', () => {
       savings_percentage: 86,
     });
     const prompt = session.generateContinuationPrompt('sess-1');
-    expect(prompt).toContain('Session Handoff');
-    expect(prompt).toBeTruthy();
+    assert.ok(prompt.includes('Session Handoff'));
+    assert.ok(prompt);
   });
 
   it('snapshot limit is 16KB', () => {
-    expect(session.getSnapshotMaxBytes()).toBe(16384);
+    assert.strictEqual(session.getSnapshotMaxBytes(), 16384);
   });
 });
