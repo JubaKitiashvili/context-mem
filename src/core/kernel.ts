@@ -129,6 +129,28 @@ export class Kernel {
     // 3e. Agent registry for multi-agent coordination
     this.agentRegistry = new AgentRegistry(this.projectDir, this.session.session_id);
 
+    // Session chain — link to previous session
+    try {
+      const latest = this.sessionManager.getLatestChainEntry(this.projectDir);
+      if (latest) {
+        this.sessionManager.createChainEntry(
+          this.session.session_id,
+          this.projectDir,
+          latest.session_id,
+          'auto',
+        );
+      } else {
+        this.sessionManager.createChainEntry(
+          this.session.session_id,
+          this.projectDir,
+          null,
+          'auto',
+        );
+      }
+    } catch {
+      // Chain init is non-critical
+    }
+
     // 4. Pipeline (with budget + session integration)
     this.pipeline = new Pipeline(this.registry, this.storage, privacy, this.session.session_id);
     this.pipeline.setBudgetManager(this.budgetManager);
@@ -390,6 +412,19 @@ export class Kernel {
     // Deregister agent from multi-agent registry
     if (this.agentRegistry) {
       try { this.agentRegistry.deregister(); } catch {}
+    }
+
+    // Update session chain with summary before shutdown
+    if (this.storage && this.sessionManager) {
+      try {
+        const tokenEstimate = this.budgetManager.getTokenEstimate(this.session.session_id);
+        this.sessionManager.updateChainEntry(this.session.session_id, {
+          summary: `Session ended after ${Math.round((Date.now() - this.session.started_at) / 60000)}m`,
+          token_estimate: tokenEstimate.used,
+        });
+      } catch {
+        // Non-critical
+      }
     }
 
     // Save session snapshot before shutdown
