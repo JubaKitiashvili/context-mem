@@ -64,7 +64,7 @@ describe('migrations', () => {
     const sql = migrations[9].up;
     assert.ok(sql.includes('CREATE TABLE IF NOT EXISTS session_chains'));
     assert.ok(sql.includes('chain_id TEXT NOT NULL'));
-    assert.ok(sql.includes('session_id TEXT NOT NULL UNIQUE'));
+    assert.ok(sql.includes('session_id TEXT PRIMARY KEY'));
     assert.ok(sql.includes('parent_session TEXT'));
     assert.ok(sql.includes('project_path TEXT NOT NULL'));
     assert.ok(sql.includes('handoff_reason TEXT NOT NULL'));
