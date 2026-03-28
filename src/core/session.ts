@@ -1,7 +1,8 @@
-import type { StoragePlugin, TokenEconomics } from './types.js';
+import type { StoragePlugin, TokenEconomics, SessionChain } from './types.js';
 import type { EventTracker } from './events.js';
+import { ulid } from './utils.js';
 
-const MAX_SNAPSHOT_BYTES = 8192;
+const MAX_SNAPSHOT_BYTES = 16384;
 const STALE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 // Budget allocation by priority tier
@@ -331,6 +332,162 @@ export class SessionManager {
     }
 
     return { snapshot: data, condensed: false };
+  }
+
+  getSnapshotMaxBytes(): number {
+    return MAX_SNAPSHOT_BYTES;
+  }
+
+  createChainEntry(
+    sessionId: string,
+    projectPath: string,
+    parentSession: string | null,
+    reason: SessionChain['handoff_reason'],
+  ): SessionChain {
+    let chainId: string;
+    if (parentSession) {
+      const parentRow = this.storage
+        .prepare('SELECT chain_id FROM session_chains WHERE session_id = ?')
+        .get(parentSession) as { chain_id: string } | undefined;
+      chainId = parentRow?.chain_id ?? ulid();
+    } else {
+      chainId = ulid();
+    }
+
+    const now = new Date().toISOString();
+    this.storage.exec(
+      `INSERT OR IGNORE INTO session_chains (chain_id, session_id, parent_session, project_path, created_at, handoff_reason, summary, token_estimate)
+       VALUES (?, ?, ?, ?, ?, ?, NULL, 0)`,
+      [chainId, sessionId, parentSession, projectPath, now, reason],
+    );
+
+    return {
+      chain_id: chainId,
+      session_id: sessionId,
+      parent_session: parentSession,
+      project_path: projectPath,
+      created_at: now,
+      handoff_reason: reason,
+      summary: null,
+      token_estimate: 0,
+    };
+  }
+
+  getLatestChainEntry(projectPath: string): SessionChain | null {
+    const row = this.storage
+      .prepare('SELECT * FROM session_chains WHERE project_path = ? ORDER BY created_at DESC, rowid DESC LIMIT 1')
+      .get(projectPath) as Record<string, unknown> | undefined;
+
+    if (!row) return null;
+    return this.rowToChain(row);
+  }
+
+  getChainHistory(sessionId: string, limit = 20): SessionChain[] {
+    const history: SessionChain[] = [];
+    let currentId: string | null = sessionId;
+
+    while (currentId && history.length < limit) {
+      const row = this.storage
+        .prepare('SELECT * FROM session_chains WHERE session_id = ?')
+        .get(currentId) as Record<string, unknown> | undefined;
+
+      if (!row) break;
+      const entry = this.rowToChain(row);
+      history.push(entry);
+      currentId = entry.parent_session;
+    }
+
+    return history;
+  }
+
+  updateChainEntry(sessionId: string, update: { summary?: string; token_estimate?: number }): void {
+    if (update.summary !== undefined) {
+      this.storage.exec(
+        'UPDATE session_chains SET summary = ? WHERE session_id = ?',
+        [update.summary, sessionId],
+      );
+    }
+    if (update.token_estimate !== undefined) {
+      this.storage.exec(
+        'UPDATE session_chains SET token_estimate = ? WHERE session_id = ?',
+        [update.token_estimate, sessionId],
+      );
+    }
+  }
+
+  generateContinuationPrompt(sessionId: string): string {
+    const snapshot = this.restoreSnapshot(sessionId);
+    const chain = this.storage
+      .prepare('SELECT * FROM session_chains WHERE session_id = ?')
+      .get(sessionId) as Record<string, unknown> | undefined;
+
+    const lines: string[] = [];
+    lines.push(`## Session Handoff — ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`);
+    lines.push('');
+
+    if (chain) {
+      const entry = this.rowToChain(chain);
+      if (entry.summary) {
+        lines.push(`### Summary`);
+        lines.push(entry.summary);
+        lines.push('');
+      }
+    }
+
+    if (snapshot) {
+      const data = snapshot.snapshot;
+
+      if (data.changes) {
+        lines.push('### Recent changes');
+        lines.push(String(data.changes));
+        lines.push('');
+      }
+
+      if (data.files) {
+        lines.push('### Active files');
+        lines.push(String(data.files));
+        lines.push('');
+      }
+
+      if (data.tasks) {
+        lines.push('### Pending tasks');
+        lines.push(String(data.tasks));
+        lines.push('');
+      }
+
+      if (data.decisions) {
+        lines.push('### Key decisions');
+        lines.push(String(data.decisions));
+        lines.push('');
+      }
+
+      if (data.errors) {
+        lines.push('### Recent errors');
+        lines.push(String(data.errors));
+        lines.push('');
+      }
+
+      if (data.plan) {
+        lines.push('### Active plan');
+        lines.push(String(data.plan));
+        lines.push('');
+      }
+    }
+
+    return lines.join('\n');
+  }
+
+  private rowToChain(row: Record<string, unknown>): SessionChain {
+    return {
+      chain_id: row.chain_id as string,
+      session_id: row.session_id as string,
+      parent_session: (row.parent_session as string) || null,
+      project_path: row.project_path as string,
+      created_at: row.created_at as string,
+      handoff_reason: row.handoff_reason as SessionChain['handoff_reason'],
+      summary: (row.summary as string) || null,
+      token_estimate: (row.token_estimate as number) || 0,
+    };
   }
 
   private extractCategories(sessionId: string): ExtractedCategory[] {
