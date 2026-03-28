@@ -47,6 +47,47 @@ function main() {
   const cwd = process.cwd();
   const config = loadConfig(cwd);
 
+  // --- Post-compaction recovery ---
+  const compactionStateFile = path.join(cwd, '.context-mem', 'compaction-state.json');
+  if (fs.existsSync(compactionStateFile)) {
+    try {
+      const compState = JSON.parse(fs.readFileSync(compactionStateFile, 'utf8'));
+      if (!compState.recovered) {
+        // Mark as recovered immediately to prevent double-injection
+        compState.recovered = true;
+        fs.writeFileSync(compactionStateFile, JSON.stringify(compState));
+
+        // Load critical context
+        const criticalFile = path.join(cwd, '.context-mem', 'compaction-critical.json');
+        if (fs.existsSync(criticalFile)) {
+          const critical = JSON.parse(fs.readFileSync(criticalFile, 'utf8'));
+          const lines = ['[Context Recovery — post-compaction]'];
+
+          if (critical.plan) {
+            lines.push(`Active plan: ${typeof critical.plan === 'string' ? critical.plan.slice(0, 300) : 'Active plan exists'}`);
+          }
+          if (critical.tasks && critical.tasks.length) {
+            lines.push(`Pending tasks: ${critical.tasks.slice(0, 5).join(', ')}`);
+          }
+          if (critical.decisions && critical.decisions.length) {
+            lines.push('Key decisions:');
+            critical.decisions.forEach(d => lines.push(`  - ${(d || '').slice(0, 150)}`));
+          }
+          if (critical.files && critical.files.length) {
+            lines.push(`Working files: ${critical.files.slice(0, 6).join(', ')}`);
+          }
+
+          const recovery = lines.join('\n').slice(0, 2048); // Max 2KB
+          process.stdout.write(recovery);
+          return; // Skip normal injection — recovery takes priority
+        }
+      }
+    } catch {
+      // Recovery is best-effort
+    }
+  }
+  // --- End post-compaction recovery ---
+
   // Check if disabled
   if (config.enabled === false) process.exit(0);
 
