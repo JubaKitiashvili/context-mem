@@ -1,7 +1,7 @@
 {
   "name": "context-mem",
 
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Context optimization for AI coding assistants — 90%+ token savings via summarization, search, and progressive disclosure",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -300,6 +300,32 @@ export class KnowledgeBase {
     return this.rowToEntry(row);
   }
 
+  /** Get entry by ID (including archived entries). Does NOT increment access count. */
+  getById(id: string): KnowledgeEntry | null {
+    const row = this.storage.prepare(
+      'SELECT * FROM knowledge WHERE id = ?'
+    ).get(id) as Record<string, unknown> | undefined;
+    if (!row) return null;
+    return this.rowToEntry(row);
+  }
+
+  /** Archive a knowledge entry by setting archived = 1. */
+  archive(id: string): boolean {
+    const row = this.storage.prepare('SELECT id FROM knowledge WHERE id = ?').get(id) as Record<string, unknown> | undefined;
+    if (!row) return false;
+    this.storage.exec('UPDATE knowledge SET archived = 1 WHERE id = ?', [id]);
+    return true;
+  }
+
+  /** Update tags on a knowledge entry (merges with existing). */
+  addTags(id: string, tags: string[]): boolean {
+    const entry = this.getById(id);
+    if (!entry) return false;
+    const merged = Array.from(new Set([...entry.tags, ...tags]));
+    this.storage.exec('UPDATE knowledge SET tags = ? WHERE id = ?', [JSON.stringify(merged), id]);
+    return true;
+  }
+
   prune(): number {
     const now = Date.now();
     const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;

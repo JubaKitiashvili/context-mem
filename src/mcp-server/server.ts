@@ -33,13 +33,14 @@ import {
   handleAgentBroadcast,
   handleTimeTravel,
   handleAsk,
+  handleResolveContradiction,
   handleHandoffSession,
 } from './tools.js';
 
 export function createMcpServer(kernel: ToolKernel): Server {
   const server = new Server(
 
-    { name: 'context-mem', version: '2.1.0' },
+    { name: 'context-mem', version: '2.1.1' },
     { capabilities: { tools: {} } },
   );
 
@@ -147,6 +148,9 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'ask':
           result = await handleAsk(params as Parameters<typeof handleAsk>[0], kernel);
+          break;
+        case 'resolve_contradiction':
+          result = await handleResolveContradiction(params as Parameters<typeof handleResolveContradiction>[0], kernel);
           break;
         case 'handoff_session':
           result = await handleHandoffSession(params as Parameters<typeof handleHandoffSession>[0], kernel);

@@ -484,6 +484,21 @@ export const toolDefinitions: ToolDefinition[] = [
       required: ['question'],
     },
   },
+  // Contradiction Resolution
+  {
+    name: 'resolve_contradiction',
+    description: 'Resolve a contradiction between knowledge entries by merging, superseding, or keeping both.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        entry_id: { type: 'string', description: 'ID of the entry to act on' },
+        conflicting_id: { type: 'string', description: 'ID of the conflicting entry' },
+        action: { type: 'string', enum: ['supersede', 'merge', 'keep_both', 'archive_old'], description: 'Resolution action' },
+        merged_content: { type: 'string', description: 'New merged content (required for merge action)' },
+      },
+      required: ['entry_id', 'conflicting_id', 'action'],
+    },
+  },
   // Session Handoff
   {
     name: 'handoff_session',
@@ -1619,6 +1634,106 @@ export async function handleAsk(
 }
 
 // Session Handoff
+// ---------------------------------------------------------------------------
+// Contradiction resolution
+// ---------------------------------------------------------------------------
+
+export async function handleResolveContradiction(
+  params: { entry_id: string; conflicting_id: string; action: string; merged_content?: string },
+  kernel: ToolKernel,
+): Promise<{ resolved: true; action: string; archived?: string[]; created?: string; relationship_id?: string } | { error: string }> {
+  // Validate required fields
+  if (!params.entry_id || typeof params.entry_id !== 'string' || !params.entry_id.trim()) {
+    return { error: 'entry_id is required and must be a non-empty string' };
+  }
+  if (!params.conflicting_id || typeof params.conflicting_id !== 'string' || !params.conflicting_id.trim()) {
+    return { error: 'conflicting_id is required and must be a non-empty string' };
+  }
+  const VALID_ACTIONS = ['supersede', 'merge', 'keep_both', 'archive_old'] as const;
+  if (!VALID_ACTIONS.includes(params.action as typeof VALID_ACTIONS[number])) {
+    return { error: `Invalid action: "${params.action}". Must be one of: ${VALID_ACTIONS.join(', ')}` };
+  }
+  if (params.action === 'merge' && (!params.merged_content || typeof params.merged_content !== 'string' || !params.merged_content.trim())) {
+    return { error: 'merged_content is required for merge action' };
+  }
+
+  const entry = kernel.knowledgeBase.getById(params.entry_id);
+  if (!entry) {
+    return { error: `Entry not found: ${params.entry_id}` };
+  }
+  const conflicting = kernel.knowledgeBase.getById(params.conflicting_id);
+  if (!conflicting) {
+    return { error: `Conflicting entry not found: ${params.conflicting_id}` };
+  }
+
+  const result: { resolved: true; action: string; archived?: string[]; created?: string; relationship_id?: string } = {
+    resolved: true,
+    action: params.action,
+  };
+
+  switch (params.action) {
+    case 'supersede': {
+      // Archive the old entry (conflicting_id), keep the new one (entry_id)
+      kernel.knowledgeBase.archive(params.conflicting_id);
+      kernel.knowledgeBase.addTags(params.entry_id, ['supersedes:' + params.conflicting_id]);
+      result.archived = [params.conflicting_id];
+      // Add graph relationship if available
+      if (kernel.knowledgeGraph) {
+        try {
+          const fromEntity = kernel.knowledgeGraph.addEntity(entry.title, 'decision');
+          const toEntity = kernel.knowledgeGraph.addEntity(conflicting.title, 'decision');
+          const rel = kernel.knowledgeGraph.addRelationship(fromEntity.id, toEntity.id, 'supersedes');
+          result.relationship_id = rel.id;
+        } catch {
+          // Graph relationship is non-critical
+        }
+      }
+      break;
+    }
+    case 'merge': {
+      // Create a new merged entry, archive both originals
+      const merged = kernel.knowledgeBase.save({
+        category: entry.category,
+        title: entry.title,
+        content: params.merged_content!,
+        tags: Array.from(new Set([...entry.tags, ...conflicting.tags, 'merged'])),
+        shareable: entry.shareable,
+        source_type: entry.source_type,
+      });
+      kernel.knowledgeBase.archive(params.entry_id);
+      kernel.knowledgeBase.archive(params.conflicting_id);
+      result.archived = [params.entry_id, params.conflicting_id];
+      result.created = merged.id;
+      break;
+    }
+    case 'keep_both': {
+      // Add 'reviewed' tag to both, marking them as non-contradicting
+      kernel.knowledgeBase.addTags(params.entry_id, ['reviewed', 'non-contradicting']);
+      kernel.knowledgeBase.addTags(params.conflicting_id, ['reviewed', 'non-contradicting']);
+      // Add graph relationship if available
+      if (kernel.knowledgeGraph) {
+        try {
+          const fromEntity = kernel.knowledgeGraph.addEntity(entry.title, 'decision');
+          const toEntity = kernel.knowledgeGraph.addEntity(conflicting.title, 'decision');
+          const rel = kernel.knowledgeGraph.addRelationship(fromEntity.id, toEntity.id, 'contradicts', { weight: 0.3 });
+          result.relationship_id = rel.id;
+        } catch {
+          // Graph relationship is non-critical
+        }
+      }
+      break;
+    }
+    case 'archive_old': {
+      // Archive the conflicting_id entry
+      kernel.knowledgeBase.archive(params.conflicting_id);
+      result.archived = [params.conflicting_id];
+      break;
+    }
+  }
+
+  return result;
+}
+
 export async function handleHandoffSession(
   params: { reason?: string; target?: string },
   kernel: ToolKernel,

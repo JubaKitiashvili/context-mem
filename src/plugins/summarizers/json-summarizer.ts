@@ -66,6 +66,10 @@ export class JsonSummarizer implements SummarizerPlugin {
   type = 'summarizer' as const;
   contentTypes = ['json', 'application/json'];
 
+  /** Cached parse result from detect() to avoid double JSON.parse on the hot path */
+  private _lastParsed: unknown = null;
+  private _lastParsedContent: string | null = null;
+
   async init(_config: PluginConfig): Promise<void> {}
   async destroy(): Promise<void> {}
 
@@ -73,9 +77,12 @@ export class JsonSummarizer implements SummarizerPlugin {
     const trimmed = content.trim();
     if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) return false;
     try {
-      JSON.parse(trimmed);
+      this._lastParsed = JSON.parse(trimmed);
+      this._lastParsedContent = content;
       return true;
     } catch {
+      this._lastParsed = null;
+      this._lastParsedContent = null;
       return false;
     }
   }
@@ -84,16 +91,24 @@ export class JsonSummarizer implements SummarizerPlugin {
     const tokensOriginal = estimateTokens(content);
 
     let parsed: unknown;
-    try {
-      parsed = JSON.parse(content);
-    } catch {
-      return {
-        summary: content,
-        tokens_original: tokensOriginal,
-        tokens_summarized: tokensOriginal,
-        savings_pct: 0,
-        content_type: 'json',
-      };
+    if (this._lastParsed !== null && this._lastParsedContent === content) {
+      parsed = this._lastParsed;
+      this._lastParsed = null;
+      this._lastParsedContent = null;
+    } else {
+      this._lastParsed = null;
+      this._lastParsedContent = null;
+      try {
+        parsed = JSON.parse(content);
+      } catch {
+        return {
+          summary: content,
+          tokens_original: tokensOriginal,
+          tokens_summarized: tokensOriginal,
+          savings_pct: 0,
+          content_type: 'json',
+        };
+      }
     }
 
     let summary: string;

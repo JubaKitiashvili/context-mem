@@ -5,6 +5,7 @@ export interface LifecycleConfig {
   max_db_size_mb: number;
   max_observations: number;
   preserve_types: ObservationType[];
+  vacuum_on_cleanup?: boolean;
 }
 
 export class LifecycleManager {
@@ -34,6 +35,16 @@ export class LifecycleManager {
         )`
       ).run(...this.config.preserve_types, excess);
       deleted += capResult.changes;
+    }
+
+    // VACUUM scheduling — reclaim space from FTS5 shadow tables + WAL
+    if (this.config.vacuum_on_cleanup !== false) {
+      this.storage.exec('PRAGMA wal_checkpoint(TRUNCATE)');
+      // Only VACUUM if DB > 10MB (VACUUM is expensive)
+      const dbSize = this.storage.prepare("SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()").get();
+      if (dbSize && (dbSize as any).size > 10 * 1024 * 1024) {
+        this.storage.exec('VACUUM');
+      }
     }
 
     return { deleted };

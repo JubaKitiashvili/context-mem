@@ -9,28 +9,47 @@ export class CsvSummarizer implements SummarizerPlugin {
   type = 'summarizer' as const;
   contentTypes = ['csv'];
 
+  /** Cached non-empty lines from detect() to avoid re-splitting in summarize() */
+  private _lastLines: string[] | null = null;
+  private _lastContent: string | null = null;
+
   async init(_config: PluginConfig): Promise<void> {}
   async destroy(): Promise<void> {}
 
   detect(content: string): boolean {
     const lines = content.split('\n').filter(l => l.trim().length > 0);
-    if (lines.length < MIN_CONSISTENT_LINES) return false;
+    if (lines.length < MIN_CONSISTENT_LINES) {
+      this._lastLines = null;
+      this._lastContent = null;
+      return false;
+    }
 
     // Check first 10 lines for consistent comma count
     const checkLines = lines.slice(0, 10);
     const commaCounts = checkLines.map(l => (l.match(/,/g) || []).length);
 
     // All lines must have at least 1 comma
-    if (commaCounts[0] === 0) return false;
+    if (commaCounts[0] === 0) {
+      this._lastLines = null;
+      this._lastContent = null;
+      return false;
+    }
 
     // Check consistency: all lines should have the same comma count
     const firstCount = commaCounts[0];
     const consistentLines = commaCounts.filter(c => c === firstCount).length;
-    return consistentLines >= MIN_CONSISTENT_LINES;
+    const matched = consistentLines >= MIN_CONSISTENT_LINES;
+    this._lastLines = matched ? lines : null;
+    this._lastContent = matched ? content : null;
+    return matched;
   }
 
   async summarize(content: string, _opts: SummarizeOpts): Promise<SummaryResult> {
-    const lines = content.split('\n').filter(l => l.trim().length > 0);
+    const lines = (this._lastLines && this._lastContent === content)
+      ? this._lastLines
+      : content.split('\n').filter(l => l.trim().length > 0);
+    this._lastLines = null;
+    this._lastContent = null;
     const tokensOriginal = estimateTokens(content);
 
     const rowCount = lines.length;

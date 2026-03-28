@@ -97,15 +97,31 @@ export class LogSummarizer implements SummarizerPlugin {
   type = 'summarizer' as const;
   contentTypes = ['log', 'syslog', 'application-log', 'access-log'];
 
+  /** Cached non-empty lines from detect() to avoid re-splitting in summarize() */
+  private _lastNonEmptyLines: string[] | null = null;
+  private _lastContent: string | null = null;
+  /** Cached access-log detection result from detect() */
+  private _lastIsAccessLog: boolean = false;
+
   async init(_config: PluginConfig): Promise<void> {}
   async destroy(): Promise<void> {}
 
   detect(content: string): boolean {
     const lines = content.split('\n').filter(l => l.trim().length > 0);
-    if (lines.length < MIN_LINES_TO_SUMMARIZE) return false;
+    if (lines.length < MIN_LINES_TO_SUMMARIZE) {
+      this._lastNonEmptyLines = null;
+      this._lastContent = null;
+      this._lastIsAccessLog = false;
+      return false;
+    }
 
     // Check for access log format first
-    if (isAccessLog(lines)) return true;
+    if (isAccessLog(lines)) {
+      this._lastNonEmptyLines = lines;
+      this._lastContent = content;
+      this._lastIsAccessLog = true;
+      return true;
+    }
 
     // Check if a meaningful portion of lines match log patterns
     let matchCount = 0;
@@ -116,12 +132,22 @@ export class LogSummarizer implements SummarizerPlugin {
     }
 
     // At least 30% of lines should look like log lines
-    return matchCount / lines.length >= 0.3;
+    const matched = matchCount / lines.length >= 0.3;
+    this._lastNonEmptyLines = matched ? lines : null;
+    this._lastContent = matched ? content : null;
+    this._lastIsAccessLog = false;
+    return matched;
   }
 
   async summarize(content: string, _opts: SummarizeOpts): Promise<SummaryResult> {
     const lines = content.split('\n');
     const tokensOriginal = estimateTokens(content);
+    const cacheValid = this._lastContent === content;
+    const cachedIsAccessLog = cacheValid ? this._lastIsAccessLog : false;
+    const cachedNonEmpty = cacheValid ? this._lastNonEmptyLines : null;
+    this._lastNonEmptyLines = null;
+    this._lastContent = null;
+    this._lastIsAccessLog = false;
 
     if (lines.length < MIN_LINES_TO_SUMMARIZE) {
       return {
@@ -134,8 +160,8 @@ export class LogSummarizer implements SummarizerPlugin {
     }
 
     // Access log format gets HTTP-aware aggregation
-    const nonEmpty = lines.filter(l => l.trim().length > 0);
-    if (isAccessLog(nonEmpty)) {
+    const nonEmpty = cachedNonEmpty ?? lines.filter(l => l.trim().length > 0);
+    if (cachedIsAccessLog || isAccessLog(nonEmpty)) {
       const summary = summarizeAccessLog(content);
       const tokensSummarized = estimateTokens(summary);
       return {
