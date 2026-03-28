@@ -483,6 +483,22 @@ export const toolDefinitions: ToolDefinition[] = [
       required: ['question'],
     },
   },
+  // Session Handoff
+  {
+    name: 'handoff_session',
+    description: 'Generate session handoff — saves state and returns continuation prompt for a new session. Use when context is running low or before ending a session.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        reason: { type: 'string', description: 'Why the handoff is happening' },
+        target: {
+          type: 'string',
+          enum: ['clipboard', 'file', 'return'],
+          description: 'Where to send the continuation prompt (default: return)',
+        },
+      },
+    },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -1599,4 +1615,69 @@ export async function handleAsk(
   const graph = kernel.knowledgeGraph ?? new (await import('../core/knowledge-graph.js')).KnowledgeGraph(kernel.storage);
   const nlQuery = new NaturalLanguageQuery(kernel.storage, kernel.knowledgeBase, graph, kernel.eventTracker);
   return nlQuery.ask(params.question.trim());
+}
+
+// Session Handoff
+export async function handleHandoffSession(
+  params: { reason?: string; target?: string },
+  kernel: ToolKernel,
+): Promise<{
+  continuation_prompt: string;
+  chain_id: string;
+  snapshot_id: string;
+  token_estimate: { used: number; limit: number; percentage: number };
+}> {
+  // Save snapshot
+  const stats = {
+    session_id: kernel.sessionId,
+    observations_stored: 0,
+    total_content_bytes: 0,
+    total_summary_bytes: 0,
+    searches_performed: 0,
+    discovery_tokens: 0,
+    read_tokens: 0,
+    tokens_saved: 0,
+    savings_percentage: 0,
+  };
+
+  try {
+    const row = kernel.storage
+      .prepare("SELECT COUNT(*) as cnt FROM token_stats WHERE session_id = ?")
+      .get(kernel.sessionId) as { cnt: number } | undefined;
+    stats.observations_stored = row?.cnt ?? 0;
+  } catch {
+    // non-critical
+  }
+
+  kernel.sessionManager.saveSnapshot(kernel.sessionId, stats);
+
+  // Create or update chain entry
+  const projectPath = kernel.config.db_path.replace(/\/.context-mem\/.*$/, '') || process.cwd();
+  let chainEntry = kernel.sessionManager.getLatestChainEntry(projectPath);
+
+  if (!chainEntry || chainEntry.session_id !== kernel.sessionId) {
+    chainEntry = kernel.sessionManager.createChainEntry(
+      kernel.sessionId,
+      projectPath,
+      chainEntry?.session_id ?? null,
+      'manual',
+    );
+  }
+
+  // Update with summary
+  const reason = params.reason || 'Manual handoff';
+  kernel.sessionManager.updateChainEntry(kernel.sessionId, { summary: reason });
+
+  // Generate continuation prompt
+  const prompt = kernel.sessionManager.generateContinuationPrompt(kernel.sessionId);
+
+  // Get token estimate
+  const tokenEstimate = kernel.budgetManager.getTokenEstimate(kernel.sessionId);
+
+  return {
+    continuation_prompt: prompt,
+    chain_id: chainEntry.chain_id,
+    snapshot_id: kernel.sessionId,
+    token_estimate: tokenEstimate,
+  };
 }
