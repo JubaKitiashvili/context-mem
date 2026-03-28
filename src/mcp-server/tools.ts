@@ -492,6 +492,11 @@ export const toolDefinitions: ToolDefinition[] = [
       type: 'object',
       properties: {
         reason: { type: 'string', description: 'Why the handoff is happening' },
+        target: {
+          type: 'string',
+          enum: ['return', 'file'],
+          description: 'Where to send the continuation prompt. "return" (default) returns it in the response. "file" saves to .context-mem/handoff.md',
+        },
       },
     },
   },
@@ -1666,6 +1671,16 @@ export async function handleHandoffSession(
 
   // Generate continuation prompt
   const prompt = kernel.sessionManager.generateContinuationPrompt(kernel.sessionId);
+
+  // Handle target
+  const target = params.target || 'return';
+  if (target === 'file') {
+    const fs = await import('fs');
+    const path = await import('path');
+    const handoffPath = path.join(kernel.projectDir, '.context-mem', 'handoff.md');
+    fs.mkdirSync(path.dirname(handoffPath), { recursive: true });
+    fs.writeFileSync(handoffPath, prompt);
+  }
 
   // Get token estimate
   const tokenEstimate = kernel.budgetManager.getTokenEstimate(kernel.sessionId);
