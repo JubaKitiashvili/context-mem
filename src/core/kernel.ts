@@ -133,14 +133,16 @@ export class Kernel {
     try {
       const latest = this.sessionManager.getLatestChainEntry(this.projectDir);
       if (latest) {
-        const chainCreated = new Date(latest.created_at).getTime();
-        const hoursSince = (Date.now() - chainCreated) / (1000 * 60 * 60);
-        const threshold = this.config.session_continuity?.light_restore_threshold_hours ?? 24;
+        // created_at is INTEGER (unixepoch seconds)
+        const chainCreatedMs = (latest.created_at as unknown as number) * 1000;
+        const hoursSince = (Date.now() - chainCreatedMs) / (1000 * 60 * 60);
+        const lightThreshold = this.config.session_continuity?.light_restore_threshold_hours ?? 24;
 
+        // Chain to parent if within light threshold (24h), otherwise start fresh
         this.sessionManager.createChainEntry(
           this.session.session_id,
           this.projectDir,
-          hoursSince < threshold ? latest.session_id : null,
+          hoursSince < lightThreshold ? latest.session_id : null,
           'auto',
         );
       } else {

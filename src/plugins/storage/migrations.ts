@@ -353,16 +353,14 @@ export const migrations: Migration[] = [
     description: 'Session chains for context continuity across sessions',
     up: `
       CREATE TABLE IF NOT EXISTS session_chains (
+        session_id TEXT PRIMARY KEY,
         chain_id TEXT NOT NULL,
-        session_id TEXT NOT NULL UNIQUE,
         parent_session TEXT,
         project_path TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        created_at INTEGER NOT NULL DEFAULT (unixepoch()),
         handoff_reason TEXT NOT NULL DEFAULT 'auto',
         summary TEXT,
-        token_estimate INTEGER DEFAULT 0,
-        PRIMARY KEY (chain_id, session_id),
-        FOREIGN KEY (parent_session) REFERENCES session_chains(session_id)
+        token_estimate INTEGER DEFAULT 0
       );
 
       CREATE INDEX IF NOT EXISTS idx_chains_session ON session_chains(session_id);

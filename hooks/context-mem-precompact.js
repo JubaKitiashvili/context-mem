@@ -8,7 +8,20 @@
 
 const { existsSync, readFileSync, writeFileSync, mkdirSync } = require('fs');
 const { join, resolve } = require('path');
-const Database = require('better-sqlite3');
+
+function loadBetterSqlite3() {
+  const paths = [
+    join(__dirname, '..', 'node_modules', 'better-sqlite3'),
+    'better-sqlite3',
+  ];
+  for (const p of paths) {
+    try { return require(p); } catch {}
+  }
+  return null;
+}
+
+const Database = loadBetterSqlite3();
+if (!Database) process.exit(0);
 
 function main() {
   try {

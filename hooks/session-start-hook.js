@@ -270,8 +270,9 @@ try {
         ).get(projectDir);
 
         if (latestChain && latestChain.session_id) {
-          const chainCreated = new Date(latestChain.created_at).getTime();
-          const hoursSince = (Date.now() - chainCreated) / (1000 * 60 * 60);
+          // created_at is INTEGER (unixepoch seconds)
+          const chainCreatedMs = latestChain.created_at * 1000;
+          const hoursSince = (Date.now() - chainCreatedMs) / (1000 * 60 * 60);
 
           const autoThreshold = (config.session_continuity && config.session_continuity.auto_restore_threshold_hours) || 2;
           const lightThreshold = (config.session_continuity && config.session_continuity.light_restore_threshold_hours) || 24;
