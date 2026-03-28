@@ -40,48 +40,45 @@ AI coding assistants waste 60–80% of their context window on raw tool outputs 
 
 ```bash
 cd your-project
-npm install context-mem
-npx context-mem init
+npm i context-mem && npx context-mem init
 ```
 
-This installs context-mem locally, auto-detects your editor (Claude Code, Cursor, Windsurf, VS Code, Cline), creates MCP config, AI rules, and configures hooks for session restore, activity journal, and proactive context injection.
+One command. `init` auto-detects your editor and creates everything:
 
-**Alternative — Claude Code plugin mode:**
+| Editor | What gets created | Restart needed? |
+|--------|-------------------|-----------------|
+| **Claude Code** | `.mcp.json` + `.claude/settings.local.json` (6 hooks) + CLAUDE.md rules | No |
+| **Cursor** | `.cursor/mcp.json` + `.cursor/rules/context-mem.mdc` | No |
+| **Windsurf** | `.windsurf/mcp.json` + `.windsurf/rules/context-mem.md` | No |
+| **VS Code / Copilot** | `.vscode/mcp.json` + `.github/copilot-instructions.md` | No |
+| **Cline** | `.cline/mcp_settings.json` + `.clinerules/context-mem.md` | No |
+| **Roo Code** | `.roo-code/mcp_settings.json` + `.roo/rules/context-mem.md` | No |
+
+**What init sets up:**
+- MCP server config (so your editor can use context-mem's 29 tools)
+- AI rules (so the AI knows when to call `observe`, `search`, `restore_session`)
+- Claude Code hooks (activity journal, observation capture, proactive injection, session restore, dashboard)
+- `.context-mem.json` config + `.context-mem/` data directory
+
+**Verify it works** (in Claude Code):
 ```bash
-claude --plugin-dir /path/to/context-mem
+cat .context-mem/journal.md | tail -5    # Should show recent tool activity
 ```
 
 <details>
-<summary>More platforms — Cursor, Windsurf, Copilot, Cline, Roo Code, Gemini CLI, Goose, OpenClaw, CrewAI, LangChain</summary>
+<summary>Manual setup (if init doesn't auto-detect your editor)</summary>
 
-**Cursor** — `.cursor/mcp.json`:
+Create `.mcp.json` in your project root:
 ```json
 { "mcpServers": { "context-mem": { "command": "npx", "args": ["-y", "context-mem", "serve"] } } }
 ```
 
-**Windsurf** — `.windsurf/mcp.json`:
-```json
-{ "mcpServers": { "context-mem": { "command": "npx", "args": ["-y", "context-mem", "serve"] } } }
-```
-
-**GitHub Copilot** — `.vscode/mcp.json`:
+For VS Code / Copilot, use `.vscode/mcp.json`:
 ```json
 { "servers": { "context-mem": { "type": "stdio", "command": "npx", "args": ["-y", "context-mem", "serve"] } } }
 ```
 
-**Cline** — add to MCP settings:
-```json
-{ "mcpServers": { "context-mem": { "command": "npx", "args": ["-y", "context-mem", "serve"], "disabled": false } } }
-```
-
-**Roo Code** — same as Cline format above.
-
-**Gemini CLI** — `.gemini/settings.json`:
-```json
-{ "mcpServers": { "context-mem": { "command": "npx", "args": ["-y", "context-mem", "serve"] } } }
-```
-
-**Goose** — add to profile extensions:
+For Goose, add to profile extensions:
 ```yaml
 extensions:
   context-mem:
@@ -90,12 +87,18 @@ extensions:
     args: ["-y", "context-mem", "serve"]
 ```
 
-**OpenClaw** — add to MCP config:
-```json
-{ "mcpServers": { "context-mem": { "command": "npx", "args": ["-y", "context-mem", "serve"] } } }
+For CrewAI / LangChain — see [configs/](configs/) for Python integration examples.
+
+</details>
+
+<details>
+<summary>Alternative: Claude Code plugin mode (development)</summary>
+
+```bash
+claude --plugin-dir /path/to/context-mem
 ```
 
-**CrewAI / LangChain** — see [configs/](configs/) for Python integration examples.
+This loads hooks directly from the plugin directory. Useful for development and testing.
 
 </details>
 
