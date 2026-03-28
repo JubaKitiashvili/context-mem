@@ -3,7 +3,7 @@
 > Context optimization for AI coding assistants — 99% token savings, zero configuration, no LLM dependency.
 
 [![npm version](https://img.shields.io/npm/v/context-mem)](https://www.npmjs.com/package/context-mem)
-[![tests](https://img.shields.io/badge/tests-491%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-535%20passing-brightgreen)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-green)]()
 
@@ -55,7 +55,7 @@ One command. `init` auto-detects your editor and creates everything:
 | **Roo Code** | `.roo-code/mcp_settings.json` + `.roo/rules/context-mem.md` | No |
 
 **What init sets up:**
-- MCP server config (so your editor can use context-mem's 29 tools)
+- MCP server config (so your editor can use context-mem's 31 tools)
 - AI rules (so the AI knows when to call `observe`, `search`, `restore_session`)
 - Claude Code hooks (activity journal, observation capture, proactive injection, session restore, dashboard)
 - `.context-mem.json` config + `.context-mem/` data directory
@@ -177,7 +177,7 @@ This loads hooks directly from the plugin directory. Useful for development and 
 
 **Session Snapshots** — Save/restore session state across restarts with progressive trimming.
 
-**Dashboard 2.0** — Real-time web UI at `http://localhost:51893` — auto-starts with `serve`, supports multi-project aggregation. Token economics, observations, search, knowledge base, events, system health. Switch between projects or see everything at once. Full observation detail view and knowledge search with FTS5. New in v2.0: knowledge graph visualization, timeline explorer for time-travel debugging, and multi-agent coordination panel.
+**Dashboard 2.0** — Real-time web UI at `http://localhost:51893` — auto-starts on session start via hooks. **Multi-project support** — one central dashboard shared across all active projects, with a project switcher bar. Token economics, observations, search, knowledge base, events, system health. **Knowledge graph visualization** — interactive force-directed canvas graph with pan/zoom/filter, color-coded by entity type. **Timeline explorer** — visual observation timeline with search, date filtering, and type pills. SSE streaming for live updates. Dark/light theme with persistence across pages.
 
 <p align="center">
   <img src="docs/screenshots/dashboard-overview.png" width="600" alt="Dashboard — token economics and observation stats" />
@@ -194,7 +194,11 @@ This loads hooks directly from the plugin directory. Useful for development and 
 
 **Privacy Engine** — Everything local. `<private>` tag stripping, custom regex redaction, plus 9 built-in secret detectors: AWS keys, GitHub tokens, JWTs, private keys, Slack tokens, emails, IPs, generic API keys, and AWS secrets. Secrets are auto-redacted before storage. No telemetry, no cloud.
 
-**Security Hardening** — CORS restricted to localhost only, input validation on all 29 handlers, error sanitization to prevent information leakage. Windows compatibility for cross-platform deployments.
+**Plugin CLI** — Manage summarizer plugins: `context-mem plugin add <name>`, `plugin remove <name>`, `plugin list`. Supports short names (e.g., `k8s` → `context-mem-summarizer-k8s`).
+
+**Auto-Update Check** — Checks npm for newer versions on session start (gstack-style). Split TTL caching (1hr fresh / 12hr nagging), escalating snooze (24h → 48h → 7 days), configurable via `~/.context-mem/config.yaml`. Never blocks, always graceful.
+
+**Security Hardening** — CORS restricted to localhost only, input validation on all 31 handlers, error sanitization (file paths + SQL keywords stripped). Windows compatibility for cross-platform deployments.
 
 **Smart Truncation** — 60/40 head/tail split for better error preservation at end of output. 4-tier fallback: JSON schema → Pattern → Head/Tail → Binary hash.
 
@@ -209,13 +213,15 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
                                                       ↓                                        ↓
                                     Privacy Engine (9 detectors)              Request Canonicalization (30s cache)
                                                       ↓                                        ↓
-                                    Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (29 tools)
+                                    Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (31 tools)
+                                                                                               ↓
+                                                                           Dashboard 2.0 ← SSE + WebSocket (real-time)
 ```
 
 ## MCP Tools
 
 <details>
-<summary>29 tools available via MCP protocol</summary>
+<summary>31 tools available via MCP protocol</summary>
 
 | Tool | Description |
 |---|---|
@@ -248,19 +254,24 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
 | `agent_status` | List active agents and their tasks |
 | `claim_files` | Claim files to prevent conflicts between agents |
 | `agent_broadcast` | Broadcast messages to all active agents |
+| `handoff_session` | Hand off session context for continuity across sessions |
+| `resolve_contradiction` | Resolve conflicting knowledge entries (supersede, merge, keep both, archive) |
 
 </details>
 
 ## CLI Commands
 
 ```bash
-context-mem init        # Initialize in current project
-context-mem serve       # Start MCP server (stdio)
-context-mem status      # Show database stats
-context-mem doctor      # Run health checks
-context-mem dashboard   # Open web dashboard
-context-mem export      # Export knowledge, snapshots, events as JSON
-context-mem import      # Import data from JSON export file
+context-mem init                    # Initialize in current project
+context-mem serve                   # Start MCP server (stdio)
+context-mem status                  # Show database stats
+context-mem doctor                  # Run health checks
+context-mem dashboard               # Open web dashboard
+context-mem export                  # Export knowledge, snapshots, events as JSON
+context-mem import                  # Import data from JSON export file
+context-mem plugin add <name>       # Install a summarizer plugin
+context-mem plugin remove <name>    # Uninstall a summarizer plugin
+context-mem plugin list             # Show installed plugins
 ```
 
 ## Configuration
