@@ -36,6 +36,7 @@ async function setupKernel(): Promise<void> {
     registry: kernel.registry,
     sessionId: kernel.session.session_id,
     config: kernel.getConfig(),
+    projectDir: tmpDir,
     budgetManager: kernel.getBudgetManager(),
     eventTracker: kernel.getEventTracker(),
     sessionManager: kernel.getSessionManager(),
@@ -77,7 +78,7 @@ describe('createMcpServer', () => {
       'update_profile', 'budget_status', 'budget_configure', 'restore_session', 'emit_event', 'query_events',
       'graph_query', 'add_relationship', 'graph_neighbors',
       'agent_register', 'agent_status', 'claim_files', 'agent_broadcast',
-      'time_travel', 'ask',
+      'time_travel', 'ask', 'handoff_session',
     ];
     assert.deepStrictEqual(names, expected);
 

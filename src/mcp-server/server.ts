@@ -33,10 +33,12 @@ import {
   handleAgentBroadcast,
   handleTimeTravel,
   handleAsk,
+  handleHandoffSession,
 } from './tools.js';
 
 export function createMcpServer(kernel: ToolKernel): Server {
   const server = new Server(
+
     { name: 'context-mem', version: '2.0.5' },
     { capabilities: { tools: {} } },
   );
@@ -145,6 +147,9 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'ask':
           result = await handleAsk(params as Parameters<typeof handleAsk>[0], kernel);
+          break;
+        case 'handoff_session':
+          result = await handleHandoffSession(params as Parameters<typeof handleHandoffSession>[0], kernel);
           break;
         default:
           console.error(`context-mem: Unknown MCP tool requested: ${name}`);

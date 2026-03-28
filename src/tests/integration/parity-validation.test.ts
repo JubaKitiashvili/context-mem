@@ -41,6 +41,7 @@ function buildToolKernel(kernel: Kernel): ToolKernel {
     registry: kernel.registry,
     sessionId: kernel['session'].session_id,
     config: kernel.getConfig(),
+    projectDir: kernel['projectDir'],
     budgetManager: kernel.getBudgetManager(),
     eventTracker: kernel.getEventTracker(),
     sessionManager: kernel.getSessionManager(),

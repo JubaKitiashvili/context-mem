@@ -35,7 +35,7 @@ async function buildKernel(storage: BetterSqlite3Storage, sessionId: string): Pr
   const contentStore = new ContentStore(storage);
   const knowledgeBase = new KnowledgeBase(storage);
 
-  return { pipeline, search, storage, registry, sessionId, config, budgetManager, eventTracker, sessionManager, contentStore, knowledgeBase };
+  return { pipeline, search, storage, registry, sessionId, config, projectDir: '/tmp/test-project', budgetManager, eventTracker, sessionManager, contentStore, knowledgeBase };
 }
 
 function makeMockRuntime(lang: string, execResult: Partial<ExecResult> = {}): RuntimePlugin {
