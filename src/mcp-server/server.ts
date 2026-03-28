@@ -38,6 +38,7 @@ import {
 
 export function createMcpServer(kernel: ToolKernel): Server {
   const server = new Server(
+
     { name: 'context-mem', version: '2.0.5' },
     { capabilities: { tools: {} } },
   );
