@@ -188,6 +188,7 @@ export async function serve(_args: string[]): Promise<void> {
     registry: kernel.registry,
     sessionId: kernel.session.session_id,
     config: kernel.getConfig(),
+    projectDir,
     budgetManager: kernel.getBudgetManager(),
     eventTracker: kernel.getEventTracker(),
     sessionManager: kernel.getSessionManager(),

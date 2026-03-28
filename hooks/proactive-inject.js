@@ -17,6 +17,7 @@
  */
 
 const fs = require('fs');
+const { renameSync, writeFileSync } = require('fs');
 const path = require('path');
 
 try {
@@ -53,9 +54,10 @@ function main() {
     try {
       const compState = JSON.parse(fs.readFileSync(compactionStateFile, 'utf8'));
       if (!compState.recovered) {
-        // Mark as recovered immediately to prevent double-injection
-        compState.recovered = true;
-        fs.writeFileSync(compactionStateFile, JSON.stringify(compState));
+        // Atomic: rename the file so concurrent hooks can't double-recover
+        const doneFile = compactionStateFile + '.done';
+        try { renameSync(compactionStateFile, doneFile); } catch { return; }
+        writeFileSync(doneFile, JSON.stringify({ ...compState, recovered: true }));
 
         // Load critical context
         const criticalFile = path.join(cwd, '.context-mem', 'compaction-critical.json');

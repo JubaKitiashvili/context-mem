@@ -36,6 +36,7 @@ async function setupKernel(): Promise<void> {
     registry: kernel.registry,
     sessionId: kernel.session.session_id,
     config: kernel.getConfig(),
+    projectDir: tmpDir,
     budgetManager: kernel.getBudgetManager(),
     eventTracker: kernel.getEventTracker(),
     sessionManager: kernel.getSessionManager(),

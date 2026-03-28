@@ -106,7 +106,7 @@ function main() {
 
     // Update chain entry
     db.prepare(
-      "UPDATE session_chains SET handoff_reason = 'compaction' WHERE session_id = ?"
+      "UPDATE session_chains SET handoff_reason = 'compaction' WHERE session_id = ? AND handoff_reason = 'auto'"
     ).run(sessionId);
 
     db.close();

@@ -66,6 +66,7 @@ export interface ToolKernel {
   registry: PluginRegistry;
   sessionId: string;
   config: ContextMemConfig;
+  projectDir: string;
   budgetManager: BudgetManager;
   eventTracker: EventTracker;
   sessionManager: SessionManager;
@@ -491,11 +492,6 @@ export const toolDefinitions: ToolDefinition[] = [
       type: 'object',
       properties: {
         reason: { type: 'string', description: 'Why the handoff is happening' },
-        target: {
-          type: 'string',
-          enum: ['clipboard', 'file', 'return'],
-          description: 'Where to send the continuation prompt (default: return)',
-        },
       },
     },
   },
@@ -1652,7 +1648,7 @@ export async function handleHandoffSession(
   kernel.sessionManager.saveSnapshot(kernel.sessionId, stats);
 
   // Create or update chain entry
-  const projectPath = kernel.config.db_path.replace(/\/.context-mem\/.*$/, '') || process.cwd();
+  const projectPath = kernel.projectDir;
   let chainEntry = kernel.sessionManager.getLatestChainEntry(projectPath);
 
   if (!chainEntry || chainEntry.session_id !== kernel.sessionId) {
