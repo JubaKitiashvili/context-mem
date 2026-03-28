@@ -170,7 +170,9 @@ export function createMcpServer(kernel: ToolKernel): Server {
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Internal error';
-      const sanitized = msg.replace(/\/(?:Users|home|var|tmp|opt|root|private)\/[\w\-\/.]+/g, '[path]');
+      const sanitized = msg
+        .replace(/\/(?:Users|home|var|tmp|opt|root|private)\/[\w\-\/.]+/g, '[path]')
+        .replace(/\b(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP)\b/gi, '[SQL]');
       return { content: [{ type: 'text', text: JSON.stringify({ error: sanitized }) }], isError: true };
     }
   });

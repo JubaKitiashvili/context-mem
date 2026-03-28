@@ -34,13 +34,45 @@ export class BetterSqlite3Storage implements StoragePlugin {
 
   private runMigrations(): void {
     const db = this.getDb();
-    const currentVersion = (db.pragma('user_version', { simple: true }) as number) || 0;
+    let currentVersion = (db.pragma('user_version', { simple: true }) as number) || 0;
+
+    // Legacy upgrade: v1.0 used schema_version table instead of user_version pragma.
+    // Sync user_version from schema_version if it exists and user_version is behind.
+    if (currentVersion === 0) {
+      try {
+        const row = db.prepare(
+          'SELECT MAX(version) as v FROM schema_version'
+        ).get() as { v: number } | undefined;
+        if (row?.v && row.v > 0) {
+          currentVersion = row.v;
+          db.pragma(`user_version = ${currentVersion}`);
+        }
+      } catch {
+        // schema_version table doesn't exist — fresh install, proceed normally
+      }
+    }
 
     if (currentVersion < LATEST_SCHEMA_VERSION) {
       const toRun = migrations.filter(m => m.version > currentVersion);
       for (const migration of toRun) {
         db.transaction(() => {
-          db.exec(migration.up);
+          try {
+            db.exec(migration.up);
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : '';
+            // If the full exec fails due to duplicate column/table from legacy DB,
+            // re-run line by line to skip only the problematic statements
+            if (msg.includes('duplicate column') || msg.includes('already exists')) {
+              for (const line of migration.up.split('\n')) {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('ALTER TABLE') && trimmed.endsWith(';')) {
+                  try { db.exec(trimmed); } catch { /* skip duplicate column */ }
+                }
+              }
+            } else {
+              throw err;
+            }
+          }
           db.pragma(`user_version = ${migration.version}`);
         })();
       }

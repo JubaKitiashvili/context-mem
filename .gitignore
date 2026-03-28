@@ -8,3 +8,4 @@ dist/
 .env
 *.tgz
 .context-mem.json
+.mcp.json

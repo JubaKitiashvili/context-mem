@@ -41,14 +41,16 @@ function getRegisteredInstances() {
   for (const file of fs.readdirSync(INSTANCES_DIR).filter(f => f.endsWith('.json'))) {
     try {
       const info = JSON.parse(fs.readFileSync(path.join(INSTANCES_DIR, file), 'utf8'));
-      // Check if process is still alive and DB exists
-      let alive = false;
-      try { process.kill(info.pid, 0); alive = true; } catch {}
-      if (alive && fs.existsSync(info.dbPath)) {
-        instances.push(info);
-      } else {
+      // DB must exist to show in dashboard
+      if (!fs.existsSync(info.dbPath)) {
         try { fs.unlinkSync(path.join(INSTANCES_DIR, file)); } catch {}
+        continue;
       }
+      // Check if process is still alive — mark status but don't delete
+      let active = false;
+      try { process.kill(info.pid, 0); active = true; } catch {}
+      info.active = active;
+      instances.push(info);
     } catch {}
   }
   return instances.sort((a, b) => a.projectName.localeCompare(b.projectName));
@@ -966,7 +968,7 @@ function getDashboardHtml() {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 24px;
+    padding: 12px 24px;
     border-bottom: 1px solid var(--border);
     background: var(--bg-card);
     position: sticky;
@@ -979,6 +981,33 @@ function getDashboardHtml() {
     display: flex;
     align-items: center;
     gap: 12px;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 20px;
+  }
+
+  .nav-link {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 5px 12px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    font-family: var(--font);
+  }
+
+  .nav-link:hover {
+    color: var(--text);
+    background: var(--bg);
+  }
+
+  .nav-link.active {
+    color: var(--accent);
+    background: rgba(99,102,241,0.1);
   }
 
   .logo {
@@ -2569,7 +2598,12 @@ function getDashboardHtml() {
 <div class="header">
   <div class="header-left">
     <div class="logo">cm</div>
-    <h1>context-mem <span>dashboard</span></h1>
+    <h1>ContextMem</h1>
+    <nav class="nav-links">
+      <a href="/" class="nav-link active">Home</a>
+      <a href="/graph" class="nav-link">Graph</a>
+      <a href="/timeline" class="nav-link">Timeline</a>
+    </nav>
   </div>
   <div style="display:flex;align-items:center;gap:12px;">
     <div class="refresh-indicator" id="refreshInfo">auto-refresh: 3s</div>
@@ -2585,11 +2619,8 @@ function getDashboardHtml() {
 <!-- Project switcher bar -->
 <div class="project-bar" id="projectBar">
   <div class="project-bar-inner">
-    <div class="project-bar-label">Projects</div>
-    <div class="project-pills" id="projectPills">
-      <div class="project-pill skeleton">Loading...</div>
-    </div>
-    <div class="project-count" id="projectCount"></div>
+    <div class="project-bar-label" id="projectLabel">Project</div>
+    <div class="project-pills" id="projectPills"></div>
   </div>
 </div>
 
@@ -2949,62 +2980,65 @@ async function fetchJson(url) {
 }
 
 // --- Project switcher (multi-project) ---
-let activeProjectDb = '__all__';
+let activeProjectDb = localStorage.getItem('cm-active-project') || null;
+
+function updateProjectBar(instances) {
+  var label = document.getElementById('projectLabel');
+  if (!label) return;
+  if (!instances || instances.length <= 1) {
+    var name = instances && instances[0] ? instances[0].projectName : '${path.basename(PROJECT_DIR).replace(/[<>&"]/g, '')}';
+    label.textContent = 'Project  ' + name;
+  } else {
+    label.textContent = 'Projects';
+  }
+}
 
 async function loadProjects() {
   try {
     const instances = await fetchJson('/api/instances');
     const container = document.getElementById('projectPills');
-    const countEl = document.getElementById('projectCount');
     const bar = document.getElementById('projectBar');
 
     if (!instances.length) {
-      bar.style.display = 'none';
-      // No running instances — use current DB directly (single project mode)
-      if (activeProjectDb === '__all__') activeProjectDb = null;
+      activeProjectDb = null;
+      container.innerHTML = '';
+      updateProjectBar(instances);
       return;
     }
 
-    // Single project — auto-select it instead of staying on __all__
-    if (instances.length === 1 && activeProjectDb === '__all__') {
+    // Validate persisted selection
+    if (activeProjectDb) {
+      var validSelection = instances.some(function(i) { return i.dbPath === activeProjectDb; });
+      if (!validSelection) activeProjectDb = instances[0].dbPath;
+    } else {
       activeProjectDb = instances[0].dbPath;
     }
 
-    // Show bar only if >1 project
-    bar.style.display = instances.length > 1 ? '' : 'none';
+    if (instances.length === 1) {
+      container.innerHTML = '';
+    } else {
+      container.innerHTML = instances.map(i => {
+        const isActive = i.dbPath === activeProjectDb;
+        return '<div class="project-pill' + (isActive ? ' active' : '') + '" data-db="' + escHtml(i.dbPath) + '" title="' + escHtml(i.projectDir) + '">' +
+          '<span class="pill-dot"></span>' +
+          escHtml(i.projectName) +
+        '</div>';
+      }).join('');
+    }
 
-    const allPill = '<div class="project-pill' + (activeProjectDb === '__all__' ? ' active' : '') + '" data-db="__all__" title="Aggregated view across all projects">' +
-      '<span class="pill-dot" style="background:var(--cyan)"></span>All Projects</div>';
+    updateProjectBar(instances);
 
-    container.innerHTML = allPill + instances.map(i => {
-      const isActive = !!(activeProjectDb && activeProjectDb !== '__all__' && i.dbPath === activeProjectDb);
-      return '<div class="project-pill' + (isActive ? ' active' : '') + '" data-db="' + escHtml(i.dbPath) + '" title="' + escHtml(i.projectDir) + '">' +
-        '<span class="pill-dot"></span>' +
-        escHtml(i.projectName) +
-      '</div>';
-    }).join('');
-
-    countEl.textContent = instances.length + ' project' + (instances.length > 1 ? 's' : '') + ' active';
-
-    // Click handlers
     container.querySelectorAll('.project-pill').forEach(pill => {
       pill.addEventListener('click', async () => {
         const db = pill.getAttribute('data-db');
         if (db === activeProjectDb) return;
-
-        if (db === '__all__') {
-          activeProjectDb = '__all__';
-          container.querySelectorAll('.project-pill').forEach(p => p.classList.remove('active'));
-          pill.classList.add('active');
-          refresh();
-          return;
-        }
-
         try {
           await fetchJson('/api/switch-project?db=' + encodeURIComponent(db));
           activeProjectDb = db;
+          localStorage.setItem('cm-active-project', activeProjectDb);
           container.querySelectorAll('.project-pill').forEach(p => p.classList.remove('active'));
           pill.classList.add('active');
+          updateProjectBar(instances);
           refresh();
         } catch {}
       });
@@ -3018,6 +3052,7 @@ function switchToProject(projectDir) {
     if (inst) {
       fetchJson('/api/switch-project?db=' + encodeURIComponent(inst.dbPath)).then(() => {
         activeProjectDb = inst.dbPath;
+        localStorage.setItem('cm-active-project', activeProjectDb);
         loadProjects();
         refresh();
         checkVectorStatus();
@@ -3031,49 +3066,7 @@ setInterval(loadProjects, 10000);
 
 async function refresh() {
   try {
-    // --- All Projects aggregated view ---
-    if (activeProjectDb === '__all__') {
-      const allData = await fetchJson('/api/stats-all');
-      const t = allData.total;
-      // If no registered instances, fall through to single-project view
-      if (t.projectCount === 0) {
-        activeProjectDb = null;
-      } else {
-      document.getElementById('statObs').textContent = fmt(t.observations);
-      document.getElementById('statObsSub').textContent = t.projectCount + ' project' + (t.projectCount !== 1 ? 's' : '');
-      document.getElementById('statSaved').textContent = fmt(t.rawBytes - t.compressedBytes);
-      document.getElementById('statSavedSub').textContent = fmt(t.rawBytes) + ' raw bytes';
-      document.getElementById('statPct').textContent = t.savings + '%';
-
-      // Show per-project breakdown in timeline
-      const tlEl = document.getElementById('timeline');
-      if (allData.projects.length) {
-        tlEl.innerHTML = '<div style="padding:12px 0;" id="projectCards">' + allData.projects.map(p =>
-          '<div class="project-card" data-dir="' + escHtml(p.projectDir) + '" style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;margin:6px 0;background:var(--bg-card);border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:border-color 0.15s;">' +
-            '<div style="display:flex;align-items:center;gap:10px;">' +
-              '<span style="width:8px;height:8px;border-radius:50%;background:var(--green,#4ade80);display:inline-block;flex-shrink:0;"></span>' +
-              '<div><div style="font-weight:600;color:var(--text);font-size:14px;">' + escHtml(p.project) + '</div>' +
-              '<div style="color:var(--text-muted);font-size:11px;margin-top:2px;">' + escHtml(p.projectDir) + '</div></div>' +
-            '</div>' +
-            '<div style="display:flex;gap:20px;align-items:center;">' +
-              '<div style="text-align:right;"><div style="color:var(--text);font-size:14px;font-weight:600;">' + fmt(p.observations) + '</div><div style="color:var(--text-muted);font-size:11px;">observations</div></div>' +
-              '<div style="text-align:right;"><div style="color:var(--cyan);font-size:14px;font-weight:700;">' + p.savings + '%</div><div style="color:var(--text-muted);font-size:11px;">saved</div></div>' +
-            '</div>' +
-          '</div>'
-        ).join('') + '</div>';
-        // Attach click handlers via delegation
-        document.getElementById('projectCards').addEventListener('click', function(e) {
-          const card = e.target.closest('.project-card');
-          if (card) switchToProject(card.dataset.dir);
-        });
-      }
-
-      document.getElementById('refreshInfo').textContent = 'updated ' + new Date().toLocaleTimeString();
-      return;
-      } // end else (has projects)
-    }
-
-    // --- Single project view ---
+    // --- Project view ---
     // Determine if searching or browsing
     const isSearching = currentSearch.length > 0;
 
@@ -4373,14 +4366,1460 @@ startPolling(3000);
 </html>`;
 }
 
+// --- Graph Page HTML ---
+function getGraphPageHtml() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>context-mem - Knowledge Graph</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg-card: #12121a;
+    --bg-card-hover: #1a1a25;
+    --border: #1e1e2e;
+    --text: #e2e2e8;
+    --text-dim: #6b6b80;
+    --text-muted: #44445a;
+    --accent: #6366f1;
+    --accent-dim: #4f46e5;
+    --green: #22c55e;
+    --green-dim: rgba(34, 197, 94, 0.15);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245, 158, 11, 0.15);
+    --red: #ef4444;
+    --red-dim: rgba(239, 68, 68, 0.15);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59, 130, 246, 0.15);
+    --purple: #a855f7;
+    --purple-dim: rgba(168, 85, 247, 0.15);
+    --cyan: #06b6d4;
+    --cyan-dim: rgba(6, 182, 212, 0.15);
+    --pink: #ec4899;
+    --pink-dim: rgba(236, 72, 153, 0.15);
+    --radius: 10px;
+    --font: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+    flex-shrink: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 28px; height: 28px; background: var(--accent); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: white;
+  }
+  .header h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
+  .header h1 span { color: var(--text-dim); font-weight: 400; }
+  .nav-links { display: flex; align-items: center; gap: 4px; margin-left: 20px; }
+  .nav-link {
+    font-size: 12px; color: var(--text-dim); text-decoration: none;
+    padding: 5px 12px; border-radius: 6px; transition: all 0.15s ease; font-family: var(--font);
+  }
+  .nav-link:hover { color: var(--text); background: var(--bg); }
+  .nav-link.active { color: var(--accent); background: rgba(99,102,241,0.1); }
+
+  .graph-toolbar {
+    display: flex; align-items: center; gap: 10px; padding: 12px 24px;
+    background: var(--bg-card); border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .graph-toolbar input, .graph-toolbar select {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 12px; font-size: 12px; color: var(--text); font-family: var(--font);
+  }
+  .graph-toolbar input { width: 240px; }
+  .graph-toolbar button {
+    background: var(--accent); border: none; border-radius: 6px;
+    padding: 6px 16px; color: #fff; font-size: 12px; cursor: pointer;
+    font-family: var(--font); transition: background 0.15s;
+  }
+  .graph-toolbar button:hover { background: var(--accent-dim); }
+  .graph-toolbar .stats {
+    margin-left: auto; font-size: 11px; color: var(--text-dim);
+    display: flex; gap: 16px;
+  }
+
+  .theme-toggle {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text-dim); font-size: 13px; width: 32px; height: 32px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  body.light {
+    --bg: #f5f5f8; --bg-card: #ffffff; --bg-card-hover: #f0f0f5;
+    --border: #e0e0e8; --text: #1a1a2e; --text-dim: #5a5a70; --text-muted: #8888a0;
+  }
+
+  .graph-container {
+    flex: 1; position: relative; overflow: hidden; background: var(--bg);
+  }
+
+  #graphCanvas {
+    width: 100%; height: 100%; display: block; cursor: grab;
+  }
+  #graphCanvas.dragging { cursor: grabbing; }
+
+  .graph-legend {
+    position: absolute; bottom: 16px; left: 16px; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px;
+    font-size: 11px; display: flex; flex-direction: column; gap: 6px;
+    opacity: 0.9;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  .node-detail {
+    position: absolute; top: 16px; right: 16px; width: 320px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 20px; font-size: 12px; display: none; z-index: 50;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4); max-height: calc(100vh - 140px); overflow-y: auto;
+  }
+  .node-detail.open { display: block; }
+  .node-detail-close {
+    position: absolute; top: 10px; right: 14px; background: none; border: none;
+    color: var(--text-dim); font-size: 16px; cursor: pointer; font-family: var(--font);
+  }
+  .node-detail-name { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .node-detail-type {
+    display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px;
+    margin-bottom: 12px;
+  }
+  .node-detail-section { margin-top: 12px; }
+  .node-detail-section-title { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .node-detail-rel {
+    font-size: 11px; padding: 4px 0; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .node-detail-rel:last-child { border-bottom: none; }
+  .rel-type-badge {
+    font-size: 9px; padding: 1px 6px; border-radius: 8px;
+    background: var(--border); color: var(--text-dim);
+  }
+
+  .graph-empty-state {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    text-align: center; color: var(--text-muted); font-size: 14px;
+  }
+  .graph-empty-state p { margin-top: 8px; font-size: 12px; }
+
+  /* --- Project Bar --- */
+  .project-bar { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 8px 24px; flex-shrink: 0; }
+  .project-bar-inner { display: flex; align-items: center; gap: 12px; max-width: 1400px; margin: 0 auto; }
+  .project-bar-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); flex-shrink: 0; }
+  .project-pills { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; overflow-x: auto; }
+  .project-pill { display: flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); transition: all 0.15s ease; white-space: nowrap; user-select: none; }
+  .project-pill:hover { border-color: var(--cyan); color: var(--text); background: var(--bg-card); }
+  .project-pill.active { background: var(--cyan-dim, rgba(0,212,255,0.1)); border-color: var(--cyan); color: var(--cyan); font-weight: 600; }
+  .project-pill .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green, #4ade80); flex-shrink: 0; }
+  .project-pill.skeleton { opacity: 0.4; cursor: default; }
+  .project-count { font-size: 11px; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <div class="logo">cm</div>
+    <h1>ContextMem</h1>
+    <nav class="nav-links">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/graph" class="nav-link active">Graph</a>
+      <a href="/timeline" class="nav-link">Timeline</a>
+    </nav>
+  </div>
+  <button class="theme-toggle" id="themeToggle" title="Toggle light/dark theme">L</button>
+</div>
+
+<div class="project-bar" id="projectBar">
+  <div class="project-bar-inner">
+    <div class="project-bar-label" id="projectLabel">Project</div>
+    <div class="project-pills" id="projectPills"></div>
+  </div>
+</div>
+
+<div class="graph-toolbar">
+  <input type="text" id="entityFilter" placeholder="Filter by entity name..." />
+  <select id="depthSelect">
+    <option value="1">Depth 1</option>
+    <option value="2" selected>Depth 2</option>
+    <option value="3">Depth 3</option>
+    <option value="4">Depth 4</option>
+    <option value="5">Depth 5</option>
+  </select>
+  <select id="typeFilter">
+    <option value="">All types</option>
+    <option value="file">File</option>
+    <option value="module">Module</option>
+    <option value="pattern">Pattern</option>
+    <option value="decision">Decision</option>
+    <option value="bug">Bug</option>
+    <option value="api">API</option>
+    <option value="person">Person</option>
+    <option value="concept">Concept</option>
+  </select>
+  <button onclick="loadGraph()">Load</button>
+  <button onclick="resetZoom()" style="background:var(--border);color:var(--text);">Reset View</button>
+  <div class="stats" id="graphStats"></div>
+</div>
+
+<div class="graph-container" id="graphContainer">
+  <canvas id="graphCanvas"></canvas>
+  <div class="graph-empty-state" id="emptyState">
+    <div style="font-size:32px;margin-bottom:12px;">*</div>
+    <div>Knowledge Graph</div>
+    <p>Click "Load" to visualize entity relationships</p>
+  </div>
+
+  <div class="graph-legend" id="graphLegend">
+    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div> file</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> module</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div> pattern / concept</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> decision</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> bug</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div> api</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ec4899"></div> person</div>
+  </div>
+
+  <div class="node-detail" id="nodeDetail">
+    <button class="node-detail-close" onclick="closeDetail()">&times;</button>
+    <div class="node-detail-name" id="detailName"></div>
+    <div class="node-detail-type" id="detailType"></div>
+    <div class="node-detail-section" id="detailMeta"></div>
+    <div class="node-detail-section" id="detailRels"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const TYPE_COLORS = {
+    file: '#22c55e', module: '#3b82f6', pattern: '#a855f7', concept: '#a855f7',
+    decision: '#f59e0b', bug: '#ef4444', api: '#06b6d4', person: '#ec4899',
+    project: '#f59e0b', organization: '#06b6d4', technology: '#3b82f6',
+  };
+  const DEFAULT_COLOR = '#6366f1';
+
+  function getColor(type) { return TYPE_COLORS[type] || TYPE_COLORS[(type||'').toLowerCase()] || DEFAULT_COLOR; }
+
+  const canvas = document.getElementById('graphCanvas');
+  const ctx = canvas.getContext('2d');
+  const container = document.getElementById('graphContainer');
+
+  let nodes = [], edges = [], nodeMap = {};
+  let simRunning = false, simIterations = 0;
+  let panX = 0, panY = 0, zoom = 1;
+  let dragNode = null, isPanning = false, lastMouse = {x:0,y:0};
+  let hoveredNode = null, selectedNode = null;
+  let animFrame = null;
+
+  function resize() {
+    const rect = container.getBoundingClientRect();
+    canvas.width = rect.width * (window.devicePixelRatio || 1);
+    canvas.height = rect.height * (window.devicePixelRatio || 1);
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
+    draw();
+  }
+  window.addEventListener('resize', resize);
+
+  function screenToWorld(sx, sy) {
+    return { x: (sx - panX) / zoom, y: (sy - panY) / zoom };
+  }
+
+  function worldToScreen(wx, wy) {
+    return { x: wx * zoom + panX, y: wy * zoom + panY };
+  }
+
+  function findNodeAt(sx, sy) {
+    const w = screenToWorld(sx, sy);
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      const n = nodes[i];
+      const dx = n.x - w.x, dy = n.y - w.y;
+      const r = (n._radius || 8) + 4;
+      if (dx*dx + dy*dy < r*r) return n;
+    }
+    return null;
+  }
+
+  // --- Force simulation ---
+  function initSim() {
+    const w = canvas.width / (window.devicePixelRatio || 1);
+    const h = canvas.height / (window.devicePixelRatio || 1);
+
+    nodes.forEach(n => {
+      n.x = w / 2 + (Math.random() - 0.5) * w * 0.5;
+      n.y = h / 2 + (Math.random() - 0.5) * h * 0.5;
+      n.vx = 0; n.vy = 0;
+      // Scale node size by connection count
+      const connCount = edges.filter(e => e.source === n.id || e.target === n.id).length;
+      n._radius = Math.max(6, Math.min(20, 6 + connCount * 2));
+    });
+
+    panX = 0; panY = 0; zoom = 1;
+    simIterations = 0;
+    simRunning = true;
+    if (animFrame) cancelAnimationFrame(animFrame);
+    tickSim();
+  }
+
+  function tickSim() {
+    if (!simRunning || simIterations >= 300) { simRunning = false; draw(); return; }
+    simIterations++;
+
+    const cw = canvas.width / (window.devicePixelRatio || 1);
+    const ch = canvas.height / (window.devicePixelRatio || 1);
+
+    // Repulsion (Barnes-Hut-like, but simple O(n^2) for small graphs)
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[j].x - nodes[i].x;
+        const dy = nodes[j].y - nodes[i].y;
+        const dist = Math.max(Math.sqrt(dx*dx + dy*dy), 1);
+        const force = 1200 / (dist * dist);
+        const fx = (dx / dist) * force;
+        const fy = (dy / dist) * force;
+        nodes[i].vx -= fx; nodes[i].vy -= fy;
+        nodes[j].vx += fx; nodes[j].vy += fy;
+      }
+    }
+
+    // Edge attraction
+    for (const e of edges) {
+      const s = nodeMap[e.source], t = nodeMap[e.target];
+      if (!s || !t) continue;
+      const dx = t.x - s.x, dy = t.y - s.y;
+      const dist = Math.max(Math.sqrt(dx*dx + dy*dy), 1);
+      const force = (dist - 120) * 0.008;
+      const fx = (dx / dist) * force;
+      const fy = (dy / dist) * force;
+      s.vx += fx; s.vy += fy;
+      t.vx -= fx; t.vy -= fy;
+    }
+
+    // Center gravity
+    for (const n of nodes) {
+      n.vx += (cw / 2 - n.x) * 0.001;
+      n.vy += (ch / 2 - n.y) * 0.001;
+    }
+
+    // Apply velocities + damping
+    const damping = 0.88;
+    for (const n of nodes) {
+      if (n === dragNode) continue;
+      n.vx *= damping; n.vy *= damping;
+      n.x += n.vx; n.y += n.vy;
+    }
+
+    draw();
+    animFrame = requestAnimationFrame(tickSim);
+  }
+
+  // --- Drawing ---
+  function draw() {
+    const w = canvas.width / (window.devicePixelRatio || 1);
+    const h = canvas.height / (window.devicePixelRatio || 1);
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.save();
+    ctx.translate(panX, panY);
+    ctx.scale(zoom, zoom);
+
+    // Draw edges
+    for (const e of edges) {
+      const s = nodeMap[e.source], t = nodeMap[e.target];
+      if (!s || !t) continue;
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(t.x, t.y);
+      ctx.strokeStyle = 'rgba(100,100,130,0.3)';
+      ctx.lineWidth = Math.max(0.5, Math.min((e.weight || 1) * 0.8, 3));
+      ctx.stroke();
+
+      // Edge label (relationship type)
+      const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2;
+      ctx.font = '9px monospace';
+      ctx.fillStyle = 'rgba(100,100,130,0.5)';
+      ctx.textAlign = 'center';
+      ctx.fillText(e.type || '', mx, my - 4);
+
+      // Arrowhead
+      const angle = Math.atan2(t.y - s.y, t.x - s.x);
+      const tr = (t._radius || 8) + 4;
+      const ax = t.x - Math.cos(angle) * tr;
+      const ay = t.y - Math.sin(angle) * tr;
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(ax - 8 * Math.cos(angle - 0.4), ay - 8 * Math.sin(angle - 0.4));
+      ctx.lineTo(ax - 8 * Math.cos(angle + 0.4), ay - 8 * Math.sin(angle + 0.4));
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(100,100,130,0.4)';
+      ctx.fill();
+    }
+
+    // Draw nodes
+    for (const n of nodes) {
+      const r = n._radius || 8;
+      const color = getColor(n.type);
+
+      // Glow for hovered/selected
+      if (n === hoveredNode || n === selectedNode) {
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, r + 6, 0, Math.PI * 2);
+        ctx.fillStyle = color.replace(')', ',0.2)').replace('rgb', 'rgba');
+        ctx.fill();
+      }
+
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = n === selectedNode ? '#fff' : 'rgba(10,10,15,0.8)';
+      ctx.lineWidth = n === selectedNode ? 2.5 : 1.5;
+      ctx.stroke();
+
+      // Label
+      ctx.font = '10px monospace';
+      ctx.fillStyle = '#e2e2e8';
+      ctx.textAlign = 'center';
+      const label = (n.name || '').length > 24 ? (n.name || '').slice(0, 22) + '..' : (n.name || '');
+      ctx.fillText(label, n.x, n.y + r + 14);
+    }
+
+    ctx.restore();
+
+    // Tooltip for hovered node
+    if (hoveredNode && hoveredNode !== selectedNode) {
+      const sp = worldToScreen(hoveredNode.x, hoveredNode.y);
+      ctx.fillStyle = 'rgba(18,18,26,0.95)';
+      const tipW = 200, tipH = 44;
+      const tx = Math.min(sp.x + 16, w - tipW - 8);
+      const ty = Math.max(sp.y - 10, 8);
+      ctx.beginPath();
+      ctx.roundRect(tx, ty, tipW, tipH, 6);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(30,30,46,1)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.font = 'bold 11px monospace';
+      ctx.fillStyle = '#e2e2e8';
+      ctx.textAlign = 'left';
+      ctx.fillText(hoveredNode.name || '', tx + 10, ty + 16);
+      ctx.font = '10px monospace';
+      ctx.fillStyle = '#6b6b80';
+      ctx.fillText(hoveredNode.type + (hoveredNode.knowledge_id ? ' (linked)' : ''), tx + 10, ty + 32);
+    }
+  }
+
+  // --- Interaction ---
+  canvas.addEventListener('mousedown', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+    const node = findNodeAt(sx, sy);
+    if (node) {
+      dragNode = node;
+      simRunning = false;
+      canvas.classList.add('dragging');
+    } else {
+      isPanning = true;
+      canvas.classList.add('dragging');
+    }
+    lastMouse = {x: e.clientX, y: e.clientY};
+  });
+
+  canvas.addEventListener('mousemove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+
+    if (dragNode) {
+      const w = screenToWorld(sx, sy);
+      dragNode.x = w.x; dragNode.y = w.y;
+      draw();
+    } else if (isPanning) {
+      panX += e.clientX - lastMouse.x;
+      panY += e.clientY - lastMouse.y;
+      draw();
+    } else {
+      const prev = hoveredNode;
+      hoveredNode = findNodeAt(sx, sy);
+      if (hoveredNode !== prev) {
+        canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
+        draw();
+      }
+    }
+    lastMouse = {x: e.clientX, y: e.clientY};
+  });
+
+  canvas.addEventListener('mouseup', function() {
+    if (dragNode) {
+      // Clicking a node (not dragging far) selects it
+      const node = dragNode;
+      dragNode = null;
+      showDetail(node);
+    }
+    isPanning = false;
+    canvas.classList.remove('dragging');
+    // Resume simulation briefly
+    if (nodes.length > 0 && simIterations < 300) {
+      simIterations = Math.max(simIterations, 250);
+      simRunning = true;
+      tickSim();
+    }
+  });
+
+  canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+    const oldZoom = zoom;
+    zoom *= e.deltaY < 0 ? 1.1 : 0.9;
+    zoom = Math.max(0.1, Math.min(5, zoom));
+    // Zoom toward cursor
+    panX = sx - (sx - panX) * (zoom / oldZoom);
+    panY = sy - (sy - panY) * (zoom / oldZoom);
+    draw();
+  }, { passive: false });
+
+  // --- Detail panel ---
+  function showDetail(node) {
+    selectedNode = node;
+    const panel = document.getElementById('nodeDetail');
+    const nameEl = document.getElementById('detailName');
+    const typeEl = document.getElementById('detailType');
+    const metaEl = document.getElementById('detailMeta');
+    const relsEl = document.getElementById('detailRels');
+
+    nameEl.textContent = node.name;
+    typeEl.textContent = node.type;
+    typeEl.style.background = getColor(node.type).replace(')', ',0.15)').replace('#', 'rgba(').replace('rgba(', function() {
+      // Convert hex to rgba
+      const c = getColor(node.type);
+      const r = parseInt(c.slice(1,3),16), g = parseInt(c.slice(3,5),16), b = parseInt(c.slice(5,7),16);
+      return 'rgba(' + r + ',' + g + ',' + b + ',0.15)';
+    }());
+    // Fix: just use a simpler approach
+    const c = getColor(node.type);
+    const r = parseInt(c.slice(1,3),16), g = parseInt(c.slice(3,5),16), b = parseInt(c.slice(5,7),16);
+    typeEl.style.background = 'rgba(' + r + ',' + g + ',' + b + ',0.15)';
+    typeEl.style.color = c;
+
+    // Metadata
+    let metaHtml = '<div class="node-detail-section-title">Metadata</div>';
+    if (node.knowledge_id) metaHtml += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;">Knowledge ID: ' + node.knowledge_id + '</div>';
+    if (node.created_at) metaHtml += '<div style="font-size:11px;color:var(--text-dim);">Created: ' + new Date(node.created_at).toLocaleString() + '</div>';
+    if (node.metadata && Object.keys(node.metadata).length > 0) {
+      metaHtml += '<pre style="font-size:10px;color:var(--text-dim);margin-top:6px;white-space:pre-wrap;word-break:break-all;">' + JSON.stringify(node.metadata, null, 2) + '</pre>';
+    }
+    metaEl.innerHTML = metaHtml;
+
+    // Relationships
+    const rels = edges.filter(e => e.source === node.id || e.target === node.id);
+    let relsHtml = '<div class="node-detail-section-title">Relationships (' + rels.length + ')</div>';
+    if (rels.length === 0) {
+      relsHtml += '<div style="font-size:11px;color:var(--text-muted);">No relationships</div>';
+    } else {
+      for (const rel of rels) {
+        const isSource = rel.source === node.id;
+        const otherId = isSource ? rel.target : rel.source;
+        const other = nodeMap[otherId];
+        const otherName = other ? other.name : otherId.slice(0, 12) + '...';
+        const arrow = isSource ? ' -> ' : ' <- ';
+        relsHtml += '<div class="node-detail-rel">' +
+          '<span class="rel-type-badge">' + (rel.type || 'related') + '</span>' +
+          '<span style="color:var(--text-dim);">' + arrow + '</span>' +
+          '<span style="cursor:pointer;color:var(--accent);" onclick="selectNodeById(\\'' + otherId + '\\')">' + otherName + '</span>' +
+        '</div>';
+      }
+    }
+    relsEl.innerHTML = relsHtml;
+    panel.classList.add('open');
+    draw();
+  }
+
+  window.closeDetail = function() {
+    selectedNode = null;
+    document.getElementById('nodeDetail').classList.remove('open');
+    draw();
+  };
+
+  window.selectNodeById = function(id) {
+    const n = nodeMap[id];
+    if (n) showDetail(n);
+  };
+
+  window.resetZoom = function() {
+    panX = 0; panY = 0; zoom = 1;
+    draw();
+  };
+
+  // --- Load data ---
+  let activeProjectDb = localStorage.getItem('cm-active-project') || null;
+
+  window.loadGraph = async function() {
+    const entity = document.getElementById('entityFilter').value;
+    const depth = document.getElementById('depthSelect').value;
+    const typeF = document.getElementById('typeFilter').value;
+
+    let url = '/api/graph?depth=' + depth;
+    if (entity) url += '&entity=' + encodeURIComponent(entity);
+    if (activeProjectDb && activeProjectDb !== '__all__') url += '&db=' + encodeURIComponent(activeProjectDb);
+
+    try {
+      const data = await fetch(url).then(r => r.json());
+      nodes = data.nodes || [];
+      edges = data.edges || [];
+
+      // Type filter (client-side)
+      if (typeF) {
+        const keep = new Set(nodes.filter(n => n.type === typeF).map(n => n.id));
+        // Also keep connected nodes
+        edges.forEach(e => { if (keep.has(e.source)) keep.add(e.target); if (keep.has(e.target)) keep.add(e.source); });
+        nodes = nodes.filter(n => keep.has(n.id));
+        edges = edges.filter(e => keep.has(e.source) && keep.has(e.target));
+      }
+
+      nodeMap = {};
+      nodes.forEach(n => { nodeMap[n.id] = n; });
+
+      document.getElementById('emptyState').style.display = nodes.length === 0 ? '' : 'none';
+      document.getElementById('graphLegend').style.display = nodes.length === 0 ? 'none' : '';
+      document.getElementById('graphStats').innerHTML = nodes.length > 0
+        ? '<span>Nodes: ' + nodes.length + '</span><span>Edges: ' + edges.length + '</span><span>Types: ' + [...new Set(nodes.map(n=>n.type))].join(', ') + '</span>'
+        : '';
+
+      if (nodes.length > 0) {
+        selectedNode = null;
+        document.getElementById('nodeDetail').classList.remove('open');
+        initSim();
+      }
+    } catch (err) {
+      console.error('Graph load failed:', err);
+    }
+  };
+
+  // --- Project switcher ---
+  function escHtml(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+
+  function updateProjectBar(instances) {
+    var label = document.getElementById('projectLabel');
+    if (!label) return;
+    if (!instances || instances.length <= 1) {
+      var name = instances && instances[0] ? instances[0].projectName : '${path.basename(PROJECT_DIR).replace(/[<>&"]/g, '')}';
+      label.textContent = 'Project  ' + name;
+    } else {
+      label.textContent = 'Projects';
+    }
+  }
+
+  async function loadProjects() {
+    try {
+      const res = await fetch('/api/instances');
+      const instances = await res.json();
+      const container = document.getElementById('projectPills');
+
+      if (!instances.length) {
+        activeProjectDb = null;
+        container.innerHTML = '';
+        updateProjectBar(instances);
+        return;
+      }
+
+      if (activeProjectDb) {
+        var validSelection = instances.some(function(i) { return i.dbPath === activeProjectDb; });
+        if (!validSelection) activeProjectDb = instances[0].dbPath;
+      } else {
+        activeProjectDb = instances[0].dbPath;
+      }
+
+      if (instances.length === 1) {
+        container.innerHTML = '';
+      } else {
+        container.innerHTML = instances.map(function(i) {
+          const isActive = i.dbPath === activeProjectDb;
+          return '<div class="project-pill' + (isActive ? ' active' : '') + '" data-db="' + escHtml(i.dbPath) + '" title="' + escHtml(i.projectDir) + '">' +
+            '<span class="pill-dot"></span>' + escHtml(i.projectName) + '</div>';
+        }).join('');
+      }
+
+      updateProjectBar(instances);
+
+      container.querySelectorAll('.project-pill').forEach(function(pill) {
+        pill.addEventListener('click', async function() {
+          const db = pill.getAttribute('data-db');
+          if (db === activeProjectDb) return;
+          try { await fetch('/api/switch-project?db=' + encodeURIComponent(db)); } catch {}
+          activeProjectDb = db;
+          localStorage.setItem('cm-active-project', activeProjectDb);
+          container.querySelectorAll('.project-pill').forEach(function(p) { p.classList.remove('active'); });
+          pill.classList.add('active');
+          updateProjectBar(instances);
+          loadGraph();
+        });
+      });
+    } catch {}
+  }
+
+  // --- Theme ---
+  const savedTheme = localStorage.getItem('cm-theme') || 'dark';
+  document.body.classList.toggle('light', savedTheme === 'light');
+  document.getElementById('themeToggle').textContent = savedTheme === 'light' ? 'D' : 'L';
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const next = document.body.classList.contains('light') ? 'dark' : 'light';
+    document.body.classList.toggle('light', next === 'light');
+    document.getElementById('themeToggle').textContent = next === 'light' ? 'D' : 'L';
+    localStorage.setItem('cm-theme', next);
+  });
+
+  // --- Init ---
+  resize();
+  loadProjects();
+  loadGraph();
+})();
+</script>
+</body>
+</html>`;
+}
+
+// --- Timeline Page HTML ---
+function getTimelinePageHtml() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>context-mem - Timeline</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg-card: #12121a;
+    --bg-card-hover: #1a1a25;
+    --border: #1e1e2e;
+    --text: #e2e2e8;
+    --text-dim: #6b6b80;
+    --text-muted: #44445a;
+    --accent: #6366f1;
+    --accent-dim: #4f46e5;
+    --green: #22c55e;
+    --green-dim: rgba(34, 197, 94, 0.15);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245, 158, 11, 0.15);
+    --red: #ef4444;
+    --red-dim: rgba(239, 68, 68, 0.15);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59, 130, 246, 0.15);
+    --purple: #a855f7;
+    --purple-dim: rgba(168, 85, 247, 0.15);
+    --cyan: #06b6d4;
+    --cyan-dim: rgba(6, 182, 212, 0.15);
+    --pink: #ec4899;
+    --pink-dim: rgba(236, 72, 153, 0.15);
+    --radius: 10px;
+    --font: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 28px; height: 28px; background: var(--accent); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: white;
+  }
+  .header h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
+  .header h1 span { color: var(--text-dim); font-weight: 400; }
+  .nav-links { display: flex; align-items: center; gap: 4px; margin-left: 20px; }
+  .nav-link {
+    font-size: 12px; color: var(--text-dim); text-decoration: none;
+    padding: 5px 12px; border-radius: 6px; transition: all 0.15s ease; font-family: var(--font);
+  }
+  .nav-link:hover { color: var(--text); background: var(--bg); }
+  .nav-link.active { color: var(--accent); background: rgba(99,102,241,0.1); }
+
+  .theme-toggle {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text-dim); font-size: 13px; width: 32px; height: 32px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  body.light {
+    --bg: #f5f5f8; --bg-card: #ffffff; --bg-card-hover: #f0f0f5;
+    --border: #e0e0e8; --text: #1a1a2e; --text-dim: #5a5a70; --text-muted: #8888a0;
+  }
+
+  .header-right {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .status-badge {
+    display: flex; align-items: center; gap: 6px; font-size: 11px;
+    color: var(--green); background: rgba(34,197,94,0.15);
+    padding: 4px 10px; border-radius: 20px;
+  }
+  .status-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .toolbar {
+    display: flex; align-items: center; gap: 10px; padding: 12px 24px;
+    background: var(--bg-card); border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .toolbar input, .toolbar select {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 12px; font-size: 12px; color: var(--text); font-family: var(--font);
+  }
+  .toolbar input[type="text"] { width: 240px; }
+  .toolbar input[type="date"] { width: 150px; }
+  .toolbar button {
+    background: var(--accent); border: none; border-radius: 6px;
+    padding: 6px 16px; color: #fff; font-size: 12px; cursor: pointer;
+    font-family: var(--font); transition: background 0.15s;
+  }
+  .toolbar button:hover { background: var(--accent-dim); }
+  .toolbar button.secondary { background: var(--border); color: var(--text); }
+  .toolbar .spacer { flex: 1; }
+  .toolbar .result-count { font-size: 11px; color: var(--text-dim); }
+  .toolbar .auto-refresh-indicator {
+    font-size: 10px; color: var(--green); display: flex; align-items: center; gap: 4px;
+  }
+
+  .type-filter-row {
+    display: flex; gap: 6px; padding: 10px 24px; flex-wrap: wrap;
+    border-bottom: 1px solid var(--border); background: var(--bg-card);
+  }
+  .type-pill {
+    font-size: 11px; padding: 4px 12px; border-radius: 16px;
+    border: 1px solid var(--border); cursor: pointer; transition: all 0.15s;
+    user-select: none;
+  }
+  .type-pill:hover { border-color: var(--accent); }
+  .type-pill.active { background: rgba(99,102,241,0.15); border-color: var(--accent); color: var(--accent); }
+
+  .main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  .timeline-line {
+    position: relative;
+    padding-left: 28px;
+  }
+  .timeline-line::before {
+    content: '';
+    position: absolute; left: 8px; top: 0; bottom: 0;
+    width: 2px; background: var(--border);
+  }
+
+  .tl-group-header {
+    font-size: 12px; font-weight: 600; color: var(--text-dim);
+    padding: 16px 0 8px; position: relative;
+  }
+  .tl-group-header::before {
+    content: '';
+    position: absolute; left: -24px; top: 20px; width: 10px; height: 10px;
+    background: var(--accent); border-radius: 50%; border: 2px solid var(--bg);
+  }
+
+  .tl-entry {
+    position: relative; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 18px; margin-bottom: 8px;
+    transition: all 0.15s ease; cursor: pointer;
+  }
+  .tl-entry:hover { background: var(--bg-card-hover); border-color: var(--accent); }
+  .tl-entry::before {
+    content: '';
+    position: absolute; left: -24px; top: 18px; width: 8px; height: 8px;
+    background: var(--border); border-radius: 50%;
+  }
+
+  .tl-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;
+  }
+  .tl-badge {
+    font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+  }
+  .tl-badge.code_change { background: var(--blue-dim); color: var(--blue); }
+  .tl-badge.error { background: var(--red-dim); color: var(--red); }
+  .tl-badge.decision { background: var(--purple-dim); color: var(--purple); }
+  .tl-badge.pattern { background: var(--cyan-dim); color: var(--cyan); }
+  .tl-badge.dependency { background: var(--orange-dim); color: var(--orange); }
+  .tl-badge.config { background: var(--green-dim); color: var(--green); }
+  .tl-badge.debug { background: var(--red-dim); color: var(--orange); }
+  .tl-badge.architecture { background: var(--purple-dim); color: var(--pink); }
+  .tl-badge.default { background: var(--border); color: var(--text-dim); }
+
+  .tl-time { font-size: 10px; color: var(--text-muted); margin-left: auto; white-space: nowrap; }
+  .tl-summary { font-size: 12px; color: var(--text); line-height: 1.5; }
+  .tl-meta { font-size: 10px; color: var(--text-muted); margin-top: 6px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .tl-detail {
+    display: none; margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--border); font-size: 11px;
+  }
+  .tl-detail.open { display: block; }
+  .tl-detail-content {
+    background: var(--bg); border-radius: 6px; padding: 10px 14px;
+    font-size: 11px; color: var(--text-dim); white-space: pre-wrap; word-break: break-all;
+    max-height: 300px; overflow-y: auto; margin-top: 8px;
+  }
+  .tl-detail-chips {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;
+  }
+  .tl-detail-chip {
+    font-size: 10px; padding: 2px 8px; border-radius: 8px;
+    background: var(--border); color: var(--text-dim);
+  }
+
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 13px;
+  }
+
+  .load-more {
+    text-align: center; padding: 16px;
+  }
+  .load-more button {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 24px; color: var(--text-dim); font-size: 12px; cursor: pointer;
+    font-family: var(--font); transition: all 0.15s;
+  }
+  .load-more button:hover { border-color: var(--accent); color: var(--text); }
+
+  /* --- Project Bar --- */
+  .project-bar { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 8px 24px; }
+  .project-bar-inner { display: flex; align-items: center; gap: 12px; max-width: 1400px; margin: 0 auto; }
+  .project-bar-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); flex-shrink: 0; }
+  .project-pills { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; overflow-x: auto; }
+  .project-pill { display: flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); transition: all 0.15s ease; white-space: nowrap; user-select: none; }
+  .project-pill:hover { border-color: var(--cyan); color: var(--text); background: var(--bg-card); }
+  .project-pill.active { background: var(--cyan-dim, rgba(0,212,255,0.1)); border-color: var(--cyan); color: var(--cyan); font-weight: 600; }
+  .project-pill .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green, #4ade80); flex-shrink: 0; }
+  .project-pill.skeleton { opacity: 0.4; cursor: default; }
+  .project-count { font-size: 11px; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <div class="logo">cm</div>
+    <h1>ContextMem</h1>
+    <nav class="nav-links">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/graph" class="nav-link">Graph</a>
+      <a href="/timeline" class="nav-link active">Timeline</a>
+    </nav>
+  </div>
+  <div class="header-right">
+    <div class="status-badge" id="statusBadge">
+      <div class="status-dot"></div>
+      <span id="statusText">auto-refresh</span>
+    </div>
+    <button class="theme-toggle" id="themeToggle" title="Toggle light/dark theme">L</button>
+  </div>
+</div>
+
+<div class="project-bar" id="projectBar">
+  <div class="project-bar-inner">
+    <div class="project-bar-label" id="projectLabel">Project</div>
+    <div class="project-pills" id="projectPills"></div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <input type="text" id="searchInput" placeholder="Search observations..." />
+  <input type="date" id="dateFrom" title="From date" />
+  <input type="date" id="dateTo" title="To date" />
+  <select id="limitSelect">
+    <option value="50">50 entries</option>
+    <option value="100" selected>100 entries</option>
+    <option value="250">250 entries</option>
+    <option value="500">500 entries</option>
+  </select>
+  <button onclick="applyFilters()">Apply</button>
+  <button class="secondary" onclick="clearFilters()">Clear</button>
+  <div class="spacer"></div>
+  <div class="result-count" id="resultCount"></div>
+  <div class="auto-refresh-indicator">
+    <div class="status-dot" style="width:4px;height:4px;"></div>
+    <span id="refreshTimer">5s</span>
+  </div>
+</div>
+
+<div class="type-filter-row" id="typeFilters"></div>
+
+<div class="main">
+  <div class="timeline-line" id="timeline">
+    <div class="empty-state">Loading timeline...</div>
+  </div>
+  <div class="load-more" id="loadMore" style="display:none;">
+    <button onclick="loadMoreEntries()">Load more</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  let entries = [];
+  let currentType = '';
+  let currentLimit = 100;
+  let lastRefresh = 0;
+  let refreshInterval = null;
+  let activeProjectDb = localStorage.getItem('cm-active-project') || null;
+
+  const BADGE_CLASSES = {
+    code_change: 'code_change', error: 'error', decision: 'decision',
+    pattern: 'pattern', dependency: 'dependency', config: 'config',
+    debug: 'debug', architecture: 'architecture'
+  };
+
+  function esc(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+
+  function timeAgo(ts) {
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return s + 's ago';
+    if (s < 3600) return Math.floor(s / 60) + 'm ago';
+    if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+    return Math.floor(s / 86400) + 'd ago';
+  }
+
+  function formatDate(ts) {
+    return new Date(ts).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function formatDayGroup(ts) {
+    const d = new Date(ts);
+    const today = new Date();
+    const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return 'Today';
+    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  }
+
+  function badgeClass(type) { return BADGE_CLASSES[type] || 'default'; }
+
+  // --- Fetch timeline data ---
+  async function fetchTimeline() {
+    const search = document.getElementById('searchInput').value.trim();
+    const dateFrom = document.getElementById('dateFrom').value;
+    const dateTo = document.getElementById('dateTo').value;
+    const limit = document.getElementById('limitSelect').value;
+    currentLimit = parseInt(limit, 10);
+
+    let url;
+    if (search) {
+      url = '/api/search?q=' + encodeURIComponent(search) + '&limit=' + limit;
+      if (currentType) url += '&type=' + encodeURIComponent(currentType);
+    } else if (dateFrom || dateTo) {
+      const from = dateFrom ? new Date(dateFrom).getTime() : 0;
+      const to = dateTo ? new Date(dateTo + 'T23:59:59').getTime() : Date.now();
+      url = '/api/timeline-range?from=' + from + '&to=' + to + '&limit=' + limit;
+      if (currentType) url += '&type=' + encodeURIComponent(currentType);
+    } else {
+      url = '/api/timeline?limit=' + limit;
+      if (currentType) url += '&type=' + encodeURIComponent(currentType);
+    }
+
+    if (activeProjectDb && activeProjectDb !== '__all__') url += '&db=' + encodeURIComponent(activeProjectDb);
+
+    try {
+      const res = await fetch(url);
+      entries = await res.json();
+      renderTimeline();
+      lastRefresh = Date.now();
+      document.getElementById('statusText').textContent = 'updated ' + new Date().toLocaleTimeString();
+    } catch (err) {
+      document.getElementById('statusText').textContent = 'error';
+      console.error(err);
+    }
+  }
+
+  // --- Render timeline ---
+  function renderTimeline() {
+    const container = document.getElementById('timeline');
+    const countEl = document.getElementById('resultCount');
+    countEl.textContent = entries.length + ' observation' + (entries.length !== 1 ? 's' : '');
+
+    if (entries.length === 0) {
+      container.innerHTML = '<div class="empty-state">No observations found</div>';
+      document.getElementById('loadMore').style.display = 'none';
+      return;
+    }
+
+    // Group by day
+    let html = '';
+    let lastDay = '';
+    for (const entry of entries) {
+      const day = formatDayGroup(entry.indexed_at);
+      if (day !== lastDay) {
+        html += '<div class="tl-group-header">' + esc(day) + '</div>';
+        lastDay = day;
+      }
+
+      const display = entry.summary || entry.content_preview || '(no content)';
+      let meta = {};
+      try { meta = typeof entry.metadata === 'string' ? JSON.parse(entry.metadata) : (entry.metadata || {}); } catch {}
+
+      html += '<div class="tl-entry" data-id="' + entry.id + '">' +
+        '<div class="tl-header">' +
+          '<span class="tl-badge ' + badgeClass(entry.type) + '">' + esc(entry.type) + '</span>' +
+          (entry.privacy_level && entry.privacy_level !== 'public'
+            ? '<span class="tl-badge default">' + esc(entry.privacy_level) + '</span>' : '') +
+          '<span class="tl-time">' + formatDate(entry.indexed_at) + ' (' + timeAgo(entry.indexed_at) + ')</span>' +
+        '</div>' +
+        '<div class="tl-summary">' + esc(display) + '</div>' +
+        '<div class="tl-meta">' +
+          '<span>id: ' + entry.id.slice(0, 12) + '...</span>' +
+          '<span>session: ' + (entry.session_id || '').slice(0, 10) + '...</span>' +
+          (meta.file_path ? '<span>file: ' + esc(meta.file_path) + '</span>' : '') +
+        '</div>' +
+        '<div class="tl-detail" id="detail-' + entry.id + '"></div>' +
+      '</div>';
+    }
+
+    container.innerHTML = html;
+    document.getElementById('loadMore').style.display = entries.length >= currentLimit ? '' : 'none';
+
+    // Click handlers
+    container.querySelectorAll('.tl-entry').forEach(el => {
+      el.addEventListener('click', function() { toggleDetail(this.dataset.id); });
+    });
+  }
+
+  // --- Detail toggle ---
+  async function toggleDetail(id) {
+    const detailEl = document.getElementById('detail-' + id);
+    if (!detailEl) return;
+
+    if (detailEl.classList.contains('open')) {
+      detailEl.classList.remove('open');
+      return;
+    }
+
+    // Close others
+    document.querySelectorAll('.tl-detail.open').forEach(el => el.classList.remove('open'));
+
+    if (detailEl.dataset.loaded) {
+      detailEl.classList.add('open');
+      return;
+    }
+
+    detailEl.innerHTML = '<div style="color:var(--text-muted);padding:4px;">Loading...</div>';
+    detailEl.classList.add('open');
+
+    try {
+      const res = await fetch('/api/observation?id=' + encodeURIComponent(id));
+      const obs = await res.json();
+      if (obs.error) { detailEl.innerHTML = '<div style="color:var(--red);">' + esc(obs.error) + '</div>'; return; }
+
+      const meta = obs.metadata || {};
+      let html = '<div class="tl-detail-chips">';
+      if (meta.source) html += '<div class="tl-detail-chip">source: ' + esc(meta.source) + '</div>';
+      if (meta.language) html += '<div class="tl-detail-chip">lang: ' + esc(meta.language) + '</div>';
+      if (meta.tokens_original) html += '<div class="tl-detail-chip">tokens: ' + meta.tokens_original + '</div>';
+      if (meta.tokens_original && meta.tokens_summarized) {
+        const saved = Math.round((1 - meta.tokens_summarized / meta.tokens_original) * 100);
+        html += '<div class="tl-detail-chip" style="color:var(--green);">saved: ' + saved + '%</div>';
+      }
+      html += '<div class="tl-detail-chip">chars: ' + (obs.content_length || 0) + '</div>';
+      html += '</div>';
+
+      if (obs.summary && obs.summary !== obs.content) {
+        html += '<div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px;">Summary</div>';
+        html += '<div style="font-size:11px;color:var(--text);margin-bottom:10px;">' + esc(obs.summary) + '</div>';
+      }
+
+      html += '<div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px;">Content</div>';
+      const content = obs.content || '';
+      const truncated = content.length > 2000;
+      html += '<div class="tl-detail-content">' + esc(truncated ? content.slice(0, 2000) + '\\n...(' + (content.length - 2000) + ' more chars)' : content) + '</div>';
+
+      detailEl.innerHTML = html;
+      detailEl.dataset.loaded = '1';
+    } catch (err) {
+      detailEl.innerHTML = '<div style="color:var(--red);">Failed: ' + esc(err.message) + '</div>';
+    }
+  }
+
+  // --- Type filter pills ---
+  async function loadTypeFilters() {
+    try {
+      var statsUrl = '/api/stats';
+      if (activeProjectDb && activeProjectDb !== '__all__') statsUrl += '?db=' + encodeURIComponent(activeProjectDb);
+      const stats = await fetch(statsUrl).then(r => r.json());
+      const types = stats.by_type || [];
+      const container = document.getElementById('typeFilters');
+      let html = '<div class="type-pill' + (!currentType ? ' active' : '') + '" data-type="">All (' + (stats.observations || 0) + ')</div>';
+      for (const t of types) {
+        html += '<div class="type-pill' + (currentType === t.type ? ' active' : '') + '" data-type="' + esc(t.type) + '">' + esc(t.type) + ' (' + t.count + ')</div>';
+      }
+      container.innerHTML = html;
+
+      container.querySelectorAll('.type-pill').forEach(pill => {
+        pill.addEventListener('click', function() {
+          currentType = this.dataset.type;
+          container.querySelectorAll('.type-pill').forEach(p => p.classList.remove('active'));
+          this.classList.add('active');
+          fetchTimeline();
+        });
+      });
+    } catch {}
+  }
+
+  // --- Actions ---
+  window.applyFilters = function() { fetchTimeline(); };
+  window.clearFilters = function() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    currentType = '';
+    loadTypeFilters();
+    fetchTimeline();
+  };
+  window.loadMoreEntries = function() {
+    const sel = document.getElementById('limitSelect');
+    const curr = parseInt(sel.value, 10);
+    const next = Math.min(curr + 100, 500);
+    sel.value = String(next);
+    fetchTimeline();
+  };
+
+  // --- Search on Enter ---
+  document.getElementById('searchInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); fetchTimeline(); }
+    if (e.key === 'Escape') { this.value = ''; fetchTimeline(); this.blur(); }
+  });
+
+  // --- Auto-refresh via SSE ---
+  function connectSSE() {
+    try {
+      const es = new EventSource('/sse');
+      es.addEventListener('stats:update', function() {
+        // Refresh timeline data silently
+        fetchTimeline();
+      });
+      es.onerror = function() {
+        es.close();
+        // Fallback to polling
+        if (!refreshInterval) {
+          refreshInterval = setInterval(fetchTimeline, 5000);
+        }
+      };
+    } catch {
+      // SSE not available, use polling
+      refreshInterval = setInterval(fetchTimeline, 5000);
+    }
+  }
+
+  // --- Theme ---
+  const savedTheme = localStorage.getItem('cm-theme') || 'dark';
+  document.body.classList.toggle('light', savedTheme === 'light');
+  document.getElementById('themeToggle').textContent = savedTheme === 'light' ? 'D' : 'L';
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const next = document.body.classList.contains('light') ? 'dark' : 'light';
+    document.body.classList.toggle('light', next === 'light');
+    document.getElementById('themeToggle').textContent = next === 'light' ? 'D' : 'L';
+    localStorage.setItem('cm-theme', next);
+  });
+
+  // --- Project switcher ---
+  function updateProjectBar(instances) {
+    var label = document.getElementById('projectLabel');
+    if (!label) return;
+    if (!instances || instances.length <= 1) {
+      var name = instances && instances[0] ? instances[0].projectName : '${path.basename(PROJECT_DIR).replace(/[<>&"]/g, '')}';
+      label.textContent = 'Project  ' + name;
+    } else {
+      label.textContent = 'Projects';
+    }
+  }
+
+  async function loadProjects() {
+    try {
+      const res = await fetch('/api/instances');
+      const instances = await res.json();
+      const container = document.getElementById('projectPills');
+
+      if (!instances.length) {
+        activeProjectDb = null;
+        container.innerHTML = '';
+        updateProjectBar(instances);
+        return;
+      }
+
+      if (activeProjectDb) {
+        var validSelection = instances.some(function(i) { return i.dbPath === activeProjectDb; });
+        if (!validSelection) activeProjectDb = instances[0].dbPath;
+      } else {
+        activeProjectDb = instances[0].dbPath;
+      }
+
+      if (instances.length === 1) {
+        container.innerHTML = '';
+      } else {
+        container.innerHTML = instances.map(function(i) {
+          const isActive = i.dbPath === activeProjectDb;
+          return '<div class="project-pill' + (isActive ? ' active' : '') + '" data-db="' + esc(i.dbPath) + '" title="' + esc(i.projectDir) + '">' +
+            '<span class="pill-dot"></span>' + esc(i.projectName) + '</div>';
+        }).join('');
+      }
+
+      updateProjectBar(instances);
+
+      container.querySelectorAll('.project-pill').forEach(function(pill) {
+        pill.addEventListener('click', async function() {
+          const db = pill.getAttribute('data-db');
+          if (db === activeProjectDb) return;
+          try { await fetch('/api/switch-project?db=' + encodeURIComponent(db)); } catch {}
+          activeProjectDb = db;
+          localStorage.setItem('cm-active-project', activeProjectDb);
+          container.querySelectorAll('.project-pill').forEach(function(p) { p.classList.remove('active'); });
+          pill.classList.add('active');
+          updateProjectBar(instances);
+          fetchTimeline();
+          loadTypeFilters();
+        });
+      });
+    } catch {}
+  }
+
+  // --- Init ---
+  loadProjects();
+  loadTypeFilters();
+  fetchTimeline();
+  connectSSE();
+
+  // Countdown display
+  setInterval(function() {
+    const s = Math.max(0, 5 - Math.floor((Date.now() - lastRefresh) / 1000));
+    document.getElementById('refreshTimer').textContent = s + 's';
+  }, 1000);
+})();
+</script>
+</body>
+</html>`;
+}
+
+// --- SSE for real-time push (lightweight alternative to WebSocket) ---
+// Uses ObservationStream-compatible protocol: { type: string, data: unknown }
+// Event types: 'observation:new', 'stats:update'
+const sseClients = new Set();
+
+function sseHandleRequest(req, res) {
+  if (req.method !== 'GET' || req.url !== '/sse') return false;
+
+  if (sseClients.size >= 50) {
+    res.writeHead(503, { 'Content-Type': 'text/plain' });
+    res.end('Too many clients');
+    return true;
+  }
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+  res.flushHeaders();
+
+  sseClients.add(res);
+
+  // Send initial stats
+  try {
+    const payload = `event: stats:update\ndata: ${JSON.stringify(getStats())}\n\n`;
+    res.write(payload);
+  } catch {}
+
+  req.on('close', () => {
+    sseClients.delete(res);
+  });
+
+  return true;
+}
+
+function sseBroadcast(event) {
+  if (sseClients.size === 0) return;
+  const payload = `event: ${event.type}\ndata: ${JSON.stringify(event.data)}\n\n`;
+  for (const res of sseClients) {
+    try { res.write(payload); } catch {}
+  }
+}
+
+// SSE heartbeat — comment line every 30s to keep connections alive
+const sseHeartbeatInterval = setInterval(() => {
+  for (const res of sseClients) {
+    try {
+      res.write(': heartbeat\n\n');
+    } catch {
+      sseClients.delete(res);
+      try { res.end(); } catch {}
+    }
+  }
+}, 30000);
+sseHeartbeatInterval.unref();
+
+// SSE stats push every 3s (same cadence as WebSocket)
+const sseStatsPushInterval = setInterval(() => {
+  if (sseClients.size === 0) return;
+  sseBroadcast({ type: 'stats:update', data: getStats() });
+}, 3000);
+sseStatsPushInterval.unref();
+
 // --- HTTP Server ---
 const server = http.createServer((req, res) => {
   if (req.url.startsWith('/api/')) {
     return handleApi(req, res);
   }
-  // Serve dashboard HTML
+  // SSE endpoint
+  if (sseHandleRequest(req, res)) return;
+
+  // Page routing
+  const pagePath = req.url.split('?')[0];
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-  res.end(getDashboardHtml());
+  if (pagePath === '/graph') {
+    res.end(getGraphPageHtml());
+  } else if (pagePath === '/timeline') {
+    res.end(getTimelinePageHtml());
+  } else {
+    res.end(getDashboardHtml());
+  }
 });
 
 // --- WebSocket for real-time push (optional, requires 'ws' package) ---
@@ -4456,6 +5895,10 @@ function shutdown() {
   if (wsHeartbeatInterval) clearInterval(wsHeartbeatInterval);
   for (const ws of wsClients) { try { ws.close(1000, 'server stopping'); } catch {} }
   wsClients.clear();
+  clearInterval(sseHeartbeatInterval);
+  clearInterval(sseStatsPushInterval);
+  for (const res of sseClients) { try { res.end(); } catch {} }
+  sseClients.clear();
   db.close();
   process.exit(0);
 }

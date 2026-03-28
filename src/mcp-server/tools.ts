@@ -650,6 +650,7 @@ export async function handleTimeline(
 ): Promise<TimelineEntry[]> {
   // Anchor mode: center timeline around a specific observation
   if (params.anchor) {
+    const ignoredFilters = (['type', 'session_id', 'from', 'to'] as const).filter(k => params[k] !== undefined);
     const depthBefore = validateLimit(params.depth_before ?? 10);
     const depthAfter = validateLimit(params.depth_after ?? 5);
 
@@ -679,14 +680,27 @@ export async function handleTimeline(
     // Combine: before (reversed to chronological) + anchor + after
     const allRows = [...beforeRows.reverse(), anchorRow, ...afterRows];
 
-    return allRows.map(row => ({
+    const entries: TimelineEntry[] = [];
+
+    if (ignoredFilters.length > 0) {
+      entries.push({
+        id: '_warning',
+        type: 'warning',
+        summary: `Anchor mode ignores these filters: ${ignoredFilters.join(', ')}`,
+        timestamp: Date.now(),
+      });
+    }
+
+    entries.push(...allRows.map(row => ({
       id: row.id,
       type: row.type,
       summary: row.id === anchorRow.id
         ? (row.summary ? `${row.summary} <- ANCHOR` : '<- ANCHOR')
         : row.summary,
       timestamp: row.indexed_at,
-    }));
+    })));
+
+    return entries;
   }
 
   // Standard mode: reverse-chronological with filters

@@ -353,12 +353,36 @@ if (dbCtx) {
 // 3. Dashboard
 const dashPort = parseInt(process.env.CONTEXT_MEM_DASHBOARD_PORT || '51893', 10);
 output.push('');
-output.push(`Dashboard: http://localhost:${dashPort}`);
+output.push(`View Dashboard @ http://localhost:${dashPort}`);
 
 if (chainContext) {
   output.push('');
   output.push(chainContext);
 }
+
+// --- Update check (via bin/update-check.js) ---
+try {
+  const { execSync } = require('child_process');
+  const updateScript = path.join(__dirname, '..', 'bin', 'update-check.js');
+  const updateResult = execSync(`node "${updateScript}" 2>/dev/null`, {
+    timeout: 6000,
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'pipe'],
+  }).trim();
+
+  if (updateResult) {
+    for (const line of updateResult.split('\n')) {
+      const parts = line.split(' ');
+      if (parts[0] === 'JUST_UPGRADED') {
+        output.push('');
+        output.push(`context-mem upgraded: ${parts[1]} → ${parts[2]}`);
+      } else if (parts[0] === 'UPGRADE_AVAILABLE') {
+        output.push('');
+        output.push(`Update available: ${parts[1]} → ${parts[2]}  —  npm update context-mem`);
+      }
+    }
+  }
+} catch {}
 
 if (output.length > 2) {
   console.log(output.join('\n'));
