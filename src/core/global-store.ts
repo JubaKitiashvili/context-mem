@@ -15,6 +15,7 @@ export interface GlobalSearchOpts {
 
 export interface GlobalKnowledgeEntry extends KnowledgeEntry {
   source_project: string;
+  source_projects?: string[];
 }
 
 export class GlobalKnowledgeStore {
@@ -86,11 +87,12 @@ export class GlobalKnowledgeStore {
       archived: false,
       source_type: entry.source_type,
       source_project: projectName,
+      source_projects: [projectName],
     };
 
     db.prepare(
-      `INSERT INTO knowledge (id, category, title, content, tags, shareable, relevance_score, access_count, created_at, last_accessed, archived, source_type, source_project)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO knowledge (id, category, title, content, tags, shareable, relevance_score, access_count, created_at, last_accessed, archived, source_type, source_project, source_projects)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       globalEntry.id,
       globalEntry.category,
@@ -105,6 +107,7 @@ export class GlobalKnowledgeStore {
       globalEntry.archived ? 1 : 0,
       globalEntry.source_type,
       globalEntry.source_project,
+      JSON.stringify(globalEntry.source_projects),
     );
 
     return globalEntry;
@@ -246,6 +249,18 @@ export class GlobalKnowledgeStore {
         ? row.source_type as SourceType
         : 'observed'),
       source_project: row.source_project as string,
+      source_projects: (() => {
+        if (row.source_projects) {
+          try {
+            return JSON.parse(row.source_projects as string) as string[];
+          } catch {
+            // fall through to default
+          }
+        }
+        // Fallback: derive from source_project
+        const sp = row.source_project as string | undefined;
+        return sp ? [sp] : [];
+      })(),
     };
   }
 

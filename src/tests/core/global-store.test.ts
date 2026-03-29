@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import Database from 'better-sqlite3';
 import { GlobalKnowledgeStore } from '../../core/global-store.js';
 import { PrivacyEngine } from '../../plugins/privacy/privacy-engine.js';
 import { BetterSqlite3Storage } from '../../plugins/storage/better-sqlite3.js';
@@ -370,5 +371,103 @@ describe('Global knowledge disabled via config', () => {
     assert.ok(Array.isArray(results), 'should return array');
     const hasGlobal = (results as any[]).some(r => r.source_project);
     assert.ok(!hasGlobal, 'should NOT include global results when disabled');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Migration v2 tests — source_projects + merge_suggestions
+// ---------------------------------------------------------------------------
+
+describe('GlobalKnowledgeStore migration v2', () => {
+  let tmpDir: string;
+  let store: GlobalKnowledgeStore;
+  let dbPath: string;
+
+  before(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cmem-global-v2-'));
+    dbPath = path.join(tmpDir, 'global', 'store.db');
+    store = createGlobalStore(tmpDir);
+  });
+
+  after(() => {
+    store.close();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it('source_projects column exists on knowledge table after migration', () => {
+    const db = new Database(dbPath, { readonly: true });
+    const cols = db.pragma('table_info(knowledge)') as Array<{ name: string }>;
+    db.close();
+    const names = cols.map(c => c.name);
+    assert.ok(names.includes('source_projects'), 'source_projects column should exist');
+  });
+
+  it('merge_suggestions table exists with correct columns', () => {
+    const db = new Database(dbPath, { readonly: true });
+    const cols = db.pragma('table_info(merge_suggestions)') as Array<{ name: string }>;
+    db.close();
+    assert.ok(cols.length > 0, 'merge_suggestions table should exist');
+    const names = cols.map(c => c.name);
+    assert.ok(names.includes('id'), 'should have id column');
+    assert.ok(names.includes('local_id'), 'should have local_id column');
+    assert.ok(names.includes('global_id'), 'should have global_id column');
+    assert.ok(names.includes('similarity_score'), 'should have similarity_score column');
+    assert.ok(names.includes('strategy'), 'should have strategy column');
+    assert.ok(names.includes('status'), 'should have status column');
+    assert.ok(names.includes('created_at'), 'should have created_at column');
+  });
+
+  it('merge_suggestions indexes exist', () => {
+    const db = new Database(dbPath, { readonly: true });
+    const indexes = db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='merge_suggestions'"
+    ).all() as Array<{ name: string }>;
+    db.close();
+    const names = indexes.map(i => i.name);
+    assert.ok(names.includes('idx_ms_status'), 'idx_ms_status index should exist');
+    assert.ok(names.includes('idx_ms_global'), 'idx_ms_global index should exist');
+  });
+
+  it('promote() writes source_projects as JSON array', () => {
+    const entry = makeMockEntry({ id: 'v2-promote-test', title: 'V2 promote test' });
+    const result = store.promote(entry, 'proj-alpha');
+
+    assert.ok(Array.isArray(result.source_projects), 'source_projects should be an array');
+    assert.deepEqual(result.source_projects, ['proj-alpha']);
+  });
+
+  it('rowToEntry() parses source_projects from DB correctly', () => {
+    const entry = makeMockEntry({ id: 'v2-row-test', title: 'V2 rowToEntry test' });
+    const promoted = store.promote(entry, 'proj-beta');
+
+    const fetched = store.getById(promoted.id);
+    assert.ok(fetched, 'entry should be found by ID');
+    assert.ok(Array.isArray(fetched.source_projects), 'source_projects should be an array');
+    assert.deepEqual(fetched.source_projects, ['proj-beta']);
+  });
+
+  it('rowToEntry() falls back to [source_project] when source_projects is null', () => {
+    // Directly insert a row without source_projects (simulating pre-migration data)
+    const db = new Database(dbPath);
+    const id = 'legacy-row-' + Date.now();
+    const now = Date.now();
+    db.prepare(
+      `INSERT INTO knowledge (id, category, title, content, tags, shareable, relevance_score, access_count, created_at, last_accessed, archived, source_type, source_project, source_projects)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`
+    ).run(id, 'pattern', 'Legacy entry', 'Content', '[]', 1, 1.0, 0, now, now, 0, 'observed', 'legacy-proj');
+    db.close();
+
+    const fetched = store.getById(id);
+    assert.ok(fetched, 'legacy entry should be retrievable');
+    assert.ok(Array.isArray(fetched.source_projects), 'source_projects should be an array');
+    assert.deepEqual(fetched.source_projects, ['legacy-proj']);
+  });
+
+  it('schema_version records version 2', () => {
+    const db = new Database(dbPath, { readonly: true });
+    const row = db.prepare('SELECT version FROM schema_version WHERE version = 2').get() as { version: number } | undefined;
+    db.close();
+    assert.ok(row, 'schema_version should have version 2 row');
+    assert.equal(row.version, 2);
   });
 });

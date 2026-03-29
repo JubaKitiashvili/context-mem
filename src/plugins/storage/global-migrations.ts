@@ -4,7 +4,7 @@ export interface GlobalMigration {
   up: string;
 }
 
-export const LATEST_GLOBAL_VERSION = 1;
+export const LATEST_GLOBAL_VERSION = 2;
 
 export const globalMigrations: GlobalMigration[] = [
   {
@@ -59,6 +59,33 @@ export const globalMigrations: GlobalMigration[] = [
 
       INSERT INTO schema_version (version, applied_at, description)
       VALUES (1, unixepoch(), 'Global knowledge store — initial schema');
+    `,
+  },
+  {
+    version: 2,
+    description: 'Source projects array + merge suggestions for cross-project dedup',
+    up: `
+      ALTER TABLE knowledge ADD COLUMN source_projects TEXT;
+
+      UPDATE knowledge
+        SET source_projects = json_array(source_project)
+        WHERE source_project IS NOT NULL AND source_projects IS NULL;
+
+      CREATE TABLE IF NOT EXISTS merge_suggestions (
+        id TEXT PRIMARY KEY,
+        local_id TEXT,
+        global_id TEXT NOT NULL,
+        similarity_score REAL NOT NULL,
+        strategy TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        created_at INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_ms_status ON merge_suggestions(status);
+      CREATE INDEX IF NOT EXISTS idx_ms_global ON merge_suggestions(global_id);
+
+      INSERT INTO schema_version (version, applied_at, description)
+      VALUES (2, unixepoch(), 'Source projects array + merge suggestions for cross-project dedup');
     `,
   },
 ];
