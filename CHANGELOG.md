@@ -2,6 +2,36 @@
 
 All notable changes to context-mem are documented here.
 
+## [2.3.0] — 2026-03-28
+
+### Added
+- Auto-promote patterns: knowledge accessed in 3+ sessions auto-promotes to global store
+- Cross-project merge/conflict resolution with duplicate detection and auto-merge
+- Enhanced proactive context injection with prioritized scoring (P1 bugs > P2 patterns > P3 cross-project)
+- Search analytics dashboard with top entries and category breakdown
+- Project health score (0-100 composite metric)
+- Cross-project comparison view in dashboard
+- Timeline explorer with date range zoom/filter and replay
+- Auto-tagger for deterministic title and tag generation from content
+- Confidence scoring for knowledge entries (source + freshness + access + sessions)
+- Entry-level time-travel diffs between dates
+- Ollama client for optional AI-assisted knowledge curation
+- `merge_suggestions` MCP tool for viewing cross-project duplicate suggestions
+- Dashboard health score gauge with color indicators
+
+### Changed
+- Proactive injection now uses dynamic scoring instead of hardcoded values
+- Proactive injection supports Write tool trigger and imports-based query extraction
+- Dreamer agent now includes promotionScan and duplicateScan tasks
+- Knowledge search now records session access for auto-promote tracking
+- Global knowledge entries support source_projects array (multiple source projects)
+- Tool count increased from 31 to 32
+
+### Database
+- Migration v11: session_access_log table, auto_promoted flag on knowledge
+- Migration v12: contradiction_count on knowledge
+- Global migration v2: source_projects column, merge_suggestions table
+
 ## [2.0.0] — 2026-03-27
 
 ### Added

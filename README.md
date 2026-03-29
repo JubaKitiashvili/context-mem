@@ -3,7 +3,7 @@
 > Context optimization for AI coding assistants — 99% token savings, zero configuration, no LLM dependency.
 
 [![npm version](https://img.shields.io/npm/v/context-mem)](https://www.npmjs.com/package/context-mem)
-[![tests](https://img.shields.io/badge/tests-535%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-585%20passing-brightgreen)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-green)]()
 
@@ -55,7 +55,7 @@ One command. `init` auto-detects your editor and creates everything:
 | **Roo Code** | `.roo-code/mcp_settings.json` + `.roo/rules/context-mem.md` | No |
 
 **What init sets up:**
-- MCP server config (so your editor can use context-mem's 31 tools)
+- MCP server config (so your editor can use context-mem's 32 tools)
 - AI rules (so the AI knows when to call `observe`, `search`, `restore_session`)
 - Claude Code hooks (activity journal, observation capture, proactive injection, session restore, dashboard)
 - `.context-mem.json` config + `.context-mem/` data directory
@@ -169,6 +169,18 @@ This loads hooks directly from the plugin directory. Useful for development and 
 
 **Natural Language Query** — Ask questions naturally with `ask` — intent classification routes your question to the right subsystem (search, knowledge, timeline, graph, or stats) without needing to know which tool to call.
 
+**Auto-Promote** — Knowledge accessed in 3+ sessions is automatically promoted to the global cross-project store. No manual intervention needed — patterns that prove useful rise to the top.
+
+**Cross-Project Merge** — Duplicate detection and auto-merge across projects. The `merge_suggestions` tool surfaces candidates for review. Conflict resolution handles contradictions gracefully.
+
+**Project Health Score** — 0–100 composite metric visible in the dashboard. Color-coded gauge reflects knowledge freshness, contradiction rate, and activity.
+
+**Confidence Scoring** — Every knowledge entry carries a confidence score based on source type, freshness, access frequency, and session count. Higher-confidence entries rank higher in search results.
+
+**Auto-Tagger** — Deterministic title and tag generation from content. Reduces manual effort when saving knowledge entries.
+
+**Ollama Integration** — Optional Ollama client for AI-assisted knowledge curation. When an Ollama endpoint is configured, it can help deduplicate, summarize, and categorize entries.
+
 **Export/Import** — Transfer knowledge between machines: `context-mem export` dumps knowledge, snapshots, and events as JSON; `context-mem import` restores them in another project. Merge or replace modes.
 
 **Budget Management** — Session token limits with three overflow strategies: aggressive truncation, warn, hard stop.
@@ -198,7 +210,7 @@ This loads hooks directly from the plugin directory. Useful for development and 
 
 **Auto-Update Check** — Checks npm for newer versions on session start (gstack-style). Split TTL caching (1hr fresh / 12hr nagging), escalating snooze (24h → 48h → 7 days), configurable via `~/.context-mem/config.yaml`. Never blocks, always graceful.
 
-**Security Hardening** — CORS restricted to localhost only, input validation on all 31 handlers, error sanitization (file paths + SQL keywords stripped). Windows compatibility for cross-platform deployments.
+**Security Hardening** — CORS restricted to localhost only, input validation on all 32 handlers, error sanitization (file paths + SQL keywords stripped). Windows compatibility for cross-platform deployments.
 
 **Smart Truncation** — 60/40 head/tail split for better error preservation at end of output. 4-tier fallback: JSON schema → Pattern → Head/Tail → Binary hash.
 
@@ -213,7 +225,7 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
                                                       ↓                                        ↓
                                     Privacy Engine (9 detectors)              Request Canonicalization (30s cache)
                                                       ↓                                        ↓
-                                    Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (31 tools)
+                                    Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (32 tools)
                                                                                                ↓
                                                                            Dashboard 2.0 ← SSE + WebSocket (real-time)
 ```
@@ -221,7 +233,7 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
 ## MCP Tools
 
 <details>
-<summary>31 tools available via MCP protocol</summary>
+<summary>32 tools available via MCP protocol</summary>
 
 | Tool | Description |
 |---|---|
@@ -256,6 +268,7 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
 | `agent_broadcast` | Broadcast messages to all active agents |
 | `handoff_session` | Hand off session context for continuity across sessions |
 | `resolve_contradiction` | Resolve conflicting knowledge entries (supersede, merge, keep both, archive) |
+| `merge_suggestions` | View cross-project duplicate suggestions for manual review and merge |
 
 </details>
 

@@ -1,7 +1,7 @@
 ---
 name: context-optimization
 description: "This skill should be used when context-mem is available in the project. Guides efficient use of context-mem's 29 MCP tools: observe large outputs, search before re-reading files, restore sessions, manage token budget, save knowledge with contradiction detection, promote knowledge to global cross-project store, search across all projects, execute code safely, emit events, time travel through project history, ask natural language questions, coordinate multi-agent sessions. Triggers on: large tool outputs, repeated file reads, session start, budget warnings, context window filling up, knowledge management, cross-project knowledge transfer, global search, code execution requests, time travel, show project state, ask question, natural language query, register agent, claim files, agent status, knowledge graph, graph query, entity relationships, add relationship, graph neighbors."
-version: 2.2.0
+version: 2.3.0
 ---
 
 Use context-mem to compress large tool outputs, search stored observations before re-reading files, and persist knowledge across sessions. Leverage its 14 content-aware summarizers (plus community plugins), 4-layer hybrid search (BM25 + Trigram + Levenshtein + Vector), cross-session memory, and cross-project knowledge transfer through 29 MCP tools. Dashboard receives real-time updates via WebSocket.
