@@ -341,6 +341,62 @@ export class KnowledgeBase {
     return true;
   }
 
+  computeConfidence(entry: KnowledgeEntry, sessionCount?: number): number {
+    const now = Date.now();
+    const HALF_LIFE = 14 * 24 * 60 * 60 * 1000;
+
+    // Source weight: explicit > inferred > observed
+    const sourceWeights: Record<string, number> = { explicit: 1.0, inferred: 0.6, observed: 0.4 };
+    const sourceWeight = sourceWeights[entry.source_type] ?? 0.4;
+
+    // Freshness decay
+    const age = now - entry.created_at;
+    const freshness = Math.pow(0.5, age / HALF_LIFE);
+
+    // Access frequency (capped at 1.0)
+    const accessFreq = Math.min(1.0, Math.log2((entry.access_count || 0) + 2) / 10);
+
+    // Session spread (if available)
+    let sessionSpread = 0;
+    if (sessionCount !== undefined) {
+      sessionSpread = Math.min(1.0, sessionCount / 5);
+    } else {
+      // Try to get from session_access_log
+      try {
+        const row = this.storage.prepare(
+          'SELECT COUNT(DISTINCT session_id) as cnt FROM session_access_log WHERE knowledge_id = ?'
+        ).get(entry.id) as { cnt: number } | undefined;
+        sessionSpread = Math.min(1.0, (row?.cnt || 0) / 5);
+      } catch {
+        sessionSpread = 0;
+      }
+    }
+
+    // Contradiction-free (check stale flag and contradiction_count)
+    let contradictionFree = 1.0;
+    try {
+      const row = this.storage.prepare(
+        'SELECT stale, contradiction_count FROM knowledge WHERE id = ?'
+      ).get(entry.id) as { stale: number; contradiction_count: number } | undefined;
+      if (row) {
+        if (row.stale) contradictionFree = 0.3;
+        else if (row.contradiction_count > 0) contradictionFree = 0.5;
+      }
+    } catch {
+      // pre-v12 or missing column
+    }
+
+    const confidence = (
+      sourceWeight * 0.3 +
+      freshness * 0.25 +
+      accessFreq * 0.2 +
+      sessionSpread * 0.15 +
+      contradictionFree * 0.1
+    );
+
+    return Math.max(0, Math.min(1, confidence));
+  }
+
   prune(): number {
     const now = Date.now();
     const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
