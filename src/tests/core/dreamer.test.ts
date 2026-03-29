@@ -162,4 +162,105 @@ describe('Dreamer background agent', () => {
     await dreamer.cycle();
     assert.ok(true, 'cycle should complete without error');
   });
+
+  describe('promotionScan', () => {
+    it('detects knowledge accessed in 3+ distinct sessions', async () => {
+      const kb2 = new KnowledgeBase(storage);
+      const entry = kb2.save({
+        category: 'pattern',
+        title: 'Frequently accessed pattern',
+        content: 'This pattern is accessed often across sessions',
+        tags: [],
+        shareable: true,
+        source_type: 'explicit',
+      });
+
+      storage.exec(
+        'INSERT INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)',
+        [entry.id, 'sess-1', Date.now()],
+      );
+      storage.exec(
+        'INSERT INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)',
+        [entry.id, 'sess-2', Date.now()],
+      );
+      storage.exec(
+        'INSERT INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)',
+        [entry.id, 'sess-3', Date.now()],
+      );
+
+      const d = new Dreamer(kb2, storage, { promotionSessionThreshold: 3 });
+      const candidates = await d.promotionScan();
+
+      const found = candidates.find(c => c.id === entry.id);
+      assert.ok(found, 'entry accessed in 3 sessions should be a promotion candidate');
+      assert.equal(found!.sessions, 3, 'should report 3 sessions');
+
+      const promoteLogs = d.getLogs().filter(l => l.type === 'promote' && l.entry_id === entry.id);
+      assert.ok(promoteLogs.length >= 1, 'should have a promote log entry');
+    });
+
+    it('skips entries already auto-promoted', async () => {
+      const kb2 = new KnowledgeBase(storage);
+      const entry = kb2.save({
+        category: 'pattern',
+        title: 'Already promoted pattern',
+        content: 'This pattern was already promoted',
+        tags: [],
+        shareable: true,
+        source_type: 'explicit',
+      });
+
+      storage.exec('UPDATE knowledge SET auto_promoted = 1 WHERE id = ?', [entry.id]);
+
+      storage.exec(
+        'INSERT INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)',
+        [entry.id, 'sess-a', Date.now()],
+      );
+      storage.exec(
+        'INSERT INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)',
+        [entry.id, 'sess-b', Date.now()],
+      );
+      storage.exec(
+        'INSERT INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)',
+        [entry.id, 'sess-c', Date.now()],
+      );
+
+      const d = new Dreamer(kb2, storage, { promotionSessionThreshold: 3 });
+      const candidates = await d.promotionScan();
+
+      const found = candidates.find(c => c.id === entry.id);
+      assert.equal(found, undefined, 'already auto-promoted entry should not be a candidate');
+    });
+
+    it('skips entries with shareable = 0', async () => {
+      const kb2 = new KnowledgeBase(storage);
+      const entry = kb2.save({
+        category: 'pattern',
+        title: 'Non-shareable pattern',
+        content: 'This pattern is not shareable',
+        tags: [],
+        shareable: false,
+        source_type: 'explicit',
+      });
+
+      storage.exec(
+        'INSERT INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)',
+        [entry.id, 'sess-x', Date.now()],
+      );
+      storage.exec(
+        'INSERT INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)',
+        [entry.id, 'sess-y', Date.now()],
+      );
+      storage.exec(
+        'INSERT INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)',
+        [entry.id, 'sess-z', Date.now()],
+      );
+
+      const d = new Dreamer(kb2, storage, { promotionSessionThreshold: 3 });
+      const candidates = await d.promotionScan();
+
+      const found = candidates.find(c => c.id === entry.id);
+      assert.equal(found, undefined, 'non-shareable entry should not be a promotion candidate');
+    });
+  });
 });

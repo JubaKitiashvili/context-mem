@@ -16,7 +16,7 @@ const STOPWORDS = new Set([
 ]);
 
 export interface DreamerLog {
-  type: 'stale' | 'archive' | 'contradiction';
+  type: 'stale' | 'archive' | 'contradiction' | 'promote';
   entry_id: string;
   message: string;
   timestamp: number;
@@ -28,6 +28,7 @@ export class Dreamer {
   private readonly CYCLE_MS: number;
   private readonly STALE_THRESHOLD_DAYS: number;
   private readonly ARCHIVE_THRESHOLD_DAYS: number;
+  private readonly PROMOTION_SESSION_THRESHOLD: number;
   private readonly logs: DreamerLog[] = [];
 
   constructor(
@@ -37,11 +38,13 @@ export class Dreamer {
       cycleMs?: number;
       staleThresholdDays?: number;
       archiveThresholdDays?: number;
+      promotionSessionThreshold?: number;
     },
   ) {
     this.CYCLE_MS = opts?.cycleMs ?? 5 * 60 * 1000;
     this.STALE_THRESHOLD_DAYS = opts?.staleThresholdDays ?? 30;
     this.ARCHIVE_THRESHOLD_DAYS = opts?.archiveThresholdDays ?? 90;
+    this.PROMOTION_SESSION_THRESHOLD = opts?.promotionSessionThreshold ?? 3;
   }
 
   start(): void {
@@ -75,6 +78,7 @@ export class Dreamer {
       await this.markStaleEntries();
       await this.archiveOldEntries();
       await this.detectContradictions();
+      await this.promotionScan();
     } catch {
       // Dreamer is non-critical — never crash the host
     }
@@ -165,6 +169,46 @@ export class Dreamer {
     }
 
     return found;
+  }
+
+  // ---------- Auto-promote scan ----------
+
+  async promotionScan(): Promise<Array<{ id: string; title: string; sessions: number }>> {
+    try {
+      const rows = this.storage.prepare(`
+        SELECT sal.knowledge_id, COUNT(DISTINCT sal.session_id) as sessions
+        FROM session_access_log sal
+        JOIN knowledge k ON k.id = sal.knowledge_id
+        WHERE k.archived = 0
+          AND k.auto_promoted = 0
+          AND k.shareable = 1
+        GROUP BY sal.knowledge_id
+        HAVING sessions >= ?
+      `).all(this.PROMOTION_SESSION_THRESHOLD) as Array<{ knowledge_id: string; sessions: number }>;
+
+      const candidates: Array<{ id: string; title: string; sessions: number }> = [];
+
+      for (const row of rows) {
+        const entry = this.storage.prepare(
+          'SELECT id, title FROM knowledge WHERE id = ?'
+        ).get(row.knowledge_id) as { id: string; title: string } | undefined;
+
+        if (entry) {
+          candidates.push({ id: entry.id, title: entry.title, sessions: row.sessions });
+          this.logs.push({
+            type: 'promote',
+            entry_id: entry.id,
+            message: `Promotion candidate: "${entry.title}" (${row.sessions} sessions)`,
+            timestamp: Date.now(),
+          });
+        }
+      }
+
+      return candidates;
+    } catch {
+      // session_access_log may not exist (pre-v11)
+      return [];
+    }
   }
 
   private extractWords(text: string): string[] {
