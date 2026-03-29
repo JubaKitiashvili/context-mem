@@ -1067,6 +1067,7 @@ export async function handleSearchKnowledge(
     relevance_score: r.relevance_score,
     tags: r.tags,
     source_type: r.source_type,
+    confidence: kernel.knowledgeBase.computeConfidence(r),
   }));
 
   // Merge global results when requested
