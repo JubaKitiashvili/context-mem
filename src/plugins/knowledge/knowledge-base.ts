@@ -2,6 +2,7 @@ import type { StoragePlugin, KnowledgeEntry, KnowledgeCategory, SourceType, Cont
 import { ulid } from '../../core/utils.js';
 import { sanitizeFTS5 } from '../search/fts5-utils.js';
 import { Embedder } from '../search/embedder.js';
+import { generateTitle, generateTags } from '../../core/auto-tagger.js';
 
 // Stopwords for contradiction detection word-overlap filter
 const STOPWORDS = new Set([
@@ -22,6 +23,16 @@ export class KnowledgeBase {
     source_type?: SourceType;
   }): KnowledgeEntry {
     const now = Date.now();
+
+    // Auto-generate title if too short or generic
+    if (!entry.title || entry.title.trim().length < 5) {
+      entry.title = generateTitle(entry.content);
+    }
+    // Auto-generate tags if empty
+    if (!entry.tags || entry.tags.length === 0) {
+      entry.tags = generateTags(entry.content);
+    }
+
     const knowledge: KnowledgeEntry = {
       id: ulid(),
       category: entry.category,
