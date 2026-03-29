@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 11;
+export const LATEST_SCHEMA_VERSION = 12;
 
 export const migrations: Migration[] = [
   {
@@ -390,6 +390,16 @@ export const migrations: Migration[] = [
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (11, unixepoch(), 'Session access log for auto-promote + auto_promoted flag on knowledge');
+    `,
+  },
+  {
+    version: 12,
+    description: 'Contradiction count for confidence scoring',
+    up: `
+      ALTER TABLE knowledge ADD COLUMN contradiction_count INTEGER DEFAULT 0;
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (12, unixepoch(), 'Contradiction count for confidence scoring');
     `,
   },
 ];
