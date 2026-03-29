@@ -1085,6 +1085,7 @@ export async function handleSearchKnowledge(
             relevance_score: gr.relevance_score,
             tags: gr.tags,
             source_type: gr.source_type,
+            confidence: 0.5,
             source_project: gr.source_project,
           } as typeof mapped[number]);
         }
