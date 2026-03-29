@@ -19,6 +19,7 @@
 const fs = require('fs');
 const { renameSync, writeFileSync } = require('fs');
 const path = require('path');
+const os = require('os');
 
 try {
   main();
@@ -94,7 +95,7 @@ function main() {
   if (config.enabled === false) process.exit(0);
 
   // Check if this tool type should trigger injection
-  const injectOn = config.inject_on || ['Read', 'Edit'];
+  const injectOn = config.inject_on || ['Read', 'Edit', 'Write'];
   if (!injectOn.includes(toolName) && toolName !== 'Bash') process.exit(0);
   if (toolName === 'Bash' && !injectOn.includes('Bash')) process.exit(0);
 
@@ -125,11 +126,14 @@ function main() {
   const db = openDatabase(cwd);
   if (!db) process.exit(0);
 
+  const globalDbPath = path.join(os.homedir(), '.context-mem', 'global', 'store.db');
+  const globalExists = fs.existsSync(globalDbPath);
+
   try {
     // --- Search for relevant context ---
     const threshold = config.relevance_threshold || 0.6;
     const maxChars = config.max_injection_chars || 500;
-    const results = searchRelevantContext(db, queryInfo.query, queryInfo.filePath);
+    const results = searchRelevantContext(db, queryInfo.query, queryInfo.filePath, globalExists ? globalDbPath : null);
 
     // Filter by relevance threshold
     const relevant = results.filter(r => r.score >= threshold);
@@ -245,14 +249,36 @@ function extractQueryFromAction(toolName, input) {
       const parts = filePath.split('/');
       const filename = parts[parts.length - 1].replace(/\.\w+$/, '');
       const dirContext = parts.slice(-3, -1).join(' ');
-      return { query: `${filename} ${dirContext}`.trim(), filePath };
+
+      // Try to extract module identity from first 5 lines
+      let moduleHint = '';
+      try {
+        const content = fs.readFileSync(filePath, 'utf8');
+        const lines = content.split('\n').slice(0, 5);
+        const imports = lines
+          .filter(l => /^(?:import|from|require|export)/.test(l.trim()))
+          .map(l => l.replace(/['"`;{}]/g, ' ').trim())
+          .join(' ')
+          .slice(0, 100);
+        if (imports) moduleHint = imports;
+      } catch {}
+
+      return { query: `${filename} ${dirContext} ${moduleHint}`.trim().slice(0, 200), filePath };
+    }
+
+    case 'Write': {
+      const filePath = input.file_path;
+      if (!filePath) return null;
+      const parts = filePath.split('/');
+      const dirContext = parts.slice(-3, -1).join(' ');
+      return { query: `conventions ${dirContext}`.trim(), filePath };
     }
 
     case 'Bash': {
       const cmd = input.command || '';
       if (cmd.includes('test')) return { query: 'test failures known issues', filePath: null };
-      if (cmd.includes('build') || cmd.includes('npm run')) return { query: 'build errors dependencies', filePath: null };
-      return null; // Skip other bash commands
+      if (cmd.includes('build') || cmd.includes('npm run') || cmd.includes('npx')) return { query: 'build errors dependencies', filePath: null };
+      return null;
     }
 
     default:
@@ -276,30 +302,53 @@ function sanitizeFTS5(query) {
 
 // --- Search pipeline ---
 
-function searchRelevantContext(db, query, filePath) {
+function searchRelevantContext(db, query, filePath, globalDbPath) {
   const results = [];
+  const now = Date.now();
+  const HALF_LIFE = 7 * 24 * 60 * 60 * 1000;
 
-  // 1. Knowledge base search via FTS5
+  // --- P1: Bug History (highest priority) ---
+  if (filePath) {
+    try {
+      const bugObs = db.prepare(`
+        SELECT substr(COALESCE(summary, content), 1, 200) as text, indexed_at, type
+        FROM observations
+        WHERE json_extract(metadata, '$.file_path') = ?
+        AND type IN ('error', 'decision')
+        ORDER BY indexed_at DESC LIMIT 3
+      `).all(filePath);
+
+      for (const o of bugObs) {
+        const age = now - (o.indexed_at || now);
+        const recency = Math.pow(0.5, age / HALF_LIFE);
+        results.push({ text: o.text, score: recency * 0.9, priority: 'bug-history' });
+      }
+    } catch {}
+  }
+
+  // --- P2: Patterns & Decisions ---
   try {
     const ftsQuery = sanitizeFTS5(query);
     if (ftsQuery) {
       const knowledge = db.prepare(`
-        SELECT title, content, category, access_count
+        SELECT title, content, category, access_count, created_at
         FROM knowledge WHERE archived = 0
+        AND category IN ('pattern', 'decision')
         AND id IN (SELECT rowid FROM knowledge_fts WHERE knowledge_fts MATCH ?)
         ORDER BY access_count DESC LIMIT 3
       `).all(ftsQuery);
 
       for (const k of knowledge) {
-        results.push({
-          text: `${k.category}: ${k.title}`,
-          score: 0.8,
-        });
+        const age = now - (k.created_at || now);
+        const recency = Math.pow(0.5, age / HALF_LIFE);
+        const accessBoost = Math.log2((k.access_count || 0) + 2) / 10;
+        const score = 0.8 * (0.7 + 0.2 * recency + 0.1 * accessBoost);
+        results.push({ text: `${k.category}: ${k.title}`, score, priority: 'pattern' });
       }
     }
   } catch {}
 
-  // 2. Graph neighbors (if file entity exists)
+  // --- Graph neighbors ---
   if (filePath) {
     try {
       const fileEntity = db.prepare(
@@ -318,56 +367,78 @@ function searchRelevantContext(db, query, filePath) {
         for (const n of neighbors) {
           results.push({
             text: `${n.relationship_type}: ${n.name} (${n.entity_type})`,
-            score: 0.7,
+            score: 0.5,
+            priority: 'graph',
           });
         }
       }
     } catch {}
   }
 
-  // 3. Recent observations about this file
-  if (filePath) {
+  // --- P3: Cross-project (fallback only when P1+P2 < 2 results) ---
+  const highPriorityCount = results.filter(r => r.priority === 'bug-history' || r.priority === 'pattern').length;
+  if (highPriorityCount < 2 && globalDbPath) {
     try {
-      const recentObs = db.prepare(`
-        SELECT substr(COALESCE(summary, content), 1, 200) as text
-        FROM observations
-        WHERE json_extract(metadata, '$.file_path') = ?
-        AND type IN ('error', 'decision')
-        ORDER BY indexed_at DESC LIMIT 2
-      `).all(filePath);
+      const GlobalDb = loadBetterSqlite3();
+      if (GlobalDb) {
+        const gdb = new GlobalDb(globalDbPath, { readonly: true });
+        try {
+          const ftsQuery = sanitizeFTS5(query);
+          if (ftsQuery) {
+            const globalKnowledge = gdb.prepare(`
+              SELECT title, category, source_project
+              FROM knowledge WHERE archived = 0
+              AND rowid IN (SELECT rowid FROM knowledge_fts WHERE knowledge_fts MATCH ?)
+              LIMIT 2
+            `).all(ftsQuery);
 
-      for (const o of recentObs) {
-        results.push({
-          text: o.text,
-          score: 0.6,
-        });
+            for (const gk of globalKnowledge) {
+              results.push({
+                text: `[${gk.source_project}] ${gk.category}: ${gk.title}`,
+                score: 0.8 * 0.6,
+                priority: 'cross-project',
+              });
+            }
+          }
+        } finally {
+          try { gdb.close(); } catch {}
+        }
       }
     } catch {}
   }
 
+  results.sort((a, b) => b.score - a.score);
   return results;
 }
 
 // --- Output formatting ---
 
 function formatInjection(results, maxChars) {
+  const priorityLabels = {
+    'bug-history': 'Bug history',
+    'pattern': 'Convention',
+    'graph': 'Related',
+    'cross-project': 'Cross-project',
+  };
+
   const lines = [];
   let totalChars = 0;
-  const header = '[context-mem] Relevant context:';
-  totalChars += header.length;
+  const header = '[context-mem]';
+  totalChars += header.length + 1;
 
-  for (const r of results.slice(0, 3)) {
-    const line = `- ${r.text}`;
+  for (const r of results.slice(0, 4)) {
+    const label = priorityLabels[r.priority] || 'Context';
+    const line = `${label}: ${r.text}`;
+
     if (totalChars + line.length + 1 > maxChars) {
-      // Truncate this line to fit
-      const remaining = maxChars - totalChars - 4; // "- " + "..."
-      if (remaining > 10) {
-        lines.push(`- ${r.text.slice(0, remaining)}...`);
+      const remaining = maxChars - totalChars - 4;
+      if (remaining > 20) {
+        lines.push(`${label}: ${r.text.slice(0, remaining)}...`);
       }
       break;
     }
     lines.push(line);
-    totalChars += line.length + 1; // +1 for newline
+    totalChars += line.length + 1;
   }
 
   if (lines.length === 0) return null;
