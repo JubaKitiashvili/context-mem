@@ -128,6 +128,58 @@ export class TimeTraveler {
   }
 
   /**
+   * Diff between two date strings — returns entry-level changes in knowledge,
+   * observations by type, and events within the window.
+   */
+  diff(fromDate: string, toDate: string): {
+    knowledge: {
+      added: Array<{ id: string; title: string; category: string; created_at: number }>;
+      archived: Array<{ id: string; title: string; category: string }>;
+    };
+    observations: {
+      count: number;
+      by_type: Record<string, number>;
+    };
+    events: Array<{ event_type: string; count: number }>;
+  } {
+    const from = this.parseDate(fromDate);
+    const to = this.parseDate(toDate);
+
+    // Knowledge added in range
+    const added = this.storage.prepare(
+      'SELECT id, title, category, created_at FROM knowledge WHERE created_at >= ? AND created_at <= ? ORDER BY created_at DESC LIMIT 50',
+    ).all(from, to) as Array<{ id: string; title: string; category: string; created_at: number }>;
+
+    // Knowledge archived in period (approximation: archived=1 and last_accessed in range)
+    const archived = this.storage.prepare(
+      'SELECT id, title, category FROM knowledge WHERE archived = 1 AND last_accessed >= ? AND last_accessed <= ? LIMIT 50',
+    ).all(from, to) as Array<{ id: string; title: string; category: string }>;
+
+    // Observations summary
+    const obsRows = this.storage.prepare(
+      'SELECT type, COUNT(*) as cnt FROM observations WHERE indexed_at >= ? AND indexed_at <= ? GROUP BY type',
+    ).all(from, to) as Array<{ type: string; cnt: number }>;
+
+    const by_type: Record<string, number> = {};
+    let obsCount = 0;
+    for (const r of obsRows) {
+      by_type[r.type] = r.cnt;
+      obsCount += r.cnt;
+    }
+
+    // Events summary
+    const eventRows = this.storage.prepare(
+      'SELECT event_type, COUNT(*) as cnt FROM events WHERE timestamp >= ? AND timestamp <= ? GROUP BY event_type',
+    ).all(from, to) as Array<{ event_type: string; cnt: number }>;
+
+    return {
+      knowledge: { added, archived },
+      observations: { count: obsCount, by_type },
+      events: eventRows.map(r => ({ event_type: r.event_type, count: r.cnt })),
+    };
+  }
+
+  /**
    * Compare the project state at `targetDate` with the current state.
    * Returns deltas: knowledge added, observation delta, events between.
    */
