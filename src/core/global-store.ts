@@ -173,6 +173,102 @@ export class GlobalKnowledgeStore {
     return this.rowToEntry(row);
   }
 
+  /**
+   * Find potential duplicates of a candidate entry in the global store.
+   * Uses FTS5 for initial candidates, then Jaccard word overlap for scoring.
+   */
+  findDuplicates(candidate: KnowledgeEntry): Array<{ entry: GlobalKnowledgeEntry; similarity: number }> {
+    const candidateWords = this.extractWords(`${candidate.title} ${candidate.content}`);
+    if (candidateWords.length < 3) return [];
+
+    // Layer 1: FTS5 candidates
+    const ftsQuery = sanitizeFTS5(candidate.title);
+    if (!ftsQuery) return [];
+
+    let ftsRows: GlobalKnowledgeEntry[] = [];
+    try {
+      ftsRows = this.searchFTS5(ftsQuery, candidate.category, 20);
+    } catch {
+      ftsRows = this.searchScan(candidate.title, candidate.category, 20);
+    }
+
+    // Layer 2: Jaccard word overlap
+    const results: Array<{ entry: GlobalKnowledgeEntry; similarity: number }> = [];
+
+    for (const row of ftsRows) {
+      const rowWords = this.extractWords(`${row.title} ${row.content}`);
+      if (rowWords.length < 3) continue;
+
+      const rowSet = new Set(rowWords);
+      const intersection = candidateWords.filter(w => rowSet.has(w)).length;
+      const union = new Set([...candidateWords, ...rowWords]).size;
+      const jaccard = union > 0 ? intersection / union : 0;
+
+      if (jaccard >= 0.4) {
+        results.push({ entry: row, similarity: jaccard });
+      }
+    }
+
+    return results.sort((a, b) => b.similarity - a.similarity);
+  }
+
+  /**
+   * Auto-merge two global entries when confidence is high.
+   * Keeps longer content as base, merges source_projects.
+   */
+  autoMerge(keepId: string, mergeId: string): GlobalKnowledgeEntry | null {
+    const db = this.getDb();
+    const keep = this.getById(keepId);
+    const merge = this.getById(mergeId);
+    if (!keep || !merge) return null;
+
+    const base = keep.content.length >= merge.content.length ? keep : merge;
+
+    // Merge source_projects
+    const sourceProjects = Array.from(new Set([
+      ...(keep.source_projects || [keep.source_project]),
+      ...(merge.source_projects || [merge.source_project]),
+    ]));
+
+    // Merge tags
+    const tags = Array.from(new Set([...keep.tags, ...merge.tags, 'auto-merged']));
+
+    // Update the kept entry
+    db.prepare(`
+      UPDATE knowledge SET
+        content = ?,
+        tags = ?,
+        source_projects = ?,
+        access_count = ?,
+        last_accessed = ?
+      WHERE id = ?
+    `).run(
+      base.content,
+      JSON.stringify(tags),
+      JSON.stringify(sourceProjects),
+      keep.access_count + merge.access_count,
+      Math.max(keep.last_accessed, merge.last_accessed),
+      keepId,
+    );
+
+    // Archive the merged entry
+    db.prepare('UPDATE knowledge SET archived = 1 WHERE id = ?').run(mergeId);
+
+    return this.getById(keepId);
+  }
+
+  private extractWords(text: string): string[] {
+    const STOP = new Set([
+      'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'her', 'was', 'one', 'our', 'out',
+      'use', 'get', 'set', 'add', 'fix', 'has', 'had', 'its', 'let', 'say', 'she', 'too', 'new',
+      'now', 'old', 'see', 'way', 'may', 'who', 'did', 'got', 'try', 'run', 'api', 'app',
+    ]);
+    return text
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(w => w.length >= 3 && !STOP.has(w));
+  }
+
   close(): void {
     this.stmtCache.clear();
     if (this.db) {
