@@ -394,6 +394,13 @@ export interface ProactiveInjectionConfig {
   inject_on?: string[];                 // default ['Read', 'Edit']
 }
 
+// Auto-promote config
+export interface AutoPromoteConfig {
+  enabled?: boolean;                    // default true
+  session_threshold?: number;           // default 3 — min distinct sessions before auto-promote
+  notify?: boolean;                     // default true — show promotion notification in SessionStart
+}
+
 // Config
 export interface ContextMemConfig {
   storage: string;
@@ -424,6 +431,7 @@ export interface ContextMemConfig {
   global_knowledge?: GlobalKnowledgeStoreConfig;
   proactive_injection?: ProactiveInjectionConfig;
   session_continuity?: SessionContinuityConfig;
+  auto_promote?: AutoPromoteConfig;
   token_estimation?: TokenEstimationConfig;
   port: number;
   api_port: number;
@@ -469,6 +477,11 @@ export const DEFAULT_CONFIG: ContextMemConfig = deepFreeze({
     snapshot_max_bytes: 16384,
     recovery_injection_max_bytes: 2048,
     recovery_cooldown_minutes: 10,
+  },
+  auto_promote: {
+    enabled: true,
+    session_threshold: 3,
+    notify: true,
   },
   token_estimation: {
     model_context_limit: 1_000_000,
