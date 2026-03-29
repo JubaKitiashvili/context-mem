@@ -4,12 +4,12 @@ import Database from 'better-sqlite3';
 import { LATEST_SCHEMA_VERSION, migrations } from '../../../plugins/storage/migrations.js';
 
 describe('migrations', () => {
-  it('LATEST_SCHEMA_VERSION is 10', () => {
-    assert.equal(LATEST_SCHEMA_VERSION, 10);
+  it('LATEST_SCHEMA_VERSION is 11', () => {
+    assert.equal(LATEST_SCHEMA_VERSION, 11);
   });
 
-  it('migrations array has 10 entries', () => {
-    assert.equal(migrations.length, 10);
+  it('migrations array has 11 entries', () => {
+    assert.equal(migrations.length, 11);
   });
 
   it('each migration has version, description, and up', () => {
@@ -80,6 +80,26 @@ describe('migrations', () => {
     assert.ok(sql.includes('idx_chains_project'));
   });
 
+  it('v11 creates session_access_log table with correct columns', () => {
+    const sql = migrations[10].up;
+    assert.ok(sql.includes('CREATE TABLE IF NOT EXISTS session_access_log'));
+    assert.ok(sql.includes('knowledge_id TEXT NOT NULL'));
+    assert.ok(sql.includes('session_id TEXT NOT NULL'));
+    assert.ok(sql.includes('accessed_at INTEGER NOT NULL'));
+    assert.ok(sql.includes('UNIQUE(knowledge_id, session_id)'));
+  });
+
+  it('v11 creates required indexes on session_access_log', () => {
+    const sql = migrations[10].up;
+    assert.ok(sql.includes('idx_sal_knowledge'));
+    assert.ok(sql.includes('idx_sal_session'));
+  });
+
+  it('v11 adds auto_promoted column to knowledge table', () => {
+    const sql = migrations[10].up;
+    assert.ok(sql.includes('ALTER TABLE knowledge ADD COLUMN auto_promoted INTEGER DEFAULT 0'));
+  });
+
   describe('running migrations on in-memory database', () => {
     it('applies all migrations without error', () => {
       const db = new Database(':memory:');
@@ -89,7 +109,7 @@ describe('migrations', () => {
 
       // Verify schema_version has all entries
       const versions = db.prepare('SELECT version FROM schema_version ORDER BY version').all() as Array<{ version: number }>;
-      assert.equal(versions.length, 10);
+      assert.equal(versions.length, 11);
       assert.equal(versions[0].version, 1);
       assert.equal(versions[1].version, 2);
       assert.equal(versions[2].version, 3);
@@ -100,6 +120,7 @@ describe('migrations', () => {
       assert.equal(versions[7].version, 8);
       assert.equal(versions[8].version, 9);
       assert.equal(versions[9].version, 10);
+      assert.equal(versions[10].version, 11);
 
       // Verify observations table exists and is insertable
       db.exec(`INSERT INTO observations (id, type, content, summary, metadata, indexed_at)
@@ -122,6 +143,27 @@ describe('migrations', () => {
                VALUES ('s1', 'query', 100, 50, 1000)`);
       const ts = db.prepare('SELECT * FROM token_stats WHERE session_id = ?').get('s1') as { session_id: string };
       assert.equal(ts.session_id, 's1');
+
+      // Verify session_access_log table exists and is insertable
+      db.exec(`INSERT INTO session_access_log (knowledge_id, session_id, accessed_at)
+               VALUES ('k1', 'sess1', 1000)`);
+      db.exec(`INSERT INTO session_access_log (knowledge_id, session_id, accessed_at)
+               VALUES ('k1', 'sess2', 2000)`);
+      const salRows = db.prepare('SELECT * FROM session_access_log WHERE knowledge_id = ?').all('k1') as Array<{ knowledge_id: string; session_id: string }>;
+      assert.equal(salRows.length, 2);
+
+      // Verify UNIQUE(knowledge_id, session_id) constraint prevents duplicates
+      assert.throws(() => {
+        db.exec(`INSERT INTO session_access_log (knowledge_id, session_id, accessed_at)
+                 VALUES ('k1', 'sess1', 9999)`);
+      });
+
+      // Verify auto_promoted column exists on knowledge table with default 0
+      db.exec(`INSERT INTO knowledge (id, category, title, content, tags, created_at)
+               VALUES ('kn1', 'test', 'Test Title', 'Test content', '[]', 1000)`);
+      const kn = db.prepare('SELECT id, auto_promoted FROM knowledge WHERE id = ?').get('kn1') as { id: string; auto_promoted: number };
+      assert.equal(kn.id, 'kn1');
+      assert.equal(kn.auto_promoted, 0);
 
       db.close();
     });

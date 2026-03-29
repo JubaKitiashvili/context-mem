@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 10;
+export const LATEST_SCHEMA_VERSION = 11;
 
 export const migrations: Migration[] = [
   {
@@ -370,6 +370,26 @@ export const migrations: Migration[] = [
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (10, unixepoch(), 'Session chains for context continuity across sessions');
+    `,
+  },
+  {
+    version: 11,
+    description: 'Session access log for auto-promote + auto_promoted flag on knowledge',
+    up: `
+      CREATE TABLE IF NOT EXISTS session_access_log (
+        knowledge_id TEXT NOT NULL,
+        session_id TEXT NOT NULL,
+        accessed_at INTEGER NOT NULL,
+        UNIQUE(knowledge_id, session_id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_sal_knowledge ON session_access_log(knowledge_id);
+      CREATE INDEX IF NOT EXISTS idx_sal_session ON session_access_log(session_id);
+
+      ALTER TABLE knowledge ADD COLUMN auto_promoted INTEGER DEFAULT 0;
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (11, unixepoch(), 'Session access log for auto-promote + auto_promoted flag on knowledge');
     `,
   },
 ];
