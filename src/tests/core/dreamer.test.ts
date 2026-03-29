@@ -5,9 +5,13 @@
  */
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
 import { KnowledgeBase } from '../../plugins/knowledge/knowledge-base.js';
 import { BetterSqlite3Storage } from '../../plugins/storage/better-sqlite3.js';
 import { Dreamer } from '../../core/dreamer.js';
+import { GlobalKnowledgeStore } from '../../core/global-store.js';
 import { createTestDb } from '../helpers.js';
 
 describe('Dreamer background agent', () => {
@@ -261,6 +265,41 @@ describe('Dreamer background agent', () => {
 
       const found = candidates.find(c => c.id === entry.id);
       assert.equal(found, undefined, 'non-shareable entry should not be a promotion candidate');
+    });
+  });
+
+  describe('duplicateScan', () => {
+    it('detects and logs duplicate entries in global store', async () => {
+      const storage = await createTestDb();
+      const kb = new KnowledgeBase(storage);
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cmem-dreamer-dup-'));
+      const globalStore = new GlobalKnowledgeStore(undefined, path.join(tmpDir, 'global.db'));
+      globalStore.open();
+
+      const dreamer = new Dreamer(kb, storage, { cycleMs: 60_000, globalStore });
+
+      // Add two similar entries to global store
+      globalStore.promote({
+        id: 'l1', category: 'pattern', title: 'Use connection pooling for PostgreSQL',
+        content: 'Always use connection pooling when connecting to PostgreSQL databases for better performance',
+        tags: ['database'], shareable: true, relevance_score: 1, access_count: 5,
+        created_at: Date.now() - 100000, last_accessed: Date.now(), archived: false, source_type: 'explicit',
+      }, 'project-a');
+
+      globalStore.promote({
+        id: 'l2', category: 'pattern', title: 'PostgreSQL connection pooling best practice',
+        content: 'Use connection pooling when connecting to PostgreSQL for better performance and resource management',
+        tags: ['postgres'], shareable: true, relevance_score: 1, access_count: 3,
+        created_at: Date.now(), last_accessed: Date.now(), archived: false, source_type: 'explicit',
+      }, 'project-b');
+
+      const count = await dreamer.duplicateScan();
+      assert.ok(count >= 1, `should detect at least 1 duplicate pair, got ${count}`);
+
+      dreamer.stop();
+      globalStore.close();
+      await storage.close();
+      fs.rmSync(tmpDir, { recursive: true });
     });
   });
 });

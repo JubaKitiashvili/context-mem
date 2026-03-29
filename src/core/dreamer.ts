@@ -7,6 +7,7 @@
  */
 import type { StoragePlugin, KnowledgeCategory } from './types.js';
 import type { KnowledgeBase } from '../plugins/knowledge/knowledge-base.js';
+import type { GlobalKnowledgeStore } from './global-store.js';
 
 // Stopwords for contradiction word-overlap detection (same set as knowledge-base)
 const STOPWORDS = new Set([
@@ -16,7 +17,7 @@ const STOPWORDS = new Set([
 ]);
 
 export interface DreamerLog {
-  type: 'stale' | 'archive' | 'contradiction' | 'promote';
+  type: 'stale' | 'archive' | 'contradiction' | 'promote' | 'merge-suggestion';
   entry_id: string;
   message: string;
   timestamp: number;
@@ -30,6 +31,7 @@ export class Dreamer {
   private readonly ARCHIVE_THRESHOLD_DAYS: number;
   private readonly PROMOTION_SESSION_THRESHOLD: number;
   private readonly logs: DreamerLog[] = [];
+  private globalStore?: GlobalKnowledgeStore;
 
   constructor(
     private knowledgeBase: KnowledgeBase,
@@ -39,12 +41,14 @@ export class Dreamer {
       staleThresholdDays?: number;
       archiveThresholdDays?: number;
       promotionSessionThreshold?: number;
+      globalStore?: GlobalKnowledgeStore;
     },
   ) {
     this.CYCLE_MS = opts?.cycleMs ?? 5 * 60 * 1000;
     this.STALE_THRESHOLD_DAYS = opts?.staleThresholdDays ?? 30;
     this.ARCHIVE_THRESHOLD_DAYS = opts?.archiveThresholdDays ?? 90;
     this.PROMOTION_SESSION_THRESHOLD = opts?.promotionSessionThreshold ?? 3;
+    this.globalStore = opts?.globalStore;
   }
 
   start(): void {
@@ -79,6 +83,7 @@ export class Dreamer {
       await this.archiveOldEntries();
       await this.detectContradictions();
       await this.promotionScan();
+      await this.duplicateScan();
     } catch {
       // Dreamer is non-critical — never crash the host
     }
@@ -208,6 +213,56 @@ export class Dreamer {
     } catch {
       // session_access_log may not exist (pre-v11)
       return [];
+    }
+  }
+
+  // ---------- Global duplicate scan ----------
+
+  async duplicateScan(): Promise<number> {
+    if (!this.globalStore) return 0;
+
+    try {
+      const allEntries = this.globalStore.getAll({ limit: 100 });
+      let found = 0;
+      const processed = new Set<string>();
+
+      for (const entry of allEntries) {
+        if (processed.has(entry.id)) continue;
+
+        const duplicates = this.globalStore.findDuplicates(entry);
+        for (const dup of duplicates) {
+          if (dup.entry.id === entry.id) continue;
+          if (processed.has(dup.entry.id)) continue;
+
+          const pairKey = [entry.id, dup.entry.id].sort().join(':');
+          if (processed.has(pairKey)) continue;
+          processed.add(pairKey);
+
+          if (dup.similarity > 0.9) {
+            this.globalStore.autoMerge(entry.id, dup.entry.id);
+            processed.add(dup.entry.id);
+            this.logs.push({
+              type: 'merge-suggestion',
+              entry_id: entry.id,
+              message: `Auto-merged with ${dup.entry.id} (similarity: ${dup.similarity.toFixed(2)})`,
+              timestamp: Date.now(),
+            });
+            found++;
+          } else if (dup.similarity >= 0.7) {
+            this.logs.push({
+              type: 'merge-suggestion',
+              entry_id: entry.id,
+              message: `Merge suggestion: "${entry.title}" ↔ "${dup.entry.title}" (similarity: ${dup.similarity.toFixed(2)})`,
+              timestamp: Date.now(),
+            });
+            found++;
+          }
+        }
+      }
+
+      return found;
+    } catch {
+      return 0;
     }
   }
 
