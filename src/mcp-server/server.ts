@@ -35,6 +35,7 @@ import {
   handleAsk,
   handleResolveContradiction,
   handleHandoffSession,
+  handleMergeSuggestions,
 } from './tools.js';
 
 export function createMcpServer(kernel: ToolKernel): Server {
@@ -154,6 +155,9 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'handoff_session':
           result = await handleHandoffSession(params as Parameters<typeof handleHandoffSession>[0], kernel);
+          break;
+        case 'merge_suggestions':
+          result = await handleMergeSuggestions(params as Parameters<typeof handleMergeSuggestions>[0], kernel);
           break;
         default:
           console.error(`context-mem: Unknown MCP tool requested: ${name}`);

@@ -16,6 +16,7 @@ import {
   handleSearchKnowledge,
   handlePromoteKnowledge,
   handleGlobalSearch,
+  handleMergeSuggestions,
 } from '../../mcp-server/tools.js';
 import type { ToolKernel } from '../../mcp-server/tools.js';
 import type { KnowledgeEntry } from '../../core/types.js';
@@ -469,5 +470,209 @@ describe('GlobalKnowledgeStore migration v2', () => {
     db.close();
     assert.ok(row, 'schema_version should have version 2 row');
     assert.equal(row.version, 2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Merge suggestion management tests
+// ---------------------------------------------------------------------------
+
+describe('GlobalKnowledgeStore merge suggestions', () => {
+  let tmpDir: string;
+  let store: GlobalKnowledgeStore;
+
+  before(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cmem-merge-sugg-'));
+    store = createGlobalStore(tmpDir);
+  });
+
+  after(() => {
+    store.close();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it('getMergeSuggestions returns empty array when no suggestions', () => {
+    const results = store.getMergeSuggestions('pending', 10);
+    assert.ok(Array.isArray(results), 'should return array');
+    assert.equal(results.length, 0, 'should be empty initially');
+  });
+
+  it('addMergeSuggestion creates a suggestion', () => {
+    // Promote an entry first so we have a valid global_id
+    const entry = makeMockEntry({ id: 'ms-test-1', title: 'Merge suggestion test entry' });
+    const promoted = store.promote(entry, 'test-project');
+
+    store.addMergeSuggestion({
+      localId: 'local-123',
+      globalId: promoted.id,
+      similarity: 0.85,
+      strategy: 'auto',
+    });
+
+    const results = store.getMergeSuggestions('pending', 10);
+    assert.equal(results.length, 1, 'should have one suggestion');
+    assert.equal(results[0].global_id, promoted.id);
+    assert.equal(results[0].local_id, 'local-123');
+    assert.equal(results[0].similarity_score, 0.85);
+    assert.equal(results[0].strategy, 'auto');
+    assert.equal(results[0].status, 'pending');
+  });
+
+  it('updateMergeSuggestion changes status to dismissed', () => {
+    const entry = makeMockEntry({ id: 'ms-test-2', title: 'Merge suggestion dismiss test' });
+    const promoted = store.promote(entry, 'test-project');
+
+    store.addMergeSuggestion({
+      globalId: promoted.id,
+      similarity: 0.75,
+      strategy: 'manual',
+    });
+
+    const before = store.getMergeSuggestions('pending', 10);
+    const suggestion = before.find(s => s.global_id === promoted.id);
+    assert.ok(suggestion, 'suggestion should exist');
+
+    const updated = store.updateMergeSuggestion(suggestion.id, 'dismissed');
+    assert.ok(updated, 'updateMergeSuggestion should return true');
+
+    const dismissed = store.getMergeSuggestions('dismissed', 10);
+    const found = dismissed.find(s => s.id === suggestion.id);
+    assert.ok(found, 'suggestion should now be in dismissed list');
+    assert.equal(found.status, 'dismissed');
+  });
+
+  it('getMergeSuggestions with status=all returns all statuses', () => {
+    const all = store.getMergeSuggestions('all', 50);
+    const statuses = new Set(all.map(s => s.status));
+    assert.ok(statuses.has('pending'), 'should have pending suggestions');
+    assert.ok(statuses.has('dismissed'), 'should have dismissed suggestions');
+  });
+
+  it('updateMergeSuggestion returns false for unknown id', () => {
+    const result = store.updateMergeSuggestion('nonexistent-id', 'accepted');
+    assert.equal(result, false, 'should return false for unknown id');
+  });
+
+  it('addMergeSuggestion without localId stores null local_id', () => {
+    const entry = makeMockEntry({ id: 'ms-test-3', title: 'No local id test' });
+    const promoted = store.promote(entry, 'test-project');
+
+    store.addMergeSuggestion({
+      globalId: promoted.id,
+      similarity: 0.6,
+      strategy: 'scan',
+    });
+
+    const results = store.getMergeSuggestions('pending', 10);
+    const suggestion = results.find(s => s.global_id === promoted.id);
+    assert.ok(suggestion, 'suggestion should exist');
+    assert.equal(suggestion.local_id, null, 'local_id should be null when not provided');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// merge_suggestions MCP tool tests
+// ---------------------------------------------------------------------------
+
+describe('merge_suggestions MCP tool', () => {
+  let storage: BetterSqlite3Storage;
+  let globalStore: GlobalKnowledgeStore;
+  let kernel: ToolKernel;
+  let tmpDir: string;
+
+  before(async () => {
+    storage = await createTestDb();
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cmem-merge-mcp-'));
+    const privacy = new PrivacyEngine({ strip_tags: true, redact_patterns: [] });
+    globalStore = new GlobalKnowledgeStore(privacy, path.join(tmpDir, 'global', 'store.db'));
+    globalStore.open();
+
+    const { PluginRegistry } = await import('../../core/plugin-registry.js');
+    const { Pipeline } = await import('../../core/pipeline.js');
+    const { SearchFusion } = await import('../../plugins/search/fusion.js');
+    const { BM25Search } = await import('../../plugins/search/bm25.js');
+    const { BudgetManager } = await import('../../core/budget.js');
+    const { EventTracker } = await import('../../core/events.js');
+    const { SessionManager } = await import('../../core/session.js');
+    const { ContentStore } = await import('../../plugins/storage/content-store.js');
+
+    const registry = new PluginRegistry();
+    const pipeline = new Pipeline(registry, storage, privacy, 'merge-mcp-test');
+    const bm25 = new BM25Search(storage);
+    await registry.register(bm25);
+    const search = new SearchFusion([bm25]);
+    const config = structuredClone(DEFAULT_CONFIG);
+    const budgetManager = new BudgetManager(storage);
+    const eventTracker = new EventTracker(storage);
+    const sessionManager = new SessionManager(storage, eventTracker);
+    const contentStore = new ContentStore(storage);
+    const knowledgeBase = new KnowledgeBase(storage);
+
+    kernel = {
+      pipeline,
+      search,
+      storage,
+      registry,
+      sessionId: 'merge-mcp-test',
+      config,
+      projectDir: '/tmp/test-project',
+      budgetManager,
+      eventTracker,
+      sessionManager,
+      contentStore,
+      knowledgeBase,
+      globalStore,
+    };
+  });
+
+  after(async () => {
+    globalStore.close();
+    await storage.close();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it('handleMergeSuggestions returns error when globalStore is not enabled', async () => {
+    const kernelWithout = { ...kernel, globalStore: undefined };
+    const result = await handleMergeSuggestions({}, kernelWithout);
+    assert.ok('error' in result, 'should return error');
+    assert.ok((result as any).error.includes('not enabled'), 'error should mention not enabled');
+  });
+
+  it('handleMergeSuggestions returns empty array initially', async () => {
+    const result = await handleMergeSuggestions({}, kernel);
+    assert.ok(Array.isArray(result), 'should return array');
+    assert.equal((result as any[]).length, 0, 'should be empty initially');
+  });
+
+  it('handleMergeSuggestions returns suggestions after adding one', async () => {
+    const entry = makeMockEntry({ id: 'mcp-ms-1', title: 'MCP merge suggestion test' });
+    const promoted = globalStore.promote(entry, 'mcp-test-project');
+
+    globalStore.addMergeSuggestion({
+      localId: 'mcp-local-1',
+      globalId: promoted.id,
+      similarity: 0.9,
+      strategy: 'auto',
+    });
+
+    const result = await handleMergeSuggestions({ status: 'pending' }, kernel);
+    assert.ok(Array.isArray(result), 'should return array');
+    assert.ok((result as any[]).length > 0, 'should have suggestions');
+    const found = (result as any[]).find((s: any) => s.global_id === promoted.id);
+    assert.ok(found, 'should find the added suggestion');
+    assert.equal(found.status, 'pending');
+    assert.equal(found.similarity_score, 0.9);
+  });
+
+  it('handleMergeSuggestions respects limit param', async () => {
+    const result = await handleMergeSuggestions({ status: 'all', limit: 1 }, kernel);
+    assert.ok(Array.isArray(result), 'should return array');
+    assert.ok((result as any[]).length <= 1, 'should respect limit of 1');
+  });
+
+  it('handleMergeSuggestions clamps limit to 50', async () => {
+    // Should not error out with a huge limit
+    const result = await handleMergeSuggestions({ status: 'all', limit: 9999 }, kernel);
+    assert.ok(Array.isArray(result), 'should return array');
   });
 });

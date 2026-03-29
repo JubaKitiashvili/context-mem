@@ -257,6 +257,59 @@ export class GlobalKnowledgeStore {
     return this.getById(keepId);
   }
 
+  /**
+   * Get merge suggestions from the global store.
+   */
+  getMergeSuggestions(status: 'pending' | 'accepted' | 'dismissed' | 'all' = 'pending', limit = 10): Array<{
+    id: string; local_id: string | null; global_id: string; similarity_score: number;
+    strategy: string; status: string; created_at: number;
+  }> {
+    const db = this.getDb();
+    try {
+      let sql = 'SELECT * FROM merge_suggestions';
+      const params: unknown[] = [];
+      if (status !== 'all') {
+        sql += ' WHERE status = ?';
+        params.push(status);
+      }
+      sql += ' ORDER BY created_at DESC LIMIT ?';
+      params.push(limit);
+      return db.prepare(sql).all(...params) as any[];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Update a merge suggestion's status.
+   */
+  updateMergeSuggestion(id: string, status: 'accepted' | 'dismissed'): boolean {
+    const db = this.getDb();
+    try {
+      const result = db.prepare('UPDATE merge_suggestions SET status = ? WHERE id = ?').run(status, id);
+      return result.changes > 0;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Insert a merge suggestion.
+   */
+  addMergeSuggestion(suggestion: {
+    localId?: string; globalId: string; similarity: number; strategy: string;
+  }): void {
+    const db = this.getDb();
+    try {
+      db.prepare(`
+        INSERT OR IGNORE INTO merge_suggestions (id, local_id, global_id, similarity_score, strategy, status, created_at)
+        VALUES (?, ?, ?, ?, ?, 'pending', ?)
+      `).run(ulid(), suggestion.localId || null, suggestion.globalId, suggestion.similarity, suggestion.strategy, Date.now());
+    } catch {
+      // merge_suggestions table may not exist (pre-v2)
+    }
+  }
+
   private extractWords(text: string): string[] {
     const STOP = new Set([
       'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'her', 'was', 'one', 'our', 'out',

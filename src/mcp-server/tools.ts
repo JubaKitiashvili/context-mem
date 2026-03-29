@@ -515,6 +515,18 @@ export const toolDefinitions: ToolDefinition[] = [
       },
     },
   },
+  // Merge suggestions
+  {
+    name: 'merge_suggestions',
+    description: 'View pending merge suggestions for duplicate global knowledge entries.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', enum: ['pending', 'accepted', 'dismissed', 'all'], description: 'Filter by status (default: pending)' },
+        limit: { type: 'number', description: 'Max results (default: 10)' },
+      },
+    },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -1162,6 +1174,18 @@ export async function handleGlobalSearch(
     source_type: r.source_type,
     source_project: r.source_project,
   }));
+}
+
+export async function handleMergeSuggestions(
+  params: { status?: string; limit?: number },
+  kernel: ToolKernel,
+): Promise<Array<{ id: string; global_id: string; similarity_score: number; strategy: string; status: string }> | { error: string }> {
+  if (!kernel.globalStore) {
+    return { error: 'Global knowledge store is not enabled' };
+  }
+  const status = (params.status || 'pending') as 'pending' | 'accepted' | 'dismissed' | 'all';
+  const limit = Math.min(Math.max(params.limit ?? 10, 1), 50);
+  return kernel.globalStore.getMergeSuggestions(status, limit);
 }
 
 // ---------------------------------------------------------------------------
