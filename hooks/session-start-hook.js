@@ -176,6 +176,32 @@ function getProfile() {
   }
 }
 
+function getPromotionNotifications() {
+  const logPath = path.join(cwd, '.context-mem', 'promotion-log.json');
+  try {
+    if (!fs.existsSync(logPath)) return null;
+    const log = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+    if (!log.entries || !log.entries.length) return null;
+
+    // Only show if not yet notified (within last 24h)
+    const now = Date.now();
+    if (log.notified_at && now - log.notified_at < 24 * 60 * 60 * 1000) return null;
+
+    const lines = ['[Auto-promoted to global knowledge]'];
+    for (const e of log.entries.slice(0, 5)) {
+      lines.push(`  - "${e.title}" (${e.sessions} sessions)`);
+    }
+
+    // Mark as notified
+    log.notified_at = now;
+    fs.writeFileSync(logPath, JSON.stringify(log), 'utf8');
+
+    return lines.join('\n');
+  } catch {
+    return null;
+  }
+}
+
 // --- DB context (secondary — historical) ---
 function getDbContext() {
   const db = openDb();
@@ -326,6 +352,13 @@ const profile = getProfile();
 if (profile) {
   output.push('## Project Profile');
   output.push(profile);
+  output.push('');
+}
+
+// Promotion notifications
+const promotionNote = getPromotionNotifications();
+if (promotionNote) {
+  output.push(promotionNote);
   output.push('');
 }
 
