@@ -2983,6 +2983,15 @@ function getDashboardHtml() {
     <div class="graph-stats" id="graphStats"></div>
   </div>
 
+  <!-- Cross-project comparison -->
+  <div class="token-bar-section" id="comparison-card" style="display:none">
+    <div class="section-title">
+      <div class="icon" style="background:var(--cyan-dim);color:var(--cyan);">P</div>
+      Project Comparison
+    </div>
+    <div id="comparison-content"></div>
+  </div>
+
   <!-- Agents -->
   <div class="agents-section" id="agentsSection">
     <div class="section-title">
@@ -3144,6 +3153,36 @@ function switchToProject(projectDir) {
 
 loadProjects();
 setInterval(loadProjects, 10000);
+
+// --- Cross-project comparison ---
+function loadComparison() {
+  fetch('/api/instances').then(r => r.json()).then(function(instances) {
+    const card = document.getElementById('comparison-card');
+    const content = document.getElementById('comparison-content');
+    if (!card || !content) return;
+    if (!instances || instances.length < 2) return; // Only show for multi-project
+    card.style.display = '';
+    content.innerHTML = '<table style="width:100%;border-collapse:collapse">' +
+      '<tr style="border-bottom:1px solid var(--border)">' +
+      '<th style="text-align:left;padding:6px;font-size:11px;color:var(--text-muted);font-weight:600;">Project</th>' +
+      '<th style="text-align:right;padding:6px;font-size:11px;color:var(--text-muted);font-weight:600;">Path</th>' +
+      '<th style="text-align:right;padding:6px;font-size:11px;color:var(--text-muted);font-weight:600;">Status</th>' +
+      '</tr>' +
+      instances.map(function(inst) {
+        const name = escHtml(inst.projectName || (inst.projectDir || '').split('/').pop() || 'Unknown');
+        const dir = escHtml(inst.projectDir || '');
+        const active = inst.dbPath === activeProjectDb;
+        return '<tr style="border-bottom:1px solid var(--border)">' +
+          '<td style="padding:6px;color:var(--text);font-size:12px;">' + name + '</td>' +
+          '<td style="padding:6px;text-align:right;color:var(--text-muted);font-size:11px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + dir + '">' + dir + '</td>' +
+          '<td style="padding:6px;text-align:right;font-size:11px;color:' + (active ? 'var(--green)' : 'var(--text-dim)') + ';">' + (active ? 'Active' : 'Registered') + '</td>' +
+          '</tr>';
+      }).join('') + '</table>';
+  }).catch(function() {});
+}
+
+loadComparison();
+setInterval(loadComparison, 15000);
 
 async function refresh() {
   try {
@@ -5477,6 +5516,7 @@ function getTimelinePageHtml() {
   </select>
   <button onclick="applyFilters()">Apply</button>
   <button class="secondary" onclick="clearFilters()">Clear</button>
+  <button id="replay-btn" title="Replay timeline chronologically">&#9654; Replay</button>
   <div class="spacer"></div>
   <div class="result-count" id="resultCount"></div>
   <div class="auto-refresh-indicator">
@@ -5600,7 +5640,7 @@ function getTimelinePageHtml() {
       let meta = {};
       try { meta = typeof entry.metadata === 'string' ? JSON.parse(entry.metadata) : (entry.metadata || {}); } catch {}
 
-      html += '<div class="tl-entry" data-id="' + entry.id + '">' +
+      html += '<div class="tl-entry" data-id="' + entry.id + '" data-ts="' + (entry.indexed_at || 0) + '">' +
         '<div class="tl-header">' +
           '<span class="tl-badge ' + badgeClass(entry.type) + '">' + esc(entry.type) + '</span>' +
           (entry.privacy_level && entry.privacy_level !== 'public'
@@ -5834,6 +5874,39 @@ function getTimelinePageHtml() {
     const s = Math.max(0, 5 - Math.floor((Date.now() - lastRefresh) / 1000));
     document.getElementById('refreshTimer').textContent = s + 's';
   }, 1000);
+
+  // --- Replay ---
+  let replayInterval = null;
+  document.getElementById('replay-btn')?.addEventListener('click', function() {
+    const btn = this;
+    if (replayInterval) {
+      clearInterval(replayInterval);
+      replayInterval = null;
+      btn.textContent = '\\u25B6 Replay';
+      // Reset highlights
+      document.querySelectorAll('.tl-entry').forEach(r => { r.style.background = ''; });
+      return;
+    }
+
+    const rows = [...document.querySelectorAll('.tl-entry')].filter(r => r.style.display !== 'none');
+    if (!rows.length) return;
+
+    btn.textContent = '\\u23F9 Stop';
+    let i = 0;
+    replayInterval = setInterval(function() {
+      if (i >= rows.length) {
+        clearInterval(replayInterval);
+        replayInterval = null;
+        btn.textContent = '\\u25B6 Replay';
+        if (i > 0) rows[i - 1].style.background = '';
+        return;
+      }
+      if (i > 0) rows[i - 1].style.background = '';
+      rows[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      rows[i].style.background = 'var(--accent-dim, rgba(99,102,241,0.15))';
+      i++;
+    }, 800);
+  });
 })();
 </script>
 </body>
