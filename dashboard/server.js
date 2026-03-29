@@ -897,6 +897,75 @@ function handleApi(req, res) {
         data = getAgents();
         break;
       }
+      case '/api/search-analytics': {
+        const topEntries = db.prepare(
+          'SELECT id, title, category, access_count FROM knowledge WHERE archived = 0 ORDER BY access_count DESC LIMIT 10'
+        ).all();
+        const categoryBreakdown = db.prepare(
+          'SELECT category, COUNT(*) as count FROM knowledge WHERE archived = 0 GROUP BY category'
+        ).all();
+        let totalSearches = 0;
+        try {
+          const row = db.prepare("SELECT COUNT(*) as count FROM token_stats WHERE event_type = 'search'").get();
+          totalSearches = row?.count || 0;
+        } catch {}
+        data = { top_entries: topEntries, category_breakdown: categoryBreakdown, total_searches: totalSearches };
+        break;
+      }
+      case '/api/health-score': {
+        const now = Date.now();
+        const fourteenDays = 14 * 24 * 60 * 60 * 1000;
+        const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+        const totalK = db.prepare('SELECT COUNT(*) as cnt FROM knowledge WHERE archived = 0').get();
+        const freshK = db.prepare('SELECT COUNT(*) as cnt FROM knowledge WHERE archived = 0 AND last_accessed > ?').get(now - fourteenDays);
+        const freshness = totalK.cnt > 0 ? (freshK.cnt / totalK.cnt) : 0;
+
+        const cats = db.prepare('SELECT COUNT(DISTINCT category) as cnt FROM knowledge WHERE archived = 0').get();
+        const coverage = Math.min(1, (cats.cnt || 0) / 5);
+
+        const recentObs = db.prepare('SELECT COUNT(*) as cnt FROM observations WHERE indexed_at > ?').get(now - sevenDays);
+        const activity = Math.min(1, (recentObs.cnt || 0) / 100);
+
+        let staleRatio = 1;
+        try {
+          const staleCount = db.prepare('SELECT COUNT(*) as cnt FROM knowledge WHERE stale = 1').get();
+          staleRatio = totalK.cnt > 0 ? 1 - Math.min(1, (staleCount.cnt || 0) / totalK.cnt) : 1;
+        } catch {}
+
+        let sessionCont = 0;
+        try {
+          const totalSess = db.prepare('SELECT COUNT(DISTINCT session_id) as cnt FROM token_stats').get();
+          const chainedSess = db.prepare('SELECT COUNT(*) as cnt FROM session_chains').get();
+          sessionCont = totalSess.cnt > 0 ? Math.min(1, (chainedSess.cnt || 0) / totalSess.cnt) : 0;
+        } catch {}
+
+        const score = Math.round(freshness * 30 + coverage * 25 + activity * 20 + staleRatio * 15 + sessionCont * 10);
+
+        data = {
+          score,
+          breakdown: {
+            knowledge_freshness: Math.round(freshness * 100),
+            knowledge_coverage: Math.round(coverage * 100),
+            observation_activity: Math.round(activity * 100),
+            contradiction_free: Math.round(staleRatio * 100),
+            session_continuity: Math.round(sessionCont * 100),
+          },
+        };
+        break;
+      }
+      case '/api/time-diff': {
+        const from = parseInt(url.searchParams.get('from') || '0');
+        const to = parseInt(url.searchParams.get('to') || String(Date.now()));
+        const added = db.prepare(
+          'SELECT id, title, category, created_at FROM knowledge WHERE created_at >= ? AND created_at <= ? ORDER BY created_at DESC LIMIT 50'
+        ).all(from, to);
+        const obsRows = db.prepare(
+          'SELECT type, COUNT(*) as cnt FROM observations WHERE indexed_at >= ? AND indexed_at <= ? GROUP BY type'
+        ).all(from, to);
+        data = { knowledge_added: added, observations: obsRows };
+        break;
+      }
       default:
         // Path-based observation lookup: /api/observation/<id>
         if (route.startsWith('/api/observation/')) {
@@ -2652,6 +2721,10 @@ function getDashboardHtml() {
       <div class="stat-value orange" id="statDb">-</div>
       <div class="stat-sub" id="statDbSub"></div>
     </div>
+    <div class="stat-card" id="health-card">
+      <div class="stat-label">Health Score</div>
+      <div class="stat-value" id="health-score" style="font-size:2em">--</div>
+    </div>
   </div>
 
   <!-- Init banner -->
@@ -2783,6 +2856,14 @@ function getDashboardHtml() {
       </div>
       <div id="knowledgeCategories" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;"></div>
       <div id="knowledgeList" style="max-height:250px;overflow-y:auto;"></div>
+    </div>
+
+    <div class="token-bar-section" id="analytics-card">
+      <div class="section-title">
+        <div class="icon" style="background:var(--blue-dim);color:var(--blue);">A</div>
+        Search Analytics
+      </div>
+      <div id="analytics-content">Loading...</div>
     </div>
 
     <div class="token-bar-section">
@@ -3115,6 +3196,28 @@ async function refresh() {
       ? stats.db_size_kb + ' KB'
       : (stats.db_size_kb / 1024).toFixed(1) + ' MB';
     document.getElementById('statDbSub').textContent = stats.store_events + ' store events';
+
+    // Health score
+    fetch('/api/health-score').then(r => r.json()).then(data => {
+      const el = document.getElementById('health-score');
+      if (el) {
+        el.textContent = data.score;
+        el.style.color = data.score > 70 ? 'var(--green)' : data.score > 40 ? 'var(--orange)' : 'var(--red)';
+      }
+    }).catch(() => {});
+
+    // Search analytics
+    fetch('/api/search-analytics').then(r => r.json()).then(data => {
+      const el = document.getElementById('analytics-content');
+      if (el && data.top_entries) {
+        el.innerHTML = data.top_entries.slice(0, 5).map(e =>
+          '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">' +
+            '<span style="color:var(--text)">' + escHtml(e.title.slice(0, 40)) + '</span>' +
+            '<span style="color:var(--text-dim)">' + e.access_count + 'x</span>' +
+          '</div>'
+        ).join('') || '<span style="color:var(--text-dim)">No data yet</span>';
+      }
+    }).catch(() => {});
 
     // --- Savings Calculator ---
     const savingsCallout = document.getElementById('savingsCallout');
