@@ -401,6 +401,13 @@ export interface AutoPromoteConfig {
   notify?: boolean;                     // default true — show promotion notification in SessionStart
 }
 
+// AI curation config
+export interface AICurationConfig {
+  enabled?: boolean;                    // default false (opt-in)
+  model?: string;                       // default 'llama3.2'
+  endpoint?: string;                    // default 'http://localhost:11434'
+}
+
 // Config
 export interface ContextMemConfig {
   storage: string;
@@ -432,6 +439,7 @@ export interface ContextMemConfig {
   proactive_injection?: ProactiveInjectionConfig;
   session_continuity?: SessionContinuityConfig;
   auto_promote?: AutoPromoteConfig;
+  ai_curation?: AICurationConfig;
   token_estimation?: TokenEstimationConfig;
   port: number;
   api_port: number;
@@ -482,6 +490,11 @@ export const DEFAULT_CONFIG: ContextMemConfig = deepFreeze({
     enabled: true,
     session_threshold: 3,
     notify: true,
+  },
+  ai_curation: {
+    enabled: false,
+    model: 'llama3.2',
+    endpoint: 'http://localhost:11434',
   },
   token_estimation: {
     model_context_limit: 1_000_000,
