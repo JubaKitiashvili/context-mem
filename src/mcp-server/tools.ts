@@ -1045,7 +1045,7 @@ export async function handleSearchKnowledge(
   const results = kernel.knowledgeBase.search(params.query, {
     category,
     limit,
-  });
+  }, kernel.sessionId);
 
   const mapped = results.map(r => ({
     id: r.id,

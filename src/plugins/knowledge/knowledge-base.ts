@@ -238,7 +238,7 @@ export class KnowledgeBase {
     }
   }
 
-  search(query: string, opts: { category?: KnowledgeCategory; limit?: number } = {}): KnowledgeEntry[] {
+  search(query: string, opts: { category?: KnowledgeCategory; limit?: number } = {}, sessionId?: string): KnowledgeEntry[] {
     const limit = opts.limit || 10;
     const sanitized = sanitizeFTS5(query);
     if (!sanitized) return [];
@@ -279,6 +279,21 @@ export class KnowledgeBase {
         'UPDATE knowledge SET access_count = access_count + 1, last_accessed = ? WHERE id = ?',
         [now, entry.id]
       );
+    }
+
+    // Record session access for auto-promote tracking
+    if (sessionId) {
+      const now2 = Date.now();
+      for (const entry of results) {
+        try {
+          this.storage.exec(
+            'INSERT OR IGNORE INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)',
+            [entry.id, sessionId, now2]
+          );
+        } catch {
+          // session_access_log table may not exist (pre-v11) — ignore
+        }
+      }
     }
 
     return results;
