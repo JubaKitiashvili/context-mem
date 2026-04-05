@@ -31,6 +31,7 @@ import type { GlobalKnowledgeStore } from '../core/global-store.js';
 import type { AgentRegistry } from '../core/agent-registry.js';
 import { TimeTraveler } from '../core/time-travel.js';
 import type { TimeSnapshot, TimeDelta } from '../core/time-travel.js';
+import type { LLMService } from '../core/llm-provider.js';
 
 // ---------------------------------------------------------------------------
 // Input validation helpers
@@ -75,6 +76,7 @@ export interface ToolKernel {
   globalStore?: GlobalKnowledgeStore;
   knowledgeGraph?: KnowledgeGraph;
   agentRegistry?: AgentRegistry;
+  llmService?: LLMService;
 }
 
 // ---------------------------------------------------------------------------
@@ -614,6 +616,19 @@ export async function handleSearch(
     return { content: [{ type: 'text', text: JSON.stringify({ error: 'query must be a non-empty string' }) }], isError: true } as any;
   }
 
+  // LLM query expansion (optional)
+  let searchQuery = params.query;
+  if (kernel.llmService) {
+    try {
+      const expansion = await kernel.llmService.expandQuery(params.query);
+      if (expansion) {
+        searchQuery = [expansion.original, ...expansion.expanded].join(' ');
+      }
+    } catch {
+      // LLM failure is non-critical — use original query
+    }
+  }
+
   const opts: { type_filter?: ObservationType[]; limit?: number } = {
     limit: validateLimit(params.limit ?? 5),
   };
@@ -621,7 +636,7 @@ export async function handleSearch(
     opts.type_filter = [validateObservationType(params.type)];
   }
 
-  const results: SearchResult[] = await kernel.search.execute(params.query, opts);
+  const results: SearchResult[] = await kernel.search.execute(searchQuery, opts);
 
   // Increment access_count for returned observations
   if (results.length > 0) {
