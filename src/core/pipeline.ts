@@ -6,6 +6,7 @@ import { truncate, MAX_PASSTHROUGH } from './truncation.js';
 import { ulid, estimateTokens } from './utils.js';
 import type { BudgetManager } from './budget.js';
 import type { SessionManager } from './session.js';
+import type { LLMService } from './llm-provider.js';
 
 export class Pipeline {
   private budgetManager?: BudgetManager;
@@ -13,6 +14,7 @@ export class Pipeline {
   private observationCount = 0;
   private readonly CHECKPOINT_INTERVAL = 20;
   private embedder: { embed(text: string): Promise<Float32Array | null>; toBuffer(e: Float32Array): Buffer } | null = null;
+  private llmService?: LLMService;
 
   constructor(
     private registry: PluginRegistry,
@@ -31,6 +33,10 @@ export class Pipeline {
 
   setEmbedder(embedder: typeof this.embedder): void {
     this.embedder = embedder;
+  }
+
+  setLLMService(llm: LLMService): void {
+    this.llmService = llm;
   }
 
   private scheduleEmbedding(id: string, text: string): void {
@@ -99,6 +105,19 @@ export class Pipeline {
     let summary: string | undefined;
     let tokensOriginal = estimateTokens(cleaned);
     let tokensSummarized = tokensOriginal;
+
+    // 2.5 LLM summarization (optional — try before deterministic)
+    if (this.llmService && !summary) {
+      try {
+        const llmResult = await this.llmService.summarize(cleaned);
+        if (llmResult) {
+          summary = llmResult.summary;
+          tokensSummarized = estimateTokens(summary);
+        }
+      } catch {
+        // LLM failure is non-critical — fall through to deterministic
+      }
+    }
 
     for (const s of summarizers) {
       if (s.detect(cleaned)) {
