@@ -106,6 +106,9 @@ export interface ContradictionWarning {
   content: string;
   similarity_reason: string;
   source_type?: SourceType;
+  authority_existing: number;
+  authority_new: number;
+  suggested_action: 'keep_existing' | 'replace' | 'merge';
 }
 
 // Knowledge Graph types

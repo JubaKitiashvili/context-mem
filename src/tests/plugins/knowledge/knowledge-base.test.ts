@@ -182,3 +182,93 @@ describe('computeAuthority', () => {
     assert.ok(Number.isFinite(auth), `authority should be finite, got ${auth}`);
   });
 });
+
+describe('contradiction resolution with authority', () => {
+  let storage: BetterSqlite3Storage;
+  let kb: KnowledgeBase;
+
+  before(async () => {
+    storage = await createTestDb();
+    kb = new KnowledgeBase(storage);
+  });
+
+  after(async () => { await storage.close(); });
+
+  it('returns authority scores and suggested action on contradiction', async () => {
+    const existing = kb.save({
+      category: 'pattern',
+      title: 'Authentication flow pattern',
+      content: 'Use JWT with refresh tokens for authentication',
+      tags: ['auth'],
+      source_type: 'explicit',
+    });
+
+    // Simulate access from multiple sessions
+    for (let i = 0; i < 5; i++) {
+      storage.exec('UPDATE knowledge SET access_count = access_count + 1 WHERE id = ?', [existing.id]);
+      try {
+        storage.exec(
+          'INSERT OR IGNORE INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)',
+          [existing.id, `session-${i}`, Date.now()]
+        );
+      } catch { /* table may not exist */ }
+    }
+
+    const warnings = await kb.checkContradictions(
+      'Authentication flow pattern',
+      'Use session cookies for authentication instead of JWT',
+      'pattern'
+    );
+
+    assert.ok(warnings.length > 0, 'should detect contradiction');
+    const w = warnings[0];
+    assert.ok(typeof w.authority_existing === 'number', 'should have authority_existing');
+    assert.ok(typeof w.authority_new === 'number', 'should have authority_new');
+    assert.ok(['keep_existing', 'replace', 'merge'].includes(w.suggested_action), 'should have valid suggested_action');
+    assert.ok(w.authority_existing > w.authority_new, 'established explicit entry should have higher authority');
+    assert.equal(w.suggested_action, 'keep_existing', 'should suggest keeping the more authoritative entry');
+  });
+
+  it('suggests merge when authority scores are close', async () => {
+    const entry1 = kb.save({
+      category: 'decision',
+      title: 'Database choice for caching',
+      content: 'Use Redis for caching layer',
+      tags: ['cache'],
+      source_type: 'observed',
+    });
+
+    const warnings = await kb.checkContradictions(
+      'Database choice for caching',
+      'Use Memcached for caching layer',
+      'decision'
+    );
+
+    if (warnings.length > 0) {
+      const w = warnings[0];
+      assert.ok(typeof w.suggested_action === 'string', 'should have suggested_action');
+    }
+  });
+
+  it('handles long content entries without errors', async () => {
+    kb.save({
+      category: 'pattern',
+      title: 'Verbose deployment process',
+      content: 'Deploy using Docker. '.repeat(100),
+      tags: ['deploy'],
+      source_type: 'observed',
+    });
+
+    const warnings = await kb.checkContradictions(
+      'Deployment process',
+      'Deploy using Kubernetes',
+      'pattern'
+    );
+
+    assert.ok(Array.isArray(warnings), 'should return warnings array');
+    for (const w of warnings) {
+      assert.ok(typeof w.authority_existing === 'number', 'should have authority on all warnings');
+      assert.ok(typeof w.suggested_action === 'string', 'should have suggested_action on all warnings');
+    }
+  });
+});

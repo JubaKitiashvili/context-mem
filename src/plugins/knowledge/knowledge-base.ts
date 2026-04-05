@@ -140,8 +140,26 @@ export class KnowledgeBase {
 
     if (candidates.length === 0) return [];
 
-    // Build contradiction warnings
+    // Build contradiction warnings with authority scoring
     const warnings: ContradictionWarning[] = [];
+
+    // Compute authority for the new entry (no session history yet)
+    const newEntryProxy: KnowledgeEntry = {
+      id: '__new__',
+      category,
+      title,
+      content,
+      tags: [],
+      shareable: true,
+      relevance_score: 1.0,
+      access_count: 0,
+      created_at: Date.now(),
+      last_accessed: Date.now(),
+      archived: false,
+      source_type: 'observed',
+    };
+    const authorityNew = computeAuthority(newEntryProxy, 0);
+
     for (const c of candidates) {
       const existingTitle = (c.title as string) ?? '';
       const existingContent = ((c.content as string) ?? '').slice(0, 200);
@@ -158,11 +176,38 @@ export class KnowledgeBase {
         }
       }
 
+      // Compute authority for existing entry
+      let sessionCount = 0;
+      try {
+        const row = this.storage.prepare(
+          'SELECT COUNT(DISTINCT session_id) as cnt FROM session_access_log WHERE knowledge_id = ?'
+        ).get(c.id as string) as { cnt: number } | undefined;
+        sessionCount = row?.cnt ?? 0;
+      } catch {
+        // session_access_log may not exist
+      }
+
+      const existingEntry = this.getById(c.id as string);
+      const authorityExisting = existingEntry ? computeAuthority(existingEntry, sessionCount) : 0;
+
+      // Determine suggested action based on authority difference
+      const authorityDiff = Math.abs(authorityExisting - authorityNew);
+      let suggestedAction: 'keep_existing' | 'replace' | 'merge';
+      if (authorityDiff > 0.3) {
+        suggestedAction = authorityExisting > authorityNew ? 'keep_existing' : 'replace';
+      } else {
+        suggestedAction = 'merge';
+      }
+
       warnings.push({
         id: c.id as string,
         title: existingTitle,
         content: existingContent,
         similarity_reason: reason,
+        source_type: existingEntry?.source_type,
+        authority_existing: authorityExisting,
+        authority_new: authorityNew,
+        suggested_action: suggestedAction,
       });
     }
 
