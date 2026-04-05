@@ -24,7 +24,7 @@ async function main() {
     case 'create-summarizer': await createSummarizer(args); break;
     case 'plugin': await plugin(args); break;
     default:
-      console.log(`context-mem v2.4.0 — Context optimization for AI coding assistants
+      console.log(`context-mem v2.5.0 — Context optimization for AI coding assistants
 
 Usage:
   context-mem serve       Start MCP server (stdio transport)

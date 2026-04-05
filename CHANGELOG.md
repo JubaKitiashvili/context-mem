@@ -2,6 +2,18 @@
 
 All notable changes to context-mem are documented here.
 
+## [2.5.0] — 2026-04-06
+
+### Added
+- **Optional LLM Integration** — opt-in enhancement layer that works alongside the deterministic pipeline. Disabled by default; all LLM failures fall back to deterministic, invalid responses never reach the database.
+- **Query Expansion** — LLM expands search queries with semantically related terms (e.g. "auth" → "authentication, JWT, login, session") to improve recall.
+- **LLM Title & Tag Generation** — higher-quality knowledge entry titles and tags via LLM, with deterministic auto-tagger as fallback.
+- **Contradiction Explanation** — LLM explains why two entries contradict each other and suggests a concrete merge strategy.
+- **Smart Summarization** — LLM summarization pass before the 14 deterministic summarizers for richer compression on complex content.
+- **Three LLM Providers** — Ollama (local, free), OpenRouter (free and paid models), and Claude API (auto-detected when `ANTHROPIC_API_KEY` is present, uses Haiku 4.5).
+- **Auto-detect** — provider selection at startup: `ANTHROPIC_API_KEY` → Claude Haiku 4.5, Ollama running locally → Ollama, `OPENROUTER_API_KEY` → OpenRouter.
+- **Setup Wizard** — `context-mem init` now asks whether to enable Free (deterministic-only) or Enhanced (optional LLM) mode and configures `ai_curation` in `.context-mem.json` accordingly.
+
 ## [2.4.0] — 2026-04-05
 
 ### Added

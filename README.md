@@ -1,15 +1,15 @@
 # context-mem
 
-> Context optimization for AI coding assistants — 99% token savings, zero configuration, no LLM dependency.
+> Context optimization for AI coding assistants — 99% token savings, deterministic by default, optional LLM enhancement.
 
 [![npm version](https://img.shields.io/npm/v/context-mem)](https://www.npmjs.com/package/context-mem)
-[![tests](https://img.shields.io/badge/tests-585%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-658%20passing-brightgreen)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-green)]()
 
 AI coding assistants waste 60–80% of their context window on raw tool outputs — full npm logs, verbose test results, uncompressed JSON. This means shorter sessions, lost context, and repeated work.
 
-**context-mem** captures tool outputs via hooks, compresses them using 14 content-aware summarizers, stores everything in local SQLite with full-text search, and serves compressed context back through the [MCP protocol](https://modelcontextprotocol.io). No LLM calls, no cloud, no cost.
+**context-mem** captures tool outputs via hooks, compresses them using 14 content-aware summarizers, stores everything in local SQLite with full-text search, and serves compressed context back through the [MCP protocol](https://modelcontextprotocol.io). Fully deterministic and free by default — no cloud, no cost. Optional LLM enhancement (Ollama, OpenRouter, or Claude API) adds query expansion, smarter titles/tags, and contradiction explanations when you want it.
 
 ## How It Compares
 
@@ -20,7 +20,7 @@ AI coding assistants waste 60–80% of their context window on raw tool outputs 
 | **Search** | BM25 + Trigram + Fuzzy + **Vector** + reranking | Basic recall | BM25 + Trigram + Fuzzy | Doc lookup |
 | **Semantic Search** | Local embeddings (free) + vector contradiction detection | LLM-based ($$$) | No | No |
 | **Search Tuning** | Configurable BM25/Trigram/Levenshtein/Vector weights | No | No | No |
-| **LLM Calls** | None (free, deterministic) | Every observation (~$57/mo) | None | None |
+| **LLM Calls** | Optional (free by default, 3 providers) | Every observation (~$57/mo) | None | None |
 | **Activity Journal** | File edits, commands, reads | No | No | No |
 | **Cross-Session Memory** | Journal + snapshots + DB | LLM summaries | Yes | No |
 | **Knowledge Base** | 5 categories, auto-extraction, 14-day half-life decay, semantic contradiction detection, source tracking | No | No | No |
@@ -179,7 +179,7 @@ This loads hooks directly from the plugin directory. Useful for development and 
 
 **Auto-Tagger** — Deterministic title and tag generation from content. Reduces manual effort when saving knowledge entries.
 
-**Ollama Integration** — Optional Ollama client for AI-assisted knowledge curation. When an Ollama endpoint is configured, it can help deduplicate, summarize, and categorize entries.
+**Optional LLM Enhancement** — An opt-in layer that works alongside the deterministic pipeline. Disabled by default — everything works perfectly without it. When enabled, it adds: query expansion (e.g. "auth" → "authentication, JWT, login, session"), LLM-generated titles and tags (with deterministic fallback), contradiction explanation with merge suggestions, and LLM summarization before the 14 deterministic summarizers. Three providers supported: **Ollama** (local, free), **OpenRouter** (free and paid models), and **Claude API** (auto-detected when `ANTHROPIC_API_KEY` is set, uses Haiku 4.5). Auto-detection picks the best available provider at startup. `context-mem init` now includes a setup wizard for choosing Free vs Enhanced mode. All LLM failures fall back gracefully to the deterministic pipeline — invalid responses never reach the database.
 
 **Export/Import** — Transfer knowledge between machines: `context-mem export` dumps knowledge, snapshots, and events as JSON; `context-mem import` restores them in another project. Merge or replace modes.
 
@@ -218,12 +218,12 @@ This loads hooks directly from the plugin directory. Useful for development and 
 
 ```
 Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarizer (14 types) → SQLite + FTS5
-                                    ↓                    ↓                                      ↓
-                              ObserveQueue         SHA256 Dedup                    4-Layer Search + Reranking
-                             (burst protection)          ↓                          (70% relevance + 20% recency
-                                              60/40 Truncation                      + 10% access frequency)
-                                                      ↓                                        ↓
-                                    Privacy Engine (9 detectors)              Request Canonicalization (30s cache)
+                                    ↓                    ↓           ↑ (LLM optional)          ↓
+                              ObserveQueue         SHA256 Dedup   LLM Layer               4-Layer Search + Reranking
+                             (burst protection)          ↓        (Ollama / OpenRouter /    (70% relevance + 20% recency
+                                              60/40 Truncation     Claude API, disabled     + 10% access frequency)
+                                                      ↓            by default, fallback           ↓
+                                    Privacy Engine (9 detectors)   to deterministic)  Request Canonicalization (30s cache)
                                                       ↓                                        ↓
                                     Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (32 tools)
                                                                                                ↓
@@ -320,7 +320,11 @@ context-mem plugin list             # Show installed plugins
     "preserve_types": ["decision", "commit"]
   },
   "port": 51893,
-  "db_path": ".context-mem/store.db"
+  "db_path": ".context-mem/store.db",
+  "ai_curation": {
+    "enabled": false,
+    "provider": "auto"
+  }
 }
 ```
 
