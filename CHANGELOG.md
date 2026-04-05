@@ -2,6 +2,13 @@
 
 All notable changes to context-mem are documented here.
 
+## [2.4.0] — 2026-04-05
+
+### Added
+- **Adaptive Reranking** — intent-specific weight vectors for causal, temporal, lookup, and general query types. General-intent results apply result-aware weight adjustment to surface the most contextually relevant observations.
+- **Depth-Aware Contradiction Resolution** — authority scoring via softmax attention across four signals (source_weight, session_breadth, access_density, recency). `ContradictionWarning` now includes a `suggested_action` field with an actionable recommendation.
+- **Block-Level Memory Attention** — four scope-based memory blocks (session, project, global, archive). Two-phase search applies softmax block attention to allocate the result budget across blocks, with per-block score normalization for consistent ranking.
+
 ## [2.3.0] — 2026-03-28
 
 ### Added
