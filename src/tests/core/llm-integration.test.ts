@@ -41,3 +41,38 @@ describe('LLM integration — query expansion', () => {
     assert.equal(await service.summarize('content'), null);
   });
 });
+
+describe('LLM integration — regression', () => {
+  it('all domain methods return null with null provider', async () => {
+    const service = new LLMService(null);
+    assert.equal(await service.expandQuery('auth'), null);
+    assert.equal(await service.generateTitle('content'), null);
+    assert.equal(await service.generateTags('content'), null);
+    assert.equal(await service.explainContradiction('a', 'b'), null);
+    assert.equal(await service.summarize('content'), null);
+  });
+
+  it('invalid provider responses are rejected', async () => {
+    const badProvider: LLMProvider = {
+      name: 'bad',
+      async isAvailable() { return true; },
+      async complete() { return { wrong: 'schema' }; },
+    };
+    const service = new LLMService(badProvider);
+    assert.equal(await service.generateTitle('content'), null);
+    assert.equal(await service.generateTags('content'), null);
+    assert.equal(await service.expandQuery('auth'), null);
+  });
+
+  it('provider that throws returns null', async () => {
+    const throwProvider: LLMProvider = {
+      name: 'throw',
+      async isAvailable() { return true; },
+      async complete() { throw new Error('crash'); },
+    };
+    const service = new LLMService(throwProvider);
+    assert.equal(await service.generateTitle('content'), null);
+    assert.equal(await service.expandQuery('query'), null);
+    assert.equal(await service.summarize('content'), null);
+  });
+});
