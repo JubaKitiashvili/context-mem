@@ -407,7 +407,8 @@ export interface AutoPromoteConfig {
 // AI curation config
 export interface AICurationConfig {
   enabled?: boolean;                    // default false (opt-in)
-  model?: string;                       // default 'llama3.2'
+  provider?: 'auto' | 'ollama' | 'openrouter' | 'claude';  // default 'auto'
+  model?: string;                       // default depends on provider
   endpoint?: string;                    // default 'http://localhost:11434'
 }
 
