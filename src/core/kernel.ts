@@ -6,6 +6,8 @@ import { ulid, estimateTokens } from './utils.js';
 import { SearchFusion } from '../plugins/search/fusion.js';
 import { BetterSqlite3Storage } from '../plugins/storage/better-sqlite3.js';
 import { PrivacyEngine } from '../plugins/privacy/privacy-engine.js';
+import { createLLMService } from './llm-factory.js';
+import type { LLMService } from './llm-provider.js';
 // Summarizers — registered in priority order
 import { TypescriptErrorSummarizer } from '../plugins/summarizers/typescript-error-summarizer.js';
 import { TestOutputSummarizer } from '../plugins/summarizers/test-output-summarizer.js';
@@ -77,6 +79,7 @@ export class Kernel {
   globalStore?: GlobalKnowledgeStore;
   knowledgeGraph!: KnowledgeGraph;
   agentRegistry?: AgentRegistry;
+  private llmService?: LLMService;
 
   constructor(projectDir: string) {
     this.projectDir = projectDir;
@@ -107,7 +110,10 @@ export class Kernel {
     this.eventTracker = new EventTracker(this.storage);
     this.sessionManager = new SessionManager(this.storage, this.eventTracker);
     this.contentStore = new ContentStore(this.storage);
-    this.knowledgeBase = new KnowledgeBase(this.storage);
+
+    // 3a. LLM service (optional — based on ai_curation config)
+    this.llmService = await createLLMService(this.config.ai_curation ?? { enabled: false });
+    this.knowledgeBase = new KnowledgeBase(this.storage, this.llmService);
 
     // 3b. Knowledge graph
     this.knowledgeGraph = new KnowledgeGraph(this.storage);
@@ -161,6 +167,7 @@ export class Kernel {
     this.pipeline = new Pipeline(this.registry, this.storage, privacy, this.session.session_id);
     this.pipeline.setBudgetManager(this.budgetManager);
     this.pipeline.setSessionManager(this.sessionManager);
+    this.pipeline.setLLMService(this.llmService);
 
     // 5. Summarizers — registered in priority order (most specific first)
     const summarizers = [

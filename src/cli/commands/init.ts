@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import readline from 'node:readline/promises';
 
 interface EditorConfig {
   name: string;
@@ -175,6 +176,30 @@ export async function init(_args: string[]): Promise<void> {
 
   // Setup Claude Code hooks in .claude/settings.local.json
   setupClaudeCodeHooks(projectDir);
+
+  // LLM setup wizard
+  if (process.stdin.isTTY) {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    try {
+      const mode = await rl.question('\n? Choose context-mem mode:\n  1. Free (deterministic only — zero token cost)\n  2. Enhanced (+ LLM features)\n  > ');
+
+      if (mode.trim() === '2') {
+        const provider = await rl.question('\n? LLM provider:\n  1. Auto-detect (recommended)\n  2. Ollama (local, free)\n  3. OpenRouter\n  4. Claude API\n  > ');
+
+        const providerMap: Record<string, string> = { '1': 'auto', '2': 'ollama', '3': 'openrouter', '4': 'claude' };
+        const selectedProvider = providerMap[provider.trim()] || 'auto';
+
+        console.log(`\n✓ LLM enabled with provider: ${selectedProvider}`);
+        console.log('  Configure via: context-mem configure { "ai_curation": { "enabled": true } }');
+      } else {
+        console.log('\n✓ Free mode — deterministic only (zero token cost)');
+      }
+    } catch {
+      // Non-interactive — skip wizard
+    } finally {
+      rl.close();
+    }
+  }
 
   console.log('Initialized context-mem in', projectDir);
   console.log('Config: .context-mem.json');
