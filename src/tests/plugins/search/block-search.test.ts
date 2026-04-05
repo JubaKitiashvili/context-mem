@@ -179,3 +179,62 @@ describe('selectBlocks', () => {
     assert.equal(selected.length, 4, 'all-zero should produce equal attention above threshold');
   });
 });
+
+describe('full pipeline integration', () => {
+  it('block search + adaptive reranking produces correct ordering for causal query', async () => {
+    const now = Date.now();
+    const DAY_MS = 24 * 60 * 60 * 1000;
+
+    // Session: recent error
+    const sessionPlugin = mockBlockPlugin('bm25', [
+      makeResult('recent-error', 1.0, now),
+    ]);
+
+    // Project: old but highly relevant pattern
+    const projectPlugin = mockBlockPlugin('bm25', [
+      makeResult('old-pattern', 3.0, now - 30 * DAY_MS),
+    ]);
+
+    const orchestrator = new BlockSearchOrchestrator({
+      session: [sessionPlugin],
+      project: [projectPlugin],
+      global: [mockBlockPlugin('bm25', [])],
+      archive: [mockBlockPlugin('bm25', [])],
+    });
+
+    // "why" triggers causal intent → recency favored
+    const results = await orchestrator.execute('why authentication failed', { limit: 10 });
+
+    assert.ok(results.length >= 2, 'should return results from both blocks');
+    // With causal intent, the recent error should rank higher despite lower base relevance
+    assert.equal(results[0].id, 'recent-error', 'causal query should prioritize recent session error');
+  });
+
+  it('block search + adaptive reranking produces correct ordering for lookup query', async () => {
+    const now = Date.now();
+    const DAY_MS = 24 * 60 * 60 * 1000;
+
+    // Session: recent but low relevance
+    const sessionPlugin = mockBlockPlugin('bm25', [
+      makeResult('recent-mention', 0.5, now),
+    ]);
+
+    // Project: old but highly relevant
+    const projectPlugin = mockBlockPlugin('bm25', [
+      makeResult('authoritative-doc', 3.0, now - 30 * DAY_MS),
+    ]);
+
+    const orchestrator = new BlockSearchOrchestrator({
+      session: [sessionPlugin],
+      project: [projectPlugin],
+      global: [mockBlockPlugin('bm25', [])],
+      archive: [mockBlockPlugin('bm25', [])],
+    });
+
+    // "how" triggers lookup intent → relevance favored
+    const results = await orchestrator.execute('how does authentication work', { limit: 10 });
+
+    assert.ok(results.length >= 2, 'should return results from both blocks');
+    assert.equal(results[0].id, 'authoritative-doc', 'lookup query should prioritize high-relevance project knowledge');
+  });
+});
