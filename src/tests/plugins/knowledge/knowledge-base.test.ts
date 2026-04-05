@@ -5,8 +5,28 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { KnowledgeBase } from '../../../plugins/knowledge/knowledge-base.js';
+import { computeAuthority } from '../../../plugins/knowledge/knowledge-base.js';
+import type { KnowledgeEntry } from '../../../core/types.js';
 import { BetterSqlite3Storage } from '../../../plugins/storage/better-sqlite3.js';
 import { createTestDb } from '../../helpers.js';
+
+function makeKnowledgeEntry(overrides: Partial<KnowledgeEntry>): KnowledgeEntry {
+  return {
+    id: 'test-id',
+    category: 'pattern',
+    title: 'Test',
+    content: 'Test content',
+    tags: [],
+    shareable: true,
+    relevance_score: 1.0,
+    access_count: 0,
+    created_at: Date.now(),
+    last_accessed: Date.now(),
+    archived: false,
+    source_type: 'observed',
+    ...overrides,
+  };
+}
 
 describe('session access recording', () => {
   let storage: BetterSqlite3Storage;
@@ -106,5 +126,59 @@ describe('session access recording', () => {
     for (const sid of sessionIds) {
       assert.ok(distinctSessions.has(sid), `session ${sid} should have a log entry`);
     }
+  });
+});
+
+describe('computeAuthority', () => {
+  it('explicit source scores higher than inferred', () => {
+    const explicit = makeKnowledgeEntry({ source_type: 'explicit' });
+    const inferred = makeKnowledgeEntry({ source_type: 'inferred' });
+
+    const explicitAuth = computeAuthority(explicit, 1);
+    const inferredAuth = computeAuthority(inferred, 1);
+
+    assert.ok(explicitAuth > inferredAuth, `explicit (${explicitAuth}) should score higher than inferred (${inferredAuth})`);
+  });
+
+  it('entry accessed across many sessions scores higher', () => {
+    const entry = makeKnowledgeEntry({ source_type: 'observed', access_count: 10 });
+
+    const fewSessions = computeAuthority(entry, 1);
+    const manySessions = computeAuthority(entry, 20);
+
+    assert.ok(manySessions > fewSessions, `many sessions (${manySessions}) should score higher than few (${fewSessions})`);
+  });
+
+  it('frequently accessed recent entry scores higher than rarely accessed old entry', () => {
+    const DAY_MS = 24 * 60 * 60 * 1000;
+    const frequentRecent = makeKnowledgeEntry({
+      source_type: 'observed',
+      access_count: 50,
+      created_at: Date.now() - 2 * DAY_MS,
+    });
+    const rareOld = makeKnowledgeEntry({
+      source_type: 'observed',
+      access_count: 1,
+      created_at: Date.now() - 60 * DAY_MS,
+    });
+
+    const recentAuth = computeAuthority(frequentRecent, 5);
+    const oldAuth = computeAuthority(rareOld, 1);
+
+    assert.ok(recentAuth > oldAuth, `frequent recent (${recentAuth}) should beat rare old (${oldAuth})`);
+  });
+
+  it('returns value between 0 and 1', () => {
+    const entry = makeKnowledgeEntry({ source_type: 'explicit', access_count: 100 });
+    const auth = computeAuthority(entry, 50);
+
+    assert.ok(auth >= 0 && auth <= 1, `authority ${auth} should be between 0 and 1`);
+  });
+
+  it('zero-age entry does not cause NaN or Infinity', () => {
+    const entry = makeKnowledgeEntry({ created_at: Date.now() });
+    const auth = computeAuthority(entry, 0);
+
+    assert.ok(Number.isFinite(auth), `authority should be finite, got ${auth}`);
   });
 });

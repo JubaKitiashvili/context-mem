@@ -11,6 +11,28 @@ const STOPWORDS = new Set([
   'now', 'old', 'see', 'way', 'may', 'who', 'did', 'got', 'try', 'run', 'api', 'app',
 ]);
 
+const SOURCE_WEIGHTS: Record<string, number> = { explicit: 1.0, inferred: 0.6, observed: 0.3 };
+
+export function computeAuthority(entry: KnowledgeEntry, sessionCount: number): number {
+  const sourceWeight = SOURCE_WEIGHTS[entry.source_type] ?? 0.3;
+  const sessionBreadth = Math.log2(sessionCount + 1) / 5; // 0-1 range, 32 sessions → 1.0
+  const ageDays = Math.max(0, (Date.now() - entry.created_at) / (24 * 60 * 60 * 1000));
+  const accessDensity = ageDays > 0 ? Math.min(1, (entry.access_count / ageDays) / 10) : Math.min(1, entry.access_count / 10);
+  const recency = Math.pow(0.5, ageDays / 7); // 7-day half-life
+
+  const raw = [sourceWeight, sessionBreadth, accessDensity, recency];
+  const expScores = raw.map(x => Math.exp(x));
+  const sumExp = expScores.reduce((a, b) => a + b, 0);
+  const attention = expScores.map(x => x / sumExp); // softmax
+
+  const authority = attention[0] * sourceWeight
+    + attention[1] * sessionBreadth
+    + attention[2] * accessDensity
+    + attention[3] * recency;
+
+  return Math.max(0, Math.min(1, authority));
+}
+
 export class KnowledgeBase {
   constructor(private storage: StoragePlugin) {}
 
