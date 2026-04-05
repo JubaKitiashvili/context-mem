@@ -8,11 +8,11 @@ describe('confidence scoring', () => {
     const storage = await createTestDb();
     const kb = new KnowledgeBase(storage);
 
-    const explicit = kb.save({
+    const explicit = await kb.save({
       category: 'pattern', title: 'Explicit entry', content: 'Content',
       tags: [], shareable: true, source_type: 'explicit',
     });
-    const observed = kb.save({
+    const observed = await kb.save({
       category: 'pattern', title: 'Observed entry', content: 'Content',
       tags: [], shareable: true, source_type: 'observed',
     });
@@ -28,7 +28,7 @@ describe('confidence scoring', () => {
     const storage = await createTestDb();
     const kb = new KnowledgeBase(storage);
 
-    const entry = kb.save({
+    const entry = await kb.save({
       category: 'pattern', title: 'Popular entry', content: 'Content',
       tags: [], shareable: true, source_type: 'explicit',
     });
@@ -48,7 +48,7 @@ describe('confidence scoring', () => {
     const storage = await createTestDb();
     const kb = new KnowledgeBase(storage);
 
-    const entry = kb.save({
+    const entry = await kb.save({
       category: 'pattern', title: 'Test', content: 'Content',
       tags: [], shareable: true, source_type: 'explicit',
     });

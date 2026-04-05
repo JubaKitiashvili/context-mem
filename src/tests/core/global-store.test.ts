@@ -213,7 +213,7 @@ describe('Global knowledge MCP tools', () => {
 
   it('promote_knowledge promotes entry from project to global', async () => {
     // First save an entry in project KB
-    const entry = kernel.knowledgeBase.save({
+    const entry = await kernel.knowledgeBase.save({
       category: 'decision',
       title: 'Use TypeScript strict mode',
       content: 'Always enable strict mode in tsconfig for better type safety.',
@@ -236,7 +236,7 @@ describe('Global knowledge MCP tools', () => {
 
   it('search_knowledge with include_global merges results', async () => {
     // Save another project entry
-    kernel.knowledgeBase.save({
+    await kernel.knowledgeBase.save({
       category: 'pattern',
       title: 'React hooks pattern',
       content: 'Use custom hooks to share logic between components.',
@@ -339,7 +339,7 @@ describe('Global knowledge disabled via config', () => {
   });
 
   it('promote_knowledge returns error when config disabled', async () => {
-    const entry = kernel.knowledgeBase.save({
+    const entry = await kernel.knowledgeBase.save({
       category: 'pattern',
       title: 'Disabled test',
       content: 'This should not promote.',
@@ -357,7 +357,7 @@ describe('Global knowledge disabled via config', () => {
   });
 
   it('search_knowledge with include_global does not include global results when disabled', async () => {
-    kernel.knowledgeBase.save({
+    await kernel.knowledgeBase.save({
       category: 'pattern',
       title: 'Local only entry',
       content: 'This is a local entry for disabled test.',

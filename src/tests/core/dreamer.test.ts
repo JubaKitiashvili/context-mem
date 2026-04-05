@@ -38,7 +38,7 @@ describe('Dreamer background agent', () => {
     const THIRTY_ONE_DAYS_MS = 31 * 24 * 60 * 60 * 1000;
     const now = Date.now();
 
-    const entry = kb.save({
+    const entry = await kb.save({
       category: 'decision',
       title: 'Use Redis for caching',
       content: 'We decided to use Redis as our caching layer',
@@ -61,7 +61,7 @@ describe('Dreamer background agent', () => {
   });
 
   it('does not mark recently accessed entries as stale', async () => {
-    const entry = kb.save({
+    const entry = await kb.save({
       category: 'pattern',
       title: 'Fresh entry pattern',
       content: 'This entry was just accessed',
@@ -80,7 +80,7 @@ describe('Dreamer background agent', () => {
     const NINETY_ONE_DAYS_MS = 91 * 24 * 60 * 60 * 1000;
     const now = Date.now();
 
-    const entry = kb.save({
+    const entry = await kb.save({
       category: 'error',
       title: 'Old observed error',
       content: 'Some old error that was observed',
@@ -105,7 +105,7 @@ describe('Dreamer background agent', () => {
     const NINETY_ONE_DAYS_MS = 91 * 24 * 60 * 60 * 1000;
     const now = Date.now();
 
-    const entry = kb.save({
+    const entry = await kb.save({
       category: 'decision',
       title: 'Critical explicit decision',
       content: 'This was an explicit team decision that should never be auto-archived',
@@ -137,7 +137,7 @@ describe('Dreamer background agent', () => {
 
   it('detects potential contradictions within a category', async () => {
     // Save two entries with high word overlap but potentially conflicting content
-    kb.save({
+    await kb.save({
       category: 'decision',
       title: 'Database choice PostgreSQL production',
       content: 'We chose PostgreSQL for production database hosting',
@@ -145,7 +145,7 @@ describe('Dreamer background agent', () => {
       source_type: 'observed',
     });
 
-    kb.save({
+    await kb.save({
       category: 'decision',
       title: 'Database choice MySQL production',
       content: 'We chose MySQL for production database hosting',
@@ -170,7 +170,7 @@ describe('Dreamer background agent', () => {
   describe('promotionScan', () => {
     it('detects knowledge accessed in 3+ distinct sessions', async () => {
       const kb2 = new KnowledgeBase(storage);
-      const entry = kb2.save({
+      const entry = await kb2.save({
         category: 'pattern',
         title: 'Frequently accessed pattern',
         content: 'This pattern is accessed often across sessions',
@@ -205,7 +205,7 @@ describe('Dreamer background agent', () => {
 
     it('skips entries already auto-promoted', async () => {
       const kb2 = new KnowledgeBase(storage);
-      const entry = kb2.save({
+      const entry = await kb2.save({
         category: 'pattern',
         title: 'Already promoted pattern',
         content: 'This pattern was already promoted',
@@ -238,7 +238,7 @@ describe('Dreamer background agent', () => {
 
     it('skips entries with shareable = 0', async () => {
       const kb2 = new KnowledgeBase(storage);
-      const entry = kb2.save({
+      const entry = await kb2.save({
         category: 'pattern',
         title: 'Non-shareable pattern',
         content: 'This pattern is not shareable',

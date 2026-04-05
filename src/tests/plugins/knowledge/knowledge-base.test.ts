@@ -195,7 +195,7 @@ describe('contradiction resolution with authority', () => {
   after(async () => { await storage.close(); });
 
   it('returns authority scores and suggested action on contradiction', async () => {
-    const existing = kb.save({
+    const existing = await kb.save({
       category: 'pattern',
       title: 'Authentication flow pattern',
       content: 'Use JWT with refresh tokens for authentication',

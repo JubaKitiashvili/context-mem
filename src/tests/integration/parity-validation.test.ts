@@ -423,8 +423,8 @@ const users = await fetch('/api/users');
   // 6. Knowledge Base
   // =========================================================================
   describe('6. Knowledge Base — save, search (FTS5 + scan), access, prune', () => {
-    it('save and search via FTS5', () => {
-      const entry = kernel.knowledgeBase.save({
+    it('save and search via FTS5', async () => {
+      const entry = await kernel.knowledgeBase.save({
         category: 'pattern',
         title: 'Repository Pattern',
         content: 'Use the repository pattern to abstract database access. This decouples business logic from storage implementation.',
@@ -439,8 +439,8 @@ const users = await fetch('/api/users');
       assert.equal(results[0].title, 'Repository Pattern');
     });
 
-    it('scan fallback for queries FTS5 misses', () => {
-      kernel.knowledgeBase.save({
+    it('scan fallback for queries FTS5 misses', async () => {
+      await kernel.knowledgeBase.save({
         category: 'api',
         title: 'Stripe Webhook Setup',
         content: 'Configure Stripe webhooks at /api/webhooks/stripe endpoint.',
@@ -452,8 +452,8 @@ const users = await fetch('/api/users');
       assert.ok(results.length >= 1, 'Should find via FTS5 or scan fallback');
     });
 
-    it('access increments access_count', () => {
-      const entry = kernel.knowledgeBase.save({
+    it('access increments access_count', async () => {
+      const entry = await kernel.knowledgeBase.save({
         category: 'decision',
         title: 'Use Zustand for state',
         content: 'Decided to use Zustand over Redux for simpler boilerplate.',

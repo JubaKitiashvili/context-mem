@@ -1,4 +1,5 @@
 import type { StoragePlugin, KnowledgeEntry, KnowledgeCategory, SourceType, ContradictionWarning } from '../../core/types.js';
+import type { LLMService } from '../../core/llm-provider.js';
 import { ulid } from '../../core/utils.js';
 import { sanitizeFTS5 } from '../search/fts5-utils.js';
 import { Embedder } from '../search/embedder.js';
@@ -34,25 +35,42 @@ export function computeAuthority(entry: KnowledgeEntry, sessionCount: number): n
 }
 
 export class KnowledgeBase {
-  constructor(private storage: StoragePlugin) {}
+  private llmService?: LLMService;
 
-  save(entry: {
+  constructor(private storage: StoragePlugin, llmService?: LLMService) {
+    this.llmService = llmService;
+  }
+
+  async save(entry: {
     category: KnowledgeCategory;
     title: string;
     content: string;
     tags?: string[];
     shareable?: boolean;
     source_type?: SourceType;
-  }): KnowledgeEntry {
+  }): Promise<KnowledgeEntry> {
     const now = Date.now();
 
-    // Auto-generate title if too short or generic
+    // Auto-generate title: try LLM first, then deterministic fallback
     if (!entry.title || entry.title.trim().length < 5) {
-      entry.title = generateTitle(entry.content);
+      if (this.llmService) {
+        const llmTitle = await this.llmService.generateTitle(entry.content);
+        if (llmTitle) entry.title = llmTitle;
+      }
+      if (!entry.title || entry.title.trim().length < 5) {
+        entry.title = generateTitle(entry.content);
+      }
     }
-    // Auto-generate tags if empty
+
+    // Auto-generate tags: try LLM first, then deterministic fallback
     if (!entry.tags || entry.tags.length === 0) {
-      entry.tags = generateTags(entry.content);
+      if (this.llmService) {
+        const llmTags = await this.llmService.generateTags(entry.content);
+        if (llmTags) entry.tags = llmTags;
+      }
+      if (!entry.tags || entry.tags.length === 0) {
+        entry.tags = generateTags(entry.content);
+      }
     }
 
     const knowledge: KnowledgeEntry = {
@@ -199,6 +217,24 @@ export class KnowledgeBase {
         suggestedAction = 'merge';
       }
 
+      // LLM-powered contradiction explanation (optional)
+      let explanation: string | undefined;
+      let suggested_merge: string | undefined;
+      if (this.llmService) {
+        try {
+          const llmExplanation = await this.llmService.explainContradiction(
+            `${existingTitle}: ${existingContent}`,
+            `${title}: ${content.slice(0, 200)}`
+          );
+          if (llmExplanation) {
+            explanation = llmExplanation.conflict;
+            suggested_merge = llmExplanation.merged_content;
+          }
+        } catch {
+          // LLM failure is non-critical
+        }
+      }
+
       warnings.push({
         id: c.id as string,
         title: existingTitle,
@@ -208,6 +244,8 @@ export class KnowledgeBase {
         authority_existing: authorityExisting,
         authority_new: authorityNew,
         suggested_action: suggestedAction,
+        explanation,
+        suggested_merge,
       });
     }
 

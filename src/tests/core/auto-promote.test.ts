@@ -19,7 +19,7 @@ describe('auto-promote execution', () => {
     const dreamer = new Dreamer(kb, storage, { cycleMs: 60_000 });
 
     // Save a shareable entry
-    const entry = kb.save({
+    const entry = await kb.save({
       category: 'pattern',
       title: 'Error boundary pattern',
       content: 'Wrap React components in error boundaries for resilience',

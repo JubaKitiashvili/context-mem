@@ -1034,7 +1034,7 @@ export async function handleSaveKnowledge(
   }
 
   try {
-    const entry = kernel.knowledgeBase.save({
+    const entry = await kernel.knowledgeBase.save({
       category,
       title: params.title,
       content: params.content,
@@ -1747,7 +1747,7 @@ export async function handleResolveContradiction(
     }
     case 'merge': {
       // Create a new merged entry, archive both originals
-      const merged = kernel.knowledgeBase.save({
+      const merged = await kernel.knowledgeBase.save({
         category: entry.category,
         title: entry.title,
         content: params.merged_content!,

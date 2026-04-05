@@ -282,13 +282,18 @@ export class Kernel {
   }
 
   private autoExtractKnowledge(obs: Observation, type: Observation['type'], _source: string, filePath?: string): void {
+    // Fire-and-forget: async save is non-critical, errors are swallowed
+    this._doAutoExtractKnowledge(obs, type, filePath).catch(() => {});
+  }
+
+  private async _doAutoExtractKnowledge(obs: Observation, type: Observation['type'], filePath?: string): Promise<void> {
     try {
       const body = obs.summary || obs.content.slice(0, 500);
 
       // Decision observations → knowledge
       if (type === 'decision') {
         const title = obs.content.split('\n')[0].slice(0, 120);
-        this.knowledgeBase.save({ category: 'decision', title, content: body, tags: ['auto-extracted'] });
+        await this.knowledgeBase.save({ category: 'decision', title, content: body, tags: ['auto-extracted'] });
         return;
       }
 
@@ -297,14 +302,14 @@ export class Kernel {
         const title = obs.content.split('\n')[0].slice(0, 120);
         const existing = this.knowledgeBase.search(title, { category: 'error', limit: 1 });
         if (existing.length === 0) {
-          this.knowledgeBase.save({ category: 'error', title, content: body, tags: ['auto-extracted'] });
+          await this.knowledgeBase.save({ category: 'error', title, content: body, tags: ['auto-extracted'] });
         }
         return;
       }
 
       // Commit observations → pattern knowledge
       if (type === 'commit') {
-        this.knowledgeBase.save({
+        await this.knowledgeBase.save({
           category: 'pattern',
           title: obs.content.split('\n')[0].slice(0, 120),
           content: body,
@@ -319,7 +324,7 @@ export class Kernel {
         this.fileAccessCounts.set(filePath, count);
         if (count === 5) {
           const fileName = filePath.split('/').pop() || filePath;
-          this.knowledgeBase.save({
+          await this.knowledgeBase.save({
             category: 'component',
             title: `Frequently accessed: ${fileName}`,
             content: body,

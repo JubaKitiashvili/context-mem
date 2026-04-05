@@ -20,12 +20,12 @@ describe('Knowledge relevance decay', () => {
 
   after(async () => { await storage.close(); });
 
-  it('recent entries rank higher than old entries', () => {
+  it('recent entries rank higher than old entries', async () => {
     const now = Date.now();
     const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
     // Save a "recent" entry
-    const recent = kb.save({
+    const recent = await kb.save({
       category: 'decision',
       title: 'Use PostgreSQL for database',
       content: 'We decided to use PostgreSQL as our primary database',
@@ -34,7 +34,7 @@ describe('Knowledge relevance decay', () => {
     });
 
     // Save an "old" entry by backdating its created_at directly in the DB
-    const old = kb.save({
+    const old = await kb.save({
       category: 'decision',
       title: 'Use MySQL for database',
       content: 'We decided to use MySQL as our primary database',
@@ -62,12 +62,12 @@ describe('Knowledge relevance decay', () => {
     );
   });
 
-  it('frequently accessed entries resist decay', () => {
+  it('frequently accessed entries resist decay', async () => {
     const now = Date.now();
     const TWENTY_DAYS_MS = 20 * 24 * 60 * 60 * 1000;
 
     // Save two entries, both old
-    const accessed = kb.save({
+    const accessed = await kb.save({
       category: 'pattern',
       title: 'Singleton pattern for logging',
       content: 'Use singleton pattern for the logging service',
@@ -75,7 +75,7 @@ describe('Knowledge relevance decay', () => {
       source_type: 'observed',
     });
 
-    const neglected = kb.save({
+    const neglected = await kb.save({
       category: 'pattern',
       title: 'Singleton pattern for caching',
       content: 'Use singleton pattern for the caching layer',
@@ -118,12 +118,12 @@ describe('Knowledge relevance decay', () => {
     );
   });
 
-  it('explicit source entries decay slower', () => {
+  it('explicit source entries decay slower', async () => {
     const now = Date.now();
     const TWENTY_DAYS_MS = 20 * 24 * 60 * 60 * 1000;
 
     // Save an explicit entry
-    const explicit = kb.save({
+    const explicit = await kb.save({
       category: 'decision',
       title: 'Always use ESLint for linting',
       content: 'Team decided ESLint is the linting standard',
@@ -132,7 +132,7 @@ describe('Knowledge relevance decay', () => {
     });
 
     // Save an observed entry with the same age
-    const observed = kb.save({
+    const observed = await kb.save({
       category: 'decision',
       title: 'Always use Prettier for linting',
       content: 'Observed that Prettier is used for linting enforcement',

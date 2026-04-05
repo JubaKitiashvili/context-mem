@@ -18,7 +18,7 @@ describe('auto-promote full cycle', () => {
     const dreamer = new Dreamer(kb, storage, { cycleMs: 60_000, globalStore });
 
     // 1. Save knowledge
-    const entry = kb.save({
+    const entry = await kb.save({
       category: 'pattern',
       title: 'Always validate JWT audience claim',
       content: 'JWT tokens must have audience (aud) claim validated to prevent token confusion attacks',

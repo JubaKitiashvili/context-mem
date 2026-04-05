@@ -109,6 +109,8 @@ export interface ContradictionWarning {
   authority_existing: number;
   authority_new: number;
   suggested_action: 'keep_existing' | 'replace' | 'merge';
+  explanation?: string;
+  suggested_merge?: string;
 }
 
 // Knowledge Graph types
