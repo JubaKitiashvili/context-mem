@@ -1,29 +1,22 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { OllamaClient } from '../../core/ollama-client.js';
+import { OllamaProvider } from '../../core/providers/ollama-provider.js';
 
-describe('OllamaClient', () => {
+describe('OllamaProvider', () => {
   it('returns false for isAvailable when server is not running', async () => {
-    const client = new OllamaClient('http://localhost:99999');
-    const available = await client.isAvailable();
+    const provider = new OllamaProvider('http://localhost:99999');
+    const available = await provider.isAvailable();
     assert.equal(available, false);
   });
 
-  it('returns null for generateTitle when unavailable', async () => {
-    const client = new OllamaClient('http://localhost:99999');
-    const title = await client.generateTitle('Test content');
-    assert.equal(title, null);
+  it('returns null for complete when unavailable', async () => {
+    const provider = new OllamaProvider('http://localhost:99999');
+    const result = await provider.complete('test prompt', {});
+    assert.equal(result, null);
   });
 
-  it('returns null for generateTags when unavailable', async () => {
-    const client = new OllamaClient('http://localhost:99999');
-    const tags = await client.generateTags('Test content');
-    assert.equal(tags, null);
-  });
-
-  it('returns null for suggestMerge when unavailable', async () => {
-    const client = new OllamaClient('http://localhost:99999');
-    const merged = await client.suggestMerge('Entry A', 'Entry B');
-    assert.equal(merged, null);
+  it('has name "ollama"', () => {
+    const provider = new OllamaProvider();
+    assert.equal(provider.name, 'ollama');
   });
 });
