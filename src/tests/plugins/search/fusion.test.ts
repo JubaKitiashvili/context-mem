@@ -153,8 +153,8 @@ describe('SearchFusion', () => {
     const results = await fusion.execute('test', { limit: 5 });
 
     // With default bm25 weight of 0.5, score 2.0 becomes 2.0 * 0.5 = 1.0 before reranking
-    // Reranking applies: score * (0.7 + 0.2 * recencyBoost + 0.1 * accessBoost)
-    // For a fresh result: ~1.0 * (0.7 + 0.2 * 1.0 + 0.1 * log2(2)/10) = ~0.91
+    // Reranking applies: score * (0.55 + 0.30 * recencyBoost + 0.15 * accessBoost)
+    // For a fresh result: ~1.0 * (0.55 + 0.30 * 1.0 + 0.15 * log2(2)/10) = ~0.865
     assert.ok(results[0].relevance_score > 0, 'should produce valid scores with default weights');
     assert.ok(results[0].relevance_score < 2.0, 'score should be scaled down by default weight');
   });
@@ -308,7 +308,7 @@ describe('rerank', () => {
     assert.ok(results[0].relevance_score > results[1].relevance_score, 'popular result should have higher score');
   });
 
-  it('preserves original relevance as dominant factor (70%)', () => {
+  it('preserves original relevance as dominant factor', () => {
     const now = Date.now();
     // High relevance but old
     const highRelevance = makeResult('high', 'code', 2.0, now - 30 * DAY_MS, 0);
@@ -346,5 +346,45 @@ describe('rerank', () => {
       assert.ok(results[i].relevance_score >= results[i + 1].relevance_score,
         `results should be sorted descending: index ${i} (${results[i].relevance_score}) >= index ${i + 1} (${results[i + 1].relevance_score})`);
     }
+  });
+});
+
+describe('adaptive reranking', () => {
+  const DAY_MS = 24 * 60 * 60 * 1000;
+
+  it('causal intent prioritizes recent results over high-relevance old ones', () => {
+    const now = Date.now();
+    const oldHighRelevance = makeResult('old-high', 'error', 2.0, now - 14 * DAY_MS, 5);
+    const recentLowRelevance = makeResult('recent-low', 'error', 1.0, now, 2);
+
+    const results = rerank([oldHighRelevance, recentLowRelevance], 'causal');
+    assert.equal(results[0].id, 'recent-low', 'causal intent should prioritize recent results');
+  });
+
+  it('lookup intent prioritizes high-relevance regardless of age', () => {
+    const now = Date.now();
+    const oldHighRelevance = makeResult('old-high', 'code', 2.0, now - 30 * DAY_MS, 0);
+    const recentLowRelevance = makeResult('recent-low', 'code', 0.5, now, 0);
+
+    const results = rerank([recentLowRelevance, oldHighRelevance], 'lookup');
+    assert.equal(results[0].id, 'old-high', 'lookup intent should prioritize relevance over recency');
+  });
+
+  it('temporal intent heavily favors recent results', () => {
+    const now = Date.now();
+    const veryOld = makeResult('very-old', 'commit', 3.0, now - 30 * DAY_MS, 10);
+    const recent = makeResult('recent', 'commit', 0.8, now - 1 * DAY_MS, 0);
+
+    const results = rerank([veryOld, recent], 'temporal');
+    assert.equal(results[0].id, 'recent', 'temporal intent should heavily favor recent results');
+  });
+
+  it('general intent uses baseline weights (similar to old 70/20/10)', () => {
+    const now = Date.now();
+    const highRelevance = makeResult('high', 'code', 2.0, now - 14 * DAY_MS, 0);
+    const lowRelevance = makeResult('low', 'code', 0.5, now, 0);
+
+    const results = rerank([lowRelevance, highRelevance], 'general');
+    assert.equal(results[0].id, 'high', 'general intent with spread scores should favor relevance');
   });
 });

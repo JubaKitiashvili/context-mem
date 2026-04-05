@@ -130,7 +130,7 @@ export class SearchFusion implements SearchOrchestrator {
       }
     }
 
-    allResults = rerank(allResults);
+    allResults = rerank(allResults, intent.intent_type);
     allResults = allResults.slice(0, opts.limit || 5);
 
     if (this.searchCallCount > SEARCH_MAX_FULL && allResults.length > 0) {
@@ -155,22 +155,30 @@ export class SearchFusion implements SearchOrchestrator {
   }
 }
 
+const INTENT_WEIGHTS: Record<string, { relevance: number; recency: number; access: number }> = {
+  causal:   { relevance: 0.20, recency: 0.70, access: 0.10 },
+  temporal: { relevance: 0.10, recency: 0.75, access: 0.15 },
+  lookup:   { relevance: 0.80, recency: 0.10, access: 0.10 },
+  general:  { relevance: 0.55, recency: 0.30, access: 0.15 },
+};
+
 /**
  * Rerank search results by combining original relevance with recency and access frequency.
- * Weights: 70% original relevance, 20% recency (exponential decay, 7-day half-life),
- * 10% access frequency (logarithmic).
+ * Weights are intent-specific: causal favors recency, lookup favors relevance,
+ * temporal heavily favors recency, general uses balanced weights.
  */
-export function rerank(results: SearchResult[]): SearchResult[] {
+export function rerank(results: SearchResult[], intentType: SearchIntent['intent_type'] = 'general'): SearchResult[] {
   const now = Date.now();
+  const weights = INTENT_WEIGHTS[intentType] || INTENT_WEIGHTS.general;
 
   return results.map(r => {
     const age = now - (r.timestamp || now);
-    const recencyBoost = Math.pow(0.5, age / HALF_LIFE_MS); // 1.0 for new, 0.5 after 7 days
-    const accessBoost = Math.log2((r.access_count || 0) + 2) / 10; // small boost for frequently accessed
+    const recencyBoost = Math.pow(0.5, age / HALF_LIFE_MS);
+    const accessBoost = Math.log2((r.access_count || 0) + 2) / 10;
 
     return {
       ...r,
-      relevance_score: r.relevance_score * (0.7 + 0.2 * recencyBoost + 0.1 * accessBoost),
+      relevance_score: r.relevance_score * (weights.relevance + weights.recency * recencyBoost + weights.access * accessBoost),
     };
   }).sort((a, b) => b.relevance_score - a.relevance_score);
 }
