@@ -1,7 +1,9 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { softmax, normalizeBlock, selectBlocks } from '../../../plugins/search/block-selector.js';
+import { BlockSearchOrchestrator } from '../../../plugins/search/fusion.js';
 import type { SearchResult } from '../../../core/types.js';
+import type { SearchPlugin, SearchOpts } from '../../../core/types.js';
 
 function makeResult(id: string, score: number, timestamp?: number): SearchResult {
   return {
@@ -13,6 +15,83 @@ function makeResult(id: string, score: number, timestamp?: number): SearchResult
     timestamp: timestamp ?? Date.now(),
   };
 }
+
+function mockBlockPlugin(
+  name: string,
+  results: SearchResult[],
+): SearchPlugin {
+  return {
+    name,
+    version: '1.0.0',
+    type: 'search' as const,
+    strategy: 'bm25' as const,
+    priority: 1,
+    init: async () => {},
+    destroy: async () => {},
+    search: async () => results,
+    shouldFallback: () => false,
+  };
+}
+
+describe('BlockSearchOrchestrator', () => {
+  it('merges results from multiple blocks with attention weighting', async () => {
+    const now = Date.now();
+    const sessionResults = [makeResult('s1', 2.0, now)];
+    const projectResults = [makeResult('p1', 1.0, now - 86400000)];
+
+    const orchestrator = new BlockSearchOrchestrator({
+      session: [mockBlockPlugin('bm25', sessionResults)],
+      project: [mockBlockPlugin('bm25', projectResults)],
+      global: [mockBlockPlugin('bm25', [])],
+      archive: [mockBlockPlugin('bm25', [])],
+    });
+
+    const results = await orchestrator.execute('test query', { limit: 10 });
+
+    assert.ok(results.length >= 2, 'should return results from multiple blocks');
+    const ids = results.map(r => r.id);
+    assert.ok(ids.includes('s1'), 'should include session result');
+    assert.ok(ids.includes('p1'), 'should include project result');
+  });
+
+  it('skips blocks with no relevant results', async () => {
+    const sessionResults = [makeResult('s1', 3.0)];
+
+    const orchestrator = new BlockSearchOrchestrator({
+      session: [mockBlockPlugin('bm25', sessionResults)],
+      project: [mockBlockPlugin('bm25', [])],
+      global: [mockBlockPlugin('bm25', [])],
+      archive: [mockBlockPlugin('bm25', [])],
+    });
+
+    const results = await orchestrator.execute('test query', { limit: 10 });
+
+    assert.ok(results.length >= 1, 'should return at least session results');
+    assert.equal(results[0].id, 's1');
+  });
+
+  it('normalizes scores so large block does not overwhelm small block', async () => {
+    const sessionResults = [makeResult('s1', 1.0)];
+    const projectResults = [
+      makeResult('p1', 10.0),
+      makeResult('p2', 8.0),
+      makeResult('p3', 5.0),
+    ];
+
+    const orchestrator = new BlockSearchOrchestrator({
+      session: [mockBlockPlugin('bm25', sessionResults)],
+      project: [mockBlockPlugin('bm25', projectResults)],
+      global: [mockBlockPlugin('bm25', [])],
+      archive: [mockBlockPlugin('bm25', [])],
+    });
+
+    const results = await orchestrator.execute('test query', { limit: 10 });
+
+    const s1 = results.find(r => r.id === 's1');
+    assert.ok(s1, 'session result should be present');
+    assert.ok(s1!.relevance_score > 0, 'session result should have positive score');
+  });
+});
 
 describe('softmax', () => {
   it('returns probabilities that sum to 1', () => {

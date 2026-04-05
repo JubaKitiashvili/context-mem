@@ -1,6 +1,7 @@
 import type { SearchPlugin, SearchResult, SearchOpts, SearchOrchestrator, SearchIntent, SearchWeights, ObservationType } from '../../core/types.js';
 import { DEFAULT_SEARCH_WEIGHTS } from '../../core/types.js';
 import { IntentClassifier } from './intent.js';
+import { softmax, normalizeBlock, selectBlocks } from './block-selector.js';
 
 const HALF_LIFE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const SEARCH_WINDOW_MS = 60_000;       // 60-second sliding window
@@ -204,4 +205,93 @@ export function rerank(results: SearchResult[], intentType: SearchIntent['intent
       relevance_score: r.relevance_score * (weights.relevance + weights.recency * recencyBoost + weights.access * accessBoost),
     };
   }).sort((a, b) => b.relevance_score - a.relevance_score);
+}
+
+interface BlockPlugins {
+  session: SearchPlugin[];
+  project: SearchPlugin[];
+  global: SearchPlugin[];
+  archive: SearchPlugin[];
+}
+
+export class BlockSearchOrchestrator {
+  private blocks: BlockPlugins;
+  private blockNames: Array<keyof BlockPlugins> = ['session', 'project', 'global', 'archive'];
+
+  constructor(blocks: BlockPlugins) {
+    this.blocks = blocks;
+  }
+
+  async execute(query: string, opts: SearchOpts): Promise<SearchResult[]> {
+    // Phase 1: Lightweight probe — get top-3 raw scores from each block's first plugin
+    const blockScores: number[] = [];
+
+    for (const blockName of this.blockNames) {
+      const plugins = this.blocks[blockName];
+      if (plugins.length === 0) {
+        blockScores.push(0);
+        continue;
+      }
+
+      try {
+        const probeResults = await plugins[0].search(query, { ...opts, limit: 3 });
+        blockScores.push(probeResults.length > 0 ? Math.max(...probeResults.map(r => r.relevance_score)) : 0);
+      } catch {
+        blockScores.push(0);
+      }
+    }
+
+    // Normalize block probe scores before attention computation so blocks with
+    // any results are fairly compared regardless of absolute score magnitude.
+    // This prevents a high-scoring block from starving out a weaker but relevant block.
+    const maxBlockScore = Math.max(...blockScores);
+    const normalizedBlockScores = maxBlockScore > 0
+      ? blockScores.map(s => s / maxBlockScore)
+      : blockScores.map(() => 1);
+
+    // Block attention via softmax
+    const selectedIndices = selectBlocks(normalizedBlockScores, 0.05);
+
+    if (selectedIndices.length === 0) return [];
+
+    const attention = softmax(normalizedBlockScores);
+
+    // Phase 2: Deep search on selected blocks + normalization
+    let allResults: SearchResult[] = [];
+
+    for (const idx of selectedIndices) {
+      const blockName = this.blockNames[idx];
+      const plugins = this.blocks[blockName];
+      if (plugins.length === 0) continue;
+
+      const fusion = new SearchFusion(plugins);
+      const results = await fusion.execute(query, opts);
+
+      // Per-block normalization (RMSNorm analogue)
+      const normalized = normalizeBlock(results);
+
+      // Weight by block attention
+      for (const r of normalized) {
+        allResults.push({
+          ...r,
+          relevance_score: r.relevance_score * attention[idx],
+        });
+      }
+    }
+
+    // Deduplicate by id (same entry might appear in multiple blocks)
+    const seen = new Set<string>();
+    allResults = allResults.filter(r => {
+      if (seen.has(r.id)) return false;
+      seen.add(r.id);
+      return true;
+    });
+
+    // Apply adaptive reranking
+    const classifier = new IntentClassifier();
+    const intent = classifier.classify(query);
+    allResults = rerank(allResults, intent.intent_type);
+
+    return allResults.slice(0, opts.limit || 5);
+  }
 }
