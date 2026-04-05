@@ -387,4 +387,39 @@ describe('adaptive reranking', () => {
     const results = rerank([lowRelevance, highRelevance], 'general');
     assert.equal(results[0].id, 'high', 'general intent with spread scores should favor relevance');
   });
+
+  it('general intent shifts to recency when relevance scores are clustered', () => {
+    const now = Date.now();
+    // All scores very close (variance < 0.01) — relevance can't differentiate
+    const oldResult = makeResult('old', 'code', 1.00, now - 14 * DAY_MS, 0);
+    const midResult = makeResult('mid', 'code', 1.01, now - 3 * DAY_MS, 0);
+    const newResult = makeResult('new', 'code', 0.99, now, 0);
+
+    const results = rerank([oldResult, midResult, newResult], 'general');
+    // With clustered scores, recency should become the differentiator
+    assert.equal(results[0].id, 'new', 'when scores are clustered, recency should differentiate');
+  });
+
+  it('general intent shifts to relevance when timestamps are clustered', () => {
+    const now = Date.now();
+    // All timestamps within a few hours (time_spread < 0.1 of 7 days)
+    const lowScore = makeResult('low', 'code', 0.5, now - 2 * 60 * 60 * 1000, 0); // 2h ago
+    const highScore = makeResult('high', 'code', 2.0, now - 1 * 60 * 60 * 1000, 0); // 1h ago
+
+    const results = rerank([lowScore, highScore], 'general');
+    assert.equal(results[0].id, 'high', 'when timestamps are clustered, relevance should differentiate');
+  });
+
+  it('general intent uses baseline when both scores and times are spread', () => {
+    const now = Date.now();
+    const spreadResults = [
+      makeResult('a', 'code', 2.0, now - 20 * DAY_MS, 0),
+      makeResult('b', 'code', 1.0, now - 5 * DAY_MS, 0),
+      makeResult('c', 'code', 0.3, now, 0),
+    ];
+
+    const results = rerank(spreadResults, 'general');
+    // With spread-out scores AND timestamps, baseline weights apply — high relevance wins
+    assert.equal(results[0].id, 'a', 'spread data should use baseline general weights');
+  });
 });
