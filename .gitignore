@@ -7,5 +7,5 @@ dist/
 .DS_Store
 .env
 *.tgz
-.context-mem.json
 .mcp.json
+.gstack/
