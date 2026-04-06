@@ -2,6 +2,18 @@
 
 All notable changes to context-mem are documented here.
 
+## [2.6.0] — 2026-04-06
+
+### Added
+- **Intelligence Dashboard** — complete redesign of the web dashboard with intelligence-first layout, refined dark/light design system, system + monospace typography, glass morphism header, and responsive mobile support.
+- **Intelligence Strip** — 4 hero cards showing health score, SearchFusion pipeline status, knowledge authority metrics, and LLM integration status at a glance.
+- **Smart Search** — dashboard search now uses the full SearchFusion pipeline with intent classification (causal/temporal/lookup/general), adaptive reranking weights, and pipeline visualization showing how results were found.
+- **Knowledge Authority Display** — every knowledge entry in the dashboard shows its computed authority score (0–1) via softmax attention over source weight, session breadth, access density, and recency.
+- **Contradiction Detection UI** — finds conflicting knowledge entries, compares authority scores side-by-side, and displays suggested resolution actions (keep existing, replace, or merge).
+- **LLM Status Indicator** — header chip showing active LLM provider, model, and availability status.
+- **4 new API endpoints** — `/api/search-fusion` (intent-aware search with reranking), `/api/contradictions` (contradiction detection with authority), `/api/llm-status` (provider config), `/api/knowledge-authority` (entries with computed authority scores).
+- **Collapsible System Status** — DB health, compression, top files, privacy, and content index grouped into a collapsible section to reduce vertical noise.
+
 ## [2.5.0] — 2026-04-06
 
 ### Added

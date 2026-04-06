@@ -28,7 +28,7 @@ AI coding assistants waste 60–80% of their context window on raw tool outputs 
 | **Quick Profile** | Auto-generated project profile on session start | No | No | No |
 | **Budget Management** | Configurable limits + overflow | No | Basic throttling | No |
 | **Event Tracking** | P1–P4, error-fix detection | No | Session events only | No |
-| **Dashboard** | Real-time web UI | Basic view | No | No |
+| **Dashboard** | Intelligence dashboard (search pipeline, authority, contradictions) | Basic view | No | No |
 | **Session Continuity** | Snapshot save/restore | Partial | Yes | No |
 | **Content Types** | 14 specialized detectors | Generic LLM | Generic sandbox | Docs only |
 | **Model Lock-in** | None (MCP protocol) | Claude-only | Claude-only | Any |
@@ -189,13 +189,13 @@ This loads hooks directly from the plugin directory. Useful for development and 
 
 **Session Snapshots** — Save/restore session state across restarts with progressive trimming.
 
-**Dashboard 2.0** — Real-time web UI at `http://localhost:51893` — auto-starts on session start via hooks. **Multi-project support** — one central dashboard shared across all active projects, with a project switcher bar. Token economics, observations, search, knowledge base, events, system health. **Knowledge graph visualization** — interactive force-directed canvas graph with pan/zoom/filter, color-coded by entity type. **Timeline explorer** — visual observation timeline with search, date filtering, and type pills. SSE streaming for live updates. Dark/light theme with persistence across pages.
+**Intelligence Dashboard** — Real-time web UI at `http://localhost:51893` — auto-starts on session start via hooks. **Intelligence strip** — 4 hero cards showing health score, SearchFusion pipeline status, knowledge authority metrics, and LLM integration status at a glance. **Smart search** — full SearchFusion pipeline with intent classification (causal/temporal/lookup/general), adaptive reranking, and pipeline visualization showing how results were found. **Knowledge authority** — every knowledge entry scored 0–1 using softmax attention over source weight, session breadth, access density, and recency. **Contradiction detection** — finds conflicting knowledge entries, compares authority scores, and suggests resolution actions (keep/replace/merge). **LLM status** — header chip showing active provider and availability. **Multi-project support** with project switcher bar. **Knowledge graph** — interactive force-directed canvas with pan/zoom/filter, color-coded by entity type. **Timeline explorer** — visual observation timeline with search, date filtering, and replay. SSE + WebSocket streaming for live updates. Dark/light theme. Responsive down to mobile.
 
 <p align="center">
-  <img src="docs/screenshots/dashboard-overview.png" width="600" alt="Dashboard — token economics and observation stats" />
+  <img src="docs/screenshots/dashboard-overview.png" width="600" alt="Dashboard — intelligence strip, smart search, and stats" />
 </p>
 <p align="center">
-  <img src="docs/screenshots/dashboard-middle.png" width="600" alt="Dashboard — event stream, session snapshots, activity" />
+  <img src="docs/screenshots/dashboard-middle.png" width="600" alt="Dashboard — knowledge authority, contradictions, events" />
 </p>
 
 **VS Code Extension** — Sidebar dashboard, status bar with live savings, command palette (start/stop/search/stats). Install from marketplace: `context-mem`.
@@ -227,7 +227,8 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
                                                       ↓                                        ↓
                                     Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (32 tools)
                                                                                                ↓
-                                                                           Dashboard 2.0 ← SSE + WebSocket (real-time)
+                                                                           Intelligence Dashboard ← SSE + WebSocket
+                                                                           (search pipeline, authority, contradictions)
 ```
 
 ## MCP Tools
