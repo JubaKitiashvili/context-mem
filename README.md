@@ -1,5 +1,7 @@
 # context-mem
 
+[![SafeSkill 58/100](https://img.shields.io/badge/SafeSkill-58%2F100_Use%20with%20Caution-orange)](https://safeskill.dev/scan/jubakitiashvili-context-mem)
+
 > Context optimization for AI coding assistants — 99% token savings, deterministic by default, optional LLM enhancement.
 
 [![npm version](https://img.shields.io/npm/v/context-mem)](https://www.npmjs.com/package/context-mem)
