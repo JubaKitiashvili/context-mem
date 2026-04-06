@@ -194,9 +194,6 @@ This loads hooks directly from the plugin directory. Useful for development and 
 <p align="center">
   <img src="docs/screenshots/dashboard-overview.png" width="600" alt="Dashboard — intelligence strip, smart search, and stats" />
 </p>
-<p align="center">
-  <img src="docs/screenshots/dashboard-middle.png" width="600" alt="Dashboard — knowledge authority, contradictions, events" />
-</p>
 
 **VS Code Extension** — Sidebar dashboard, status bar with live savings, command palette (start/stop/search/stats). Install from marketplace: `context-mem`.
 
