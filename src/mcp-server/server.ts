@@ -37,6 +37,8 @@ import {
   handleHandoffSession,
   handleMergeSuggestions,
   handleRecall,
+  handleEntityDetect,
+  handleListPeople,
 } from './tools.js';
 
 export function createMcpServer(kernel: ToolKernel): Server {
@@ -162,6 +164,12 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'recall':
           result = await handleRecall(params as Parameters<typeof handleRecall>[0], kernel);
+          break;
+        case 'entity_detect':
+          result = await handleEntityDetect(params as Parameters<typeof handleEntityDetect>[0], kernel);
+          break;
+        case 'list_people':
+          result = await handleListPeople(params as Parameters<typeof handleListPeople>[0], kernel);
           break;
         default:
           console.error(`context-mem: Unknown MCP tool requested: ${name}`);

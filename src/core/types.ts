@@ -43,6 +43,7 @@ export interface ObservationMetadata {
   files_modified?: string[];
   importance_score?: number;
   significance_flags?: string[];
+  entities?: string[];
 }
 
 export interface Observation {

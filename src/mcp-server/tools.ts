@@ -557,6 +557,28 @@ export const toolDefinitions: ToolDefinition[] = [
       required: ['query'],
     },
   },
+  // Total Recall — Entity Detection
+  {
+    name: 'entity_detect',
+    description: 'Extract entities (technologies, people, files, components) from text content.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        content: { type: 'string', description: 'Text to extract entities from' },
+      },
+      required: ['content'],
+    },
+  },
+  {
+    name: 'list_people',
+    description: 'List all detected person entities with relationship counts.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        limit: { type: 'number', description: 'Max results (default: 20)' },
+      },
+    },
+  },
   // Merge suggestions
   {
     name: 'merge_suggestions',
@@ -1859,6 +1881,46 @@ export async function handleRecall(
     }
 
     return results;
+  } catch {
+    return [];
+  }
+}
+
+// Total Recall — Entity Detection handlers
+export async function handleEntityDetect(
+  params: { content: string },
+  _kernel: ToolKernel,
+): Promise<Array<{ name: string; type: string; confidence: number; aliases: string[] }> | { error: string }> {
+  if (!params.content || typeof params.content !== 'string' || !params.content.trim()) {
+    return { error: 'content is required and must be a non-empty string' };
+  }
+
+  const { extractEntities } = await import('../core/entity-extractor.js');
+  return extractEntities(params.content);
+}
+
+export async function handleListPeople(
+  params: { limit?: number },
+  kernel: ToolKernel,
+): Promise<Array<{ id: string; name: string; relationship_count: number; created_at: number }>> {
+  const limit = validateLimit(params.limit ?? 20);
+
+  try {
+    const rows = kernel.storage.prepare(`
+      SELECT e.id, e.name, e.created_at,
+             (SELECT COUNT(*) FROM relationships r WHERE r.from_entity = e.id OR r.to_entity = e.id) as rel_count
+      FROM entities e
+      WHERE e.entity_type = 'person'
+      ORDER BY rel_count DESC, e.created_at DESC
+      LIMIT ?
+    `).all(limit) as Array<{ id: string; name: string; created_at: number; rel_count: number }>;
+
+    return rows.map(r => ({
+      id: r.id,
+      name: r.name,
+      relationship_count: r.rel_count,
+      created_at: r.created_at,
+    }));
   } catch {
     return [];
   }
