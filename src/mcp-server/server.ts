@@ -37,6 +37,7 @@ import {
   handleHandoffSession,
   handleMergeSuggestions,
   handleRecall,
+  handleImportConversations,
   handleBrowse,
   handleListTopics,
   handleFindTunnels,
@@ -175,6 +176,9 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'list_people':
           result = await handleListPeople(params as Parameters<typeof handleListPeople>[0], kernel);
+          break;
+        case 'import_conversations':
+          result = await handleImportConversations(params as Parameters<typeof handleImportConversations>[0], kernel);
           break;
         case 'browse':
           result = await handleBrowse(params as Parameters<typeof handleBrowse>[0], kernel);

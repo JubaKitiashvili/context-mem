@@ -559,6 +559,19 @@ export const toolDefinitions: ToolDefinition[] = [
       required: ['query'],
     },
   },
+  // Total Recall — Conversation Import
+  {
+    name: 'import_conversations',
+    description: 'Import external conversation exports (Claude, ChatGPT, Slack, plaintext) into context memory.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        content: { type: 'string', description: 'Conversation content to import' },
+        format: { type: 'string', enum: ['auto', 'claude-code', 'claude-ai', 'chatgpt', 'slack', 'plaintext'], description: 'Format hint (default: auto-detect)' },
+      },
+      required: ['content'],
+    },
+  },
   // Total Recall — Browse & Topics
   {
     name: 'browse',
@@ -1980,6 +1993,21 @@ export async function handleRecall(
   } catch {
     return [];
   }
+}
+
+// Total Recall — Conversation Import handler
+export async function handleImportConversations(
+  params: { content: string; format?: string },
+  kernel: ToolKernel,
+): Promise<{ imported: number; skipped: number; format: string; errors: string[] } | { error: string }> {
+  if (!params.content || typeof params.content !== 'string' || !params.content.trim()) {
+    return { error: 'content is required' };
+  }
+
+  const { importConversations } = await import('../core/conversation-import.js');
+  return importConversations(params.content, kernel.pipeline, {
+    format: (params.format as 'auto' | 'claude-code' | 'claude-ai' | 'chatgpt' | 'slack' | 'plaintext') || 'auto',
+  });
 }
 
 // Total Recall — Browse & Topics handlers
