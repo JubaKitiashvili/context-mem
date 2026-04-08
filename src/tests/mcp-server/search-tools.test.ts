@@ -152,6 +152,65 @@ describe('MCP tools — timeline', () => {
   });
 });
 
+describe('MCP tools — search verbatim mode', () => {
+  let storage: BetterSqlite3Storage;
+  let kernel: ToolKernel;
+
+  before(async () => {
+    storage = await createTestDb();
+    kernel = await buildKernel(storage, 'mcp-verbatim-session');
+    // Seed: content has "detailed explanation" but summarizer would shorten it
+    await handleObserve({ content: 'This is a detailed explanation of the authentication system architecture', type: 'code' }, kernel);
+    await handleObserve({ content: 'Redis connection timeout error in production cluster', type: 'error' }, kernel);
+  });
+
+  after(async () => { await storage.close(); });
+
+  it('verbatim=false returns summary snippets (default behavior)', async () => {
+    const results = await handleSearch({ query: 'authentication', verbatim: false }, kernel);
+    assert.ok(Array.isArray(results));
+  });
+
+  it('verbatim=true returns original content in snippet', async () => {
+    const results = await handleSearch({ query: 'authentication', verbatim: true }, kernel);
+    assert.ok(Array.isArray(results));
+    if (results.length > 0) {
+      assert.ok(results[0].snippet.includes('detailed explanation'), 'verbatim should return full content');
+    }
+  });
+
+  it('verbatim search finds terms in original content', async () => {
+    const results = await handleSearch({ query: 'production cluster', verbatim: true }, kernel);
+    assert.ok(results.length > 0, 'should find content by original text');
+    assert.ok(results[0].snippet.includes('Redis connection timeout'), 'should return full original content');
+  });
+
+  it('verbatim search with no results returns empty array', async () => {
+    const results = await handleSearch({ query: 'xyznonexistent999', verbatim: true }, kernel);
+    assert.ok(Array.isArray(results));
+    assert.equal(results.length, 0);
+  });
+});
+
+describe('MCP tools — timeline verbatim mode', () => {
+  let storage: BetterSqlite3Storage;
+  let kernel: ToolKernel;
+
+  before(async () => {
+    storage = await createTestDb();
+    kernel = await buildKernel(storage, 'mcp-timeline-verbatim-session');
+    await handleObserve({ content: 'original verbatim content for timeline test', type: 'context' }, kernel);
+  });
+
+  after(async () => { await storage.close(); });
+
+  it('verbatim=true returns content instead of summary', async () => {
+    const results = await handleTimeline({ verbatim: true }, kernel);
+    assert.ok(results.length > 0);
+    assert.ok(results[0].summary?.includes('original verbatim content'), 'should contain original content');
+  });
+});
+
 describe('MCP tools — get', () => {
   let storage: BetterSqlite3Storage;
   let kernel: ToolKernel;

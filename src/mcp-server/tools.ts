@@ -1,5 +1,6 @@
 import type { Pipeline } from '../core/pipeline.js';
 import type { SearchFusion } from '../plugins/search/fusion.js';
+import { sanitizeFTS5Query } from '../plugins/search/fts5-utils.js';
 import type { BetterSqlite3Storage } from '../plugins/storage/better-sqlite3.js';
 import type {
   SummarizerPlugin,
@@ -135,6 +136,7 @@ export const toolDefinitions: ToolDefinition[] = [
           description: 'Filter by observation type',
         },
         limit: { type: 'number', description: 'Max results (default: 5)' },
+        verbatim: { type: 'boolean', description: 'When true, search original content and return verbatim text instead of summaries' },
       },
       required: ['query'],
     },
@@ -157,6 +159,7 @@ export const toolDefinitions: ToolDefinition[] = [
         anchor: { type: 'string', description: 'Observation ID to center the timeline on' },
         depth_before: { type: 'number', description: 'Number of observations before anchor (default 10)' },
         depth_after: { type: 'number', description: 'Number of observations after anchor (default 5)' },
+        verbatim: { type: 'boolean', description: 'When true, return original content instead of summaries' },
       },
       required: [],
     },
@@ -609,11 +612,56 @@ export async function handleSummarize(
 
 // Task 20 — search
 export async function handleSearch(
-  params: { query: string; type?: string; limit?: number },
+  params: { query: string; type?: string; limit?: number; verbatim?: boolean },
   kernel: ToolKernel,
 ): Promise<Array<{ id: string; title: string; snippet: string; relevance_score: number; timestamp: number }>> {
   if (!params.query || typeof params.query !== 'string' || !params.query.trim()) {
     return { content: [{ type: 'text', text: JSON.stringify({ error: 'query must be a non-empty string' }) }], isError: true } as any;
+  }
+
+  // Verbatim mode: search content-only FTS index and return original content
+  if (params.verbatim) {
+    const limit = validateLimit(params.limit ?? 5);
+    let sql = `
+      SELECT o.id, o.type, o.content, o.indexed_at, o.access_count,
+             bm25(obs_content_fts) as relevance
+      FROM obs_content_fts
+      JOIN observations o ON o.rowid = obs_content_fts.rowid
+      WHERE obs_content_fts MATCH ?
+    `;
+    const sqlParams: unknown[] = [sanitizeFTS5Query(params.query)];
+
+    if (params.type) {
+      sql += ' AND o.type = ?';
+      sqlParams.push(validateObservationType(params.type));
+    }
+    sql += ' ORDER BY bm25(obs_content_fts) LIMIT ?';
+    sqlParams.push(limit);
+
+    try {
+      const rows = kernel.storage.prepare(sql).all(...sqlParams) as Array<{
+        id: string; type: string; content: string; indexed_at: number; access_count: number; relevance: number;
+      }>;
+
+      // Increment access_count
+      const ids = rows.map(r => r.id);
+      if (ids.length > 0) {
+        try {
+          const placeholders = ids.map(() => '?').join(',');
+          kernel.storage.exec(`UPDATE observations SET access_count = access_count + 1 WHERE id IN (${placeholders})`, ids);
+        } catch { /* non-critical */ }
+      }
+
+      return rows.map(r => ({
+        id: r.id,
+        title: r.content.slice(0, 100),
+        snippet: r.content,
+        relevance_score: Math.abs(r.relevance),
+        timestamp: r.indexed_at,
+      }));
+    } catch {
+      return [];
+    }
   }
 
   // LLM query expansion (optional)
@@ -672,9 +720,11 @@ export interface TimelineEntry {
 }
 
 export async function handleTimeline(
-  params: { from?: number; to?: number; type?: string; session_id?: string; limit?: number; anchor?: string; depth_before?: number; depth_after?: number },
+  params: { from?: number; to?: number; type?: string; session_id?: string; limit?: number; anchor?: string; depth_before?: number; depth_after?: number; verbatim?: boolean },
   kernel: ToolKernel,
 ): Promise<TimelineEntry[]> {
+  const textCol = params.verbatim ? 'content' : 'summary';
+
   // Anchor mode: center timeline around a specific observation
   if (params.anchor) {
     const ignoredFilters = (['type', 'session_id', 'from', 'to'] as const).filter(k => params[k] !== undefined);
@@ -683,8 +733,8 @@ export async function handleTimeline(
 
     // Get the anchor observation's timestamp
     const anchorRow = kernel.storage.prepare(
-      'SELECT id, type, summary, indexed_at FROM observations WHERE id = ?'
-    ).get(params.anchor) as { id: string; type: string; summary: string | null; indexed_at: number } | undefined;
+      `SELECT id, type, ${textCol} as text_val, indexed_at FROM observations WHERE id = ?`
+    ).get(params.anchor) as { id: string; type: string; text_val: string | null; indexed_at: number } | undefined;
 
     if (!anchorRow) {
       return [];
@@ -692,16 +742,16 @@ export async function handleTimeline(
 
     // Get observations before the anchor
     const beforeRows = kernel.storage.prepare(
-      'SELECT id, type, summary, indexed_at FROM observations WHERE indexed_at < ? ORDER BY indexed_at DESC LIMIT ?'
+      `SELECT id, type, ${textCol} as text_val, indexed_at FROM observations WHERE indexed_at < ? ORDER BY indexed_at DESC LIMIT ?`
     ).all(anchorRow.indexed_at, depthBefore) as Array<{
-      id: string; type: string; summary: string | null; indexed_at: number;
+      id: string; type: string; text_val: string | null; indexed_at: number;
     }>;
 
     // Get observations after the anchor
     const afterRows = kernel.storage.prepare(
-      'SELECT id, type, summary, indexed_at FROM observations WHERE indexed_at > ? ORDER BY indexed_at ASC LIMIT ?'
+      `SELECT id, type, ${textCol} as text_val, indexed_at FROM observations WHERE indexed_at > ? ORDER BY indexed_at ASC LIMIT ?`
     ).all(anchorRow.indexed_at, depthAfter) as Array<{
-      id: string; type: string; summary: string | null; indexed_at: number;
+      id: string; type: string; text_val: string | null; indexed_at: number;
     }>;
 
     // Combine: before (reversed to chronological) + anchor + after
@@ -722,8 +772,8 @@ export async function handleTimeline(
       id: row.id,
       type: row.type,
       summary: row.id === anchorRow.id
-        ? (row.summary ? `${row.summary} <- ANCHOR` : '<- ANCHOR')
-        : row.summary,
+        ? (row.text_val ? `${row.text_val} <- ANCHOR` : '<- ANCHOR')
+        : row.text_val,
       timestamp: row.indexed_at,
     })));
 
@@ -735,7 +785,7 @@ export async function handleTimeline(
   const validTo = validateTimestamp(params.to);
   const validLimit = validateLimit(params.limit ?? 20);
 
-  let sql = 'SELECT id, type, summary, indexed_at FROM observations WHERE 1=1';
+  let sql = `SELECT id, type, ${textCol} as text_val, indexed_at FROM observations WHERE 1=1`;
   const queryParams: unknown[] = [];
 
   if (validFrom !== undefined) {
@@ -759,13 +809,13 @@ export async function handleTimeline(
   queryParams.push(validLimit);
 
   const rows = kernel.storage.prepare(sql).all(...queryParams) as Array<{
-    id: string; type: string; summary: string | null; indexed_at: number;
+    id: string; type: string; text_val: string | null; indexed_at: number;
   }>;
 
   return rows.map(row => ({
     id: row.id,
     type: row.type,
-    summary: row.summary,
+    summary: row.text_val,
     timestamp: row.indexed_at,
   }));
 }
