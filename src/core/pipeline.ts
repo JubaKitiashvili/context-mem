@@ -7,6 +7,7 @@ import { ulid, estimateTokens } from './utils.js';
 import type { BudgetManager } from './budget.js';
 import type { SessionManager } from './session.js';
 import type { LLMService } from './llm-provider.js';
+import { classifyImportance } from './importance-classifier.js';
 
 export class Pipeline {
   private budgetManager?: BudgetManager;
@@ -100,13 +101,22 @@ export class Pipeline {
       };
     }
 
+    // 2.5 Importance classification (zero-LLM, deterministic)
+    const importance = classifyImportance(cleaned, type);
+
     // 3. Find summarizer
     const summarizers = this.registry.getAll('summarizer') as SummarizerPlugin[];
     let summary: string | undefined;
     let tokensOriginal = estimateTokens(cleaned);
     let tokensSummarized = tokensOriginal;
 
-    // 2.5 LLM summarization (optional — try before deterministic)
+    // 3a. Pinned observations bypass summarization — store content as summary for search compatibility
+    if (importance.pinned) {
+      summary = cleaned;
+      tokensSummarized = tokensOriginal;
+    }
+
+    // 3b. LLM summarization (optional — try before deterministic, skip if pinned)
     if (this.llmService && !summary) {
       try {
         const llmResult = await this.llmService.summarize(cleaned);
@@ -161,15 +171,17 @@ export class Pipeline {
         session_id: this.sessionId,
         correlation_id: opts?.correlation_id,
         files_modified: opts?.files_modified,
+        importance_score: importance.score,
+        significance_flags: importance.flags,
       },
       indexed_at: Date.now(),
     };
 
     // 6. Store
     this.storage.exec(
-      `INSERT INTO observations (id, type, content, summary, metadata, indexed_at, privacy_level, session_id, content_hash, correlation_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [obs.id, obs.type, obs.content, obs.summary || null, JSON.stringify(obs.metadata), obs.indexed_at, privacyLevel, this.sessionId, contentHash, opts?.correlation_id || null]
+      `INSERT INTO observations (id, type, content, summary, metadata, indexed_at, privacy_level, session_id, content_hash, correlation_id, importance_score, pinned, compression_tier)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [obs.id, obs.type, obs.content, obs.summary || null, JSON.stringify(obs.metadata), obs.indexed_at, privacyLevel, this.sessionId, contentHash, opts?.correlation_id || null, importance.score, importance.pinned ? 1 : 0, 'verbatim']
     );
 
     // 6b. Async embedding (fire-and-forget)

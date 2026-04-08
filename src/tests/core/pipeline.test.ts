@@ -148,4 +148,65 @@ describe('Pipeline', () => {
       assert.ok(rows.length > 0, 'token_stats should have a store entry');
     });
   });
+
+  describe('importance classification integration', () => {
+    let storage: BetterSqlite3Storage;
+    let pipeline: Pipeline;
+
+    before(async () => {
+      storage = await createTestDb();
+      const registry = new PluginRegistry();
+      const privacy = makePrivacy();
+      pipeline = new Pipeline(registry, storage, privacy, 'session-importance');
+    });
+
+    after(async () => { await storage.close(); });
+
+    it('stores importance_score in DB column for decision type', async () => {
+      const obs = await pipeline.observe('we decided to use Redis for caching', 'decision', 'test');
+      const row = storage.prepare('SELECT importance_score, pinned, compression_tier FROM observations WHERE id = ?').get(obs.id) as {
+        importance_score: number; pinned: number; compression_tier: string;
+      };
+      assert.ok(row.importance_score >= 0.9, `expected >= 0.9, got ${row.importance_score}`);
+      assert.equal(row.pinned, 1, 'decision should be auto-pinned');
+      assert.equal(row.compression_tier, 'verbatim');
+    });
+
+    it('pinned observation stores content as summary (bypasses summarization)', async () => {
+      const content = 'we decided to migrate from MySQL to PostgreSQL';
+      const obs = await pipeline.observe(content, 'decision', 'test');
+      const row = storage.prepare('SELECT content, summary FROM observations WHERE id = ?').get(obs.id) as {
+        content: string; summary: string;
+      };
+      assert.equal(row.summary, content, 'pinned observation should have content as summary');
+    });
+
+    it('stores significance flags in metadata JSON', async () => {
+      const obs = await pipeline.observe('shipped the new auth module to production', 'context', 'test');
+      assert.ok(obs.metadata.significance_flags);
+      assert.ok(obs.metadata.significance_flags!.includes('MILESTONE'));
+    });
+
+    it('compression_tier defaults to verbatim for all new observations', async () => {
+      const obs = await pipeline.observe('just a normal log entry', 'log', 'test');
+      const row = storage.prepare('SELECT compression_tier FROM observations WHERE id = ?').get(obs.id) as { compression_tier: string };
+      assert.equal(row.compression_tier, 'verbatim');
+    });
+
+    it('existing observe behavior unchanged for normal content', async () => {
+      const content = 'a simple context observation with nothing special';
+      const obs = await pipeline.observe(content, 'context', 'test');
+      const row = storage.prepare('SELECT importance_score, pinned FROM observations WHERE id = ?').get(obs.id) as {
+        importance_score: number; pinned: number;
+      };
+      assert.equal(row.importance_score, 0.4, 'context type should get 0.4 base score');
+      assert.equal(row.pinned, 0, 'normal context should not be pinned');
+    });
+
+    it('importance_score is also stored in metadata', async () => {
+      const obs = await pipeline.observe('a critical vulnerability found', 'error', 'test');
+      assert.ok(obs.metadata.importance_score !== undefined);
+      assert.ok(obs.metadata.importance_score! >= 0.8);
+    });
+  });
 });

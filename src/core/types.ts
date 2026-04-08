@@ -41,6 +41,8 @@ export interface ObservationMetadata {
   session_id?: string;
   correlation_id?: string;
   files_modified?: string[];
+  importance_score?: number;
+  significance_flags?: string[];
 }
 
 export interface Observation {
