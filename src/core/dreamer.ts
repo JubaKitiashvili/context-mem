@@ -8,6 +8,8 @@
 import type { StoragePlugin, KnowledgeCategory } from './types.js';
 import type { KnowledgeBase } from '../plugins/knowledge/knowledge-base.js';
 import type { GlobalKnowledgeStore } from './global-store.js';
+import { getTargetTier, compressToTier } from './adaptive-compressor.js';
+import type { CompressionTier } from './adaptive-compressor.js';
 
 // Stopwords for contradiction word-overlap detection (same set as knowledge-base)
 const STOPWORDS = new Set([
@@ -17,7 +19,7 @@ const STOPWORDS = new Set([
 ]);
 
 export interface DreamerLog {
-  type: 'stale' | 'archive' | 'contradiction' | 'promote' | 'merge-suggestion';
+  type: 'stale' | 'archive' | 'contradiction' | 'promote' | 'merge-suggestion' | 'compress';
   entry_id: string;
   message: string;
   timestamp: number;
@@ -84,6 +86,7 @@ export class Dreamer {
       await this.detectContradictions();
       await this.promotionScan();
       await this.duplicateScan();
+      await this.progressiveCompress();
     } catch {
       // Dreamer is non-critical — never crash the host
     }
@@ -261,6 +264,49 @@ export class Dreamer {
       }
 
       return found;
+    } catch {
+      return 0;
+    }
+  }
+
+  // ---------- Progressive compression ----------
+
+  async progressiveCompress(): Promise<number> {
+    try {
+      const rows = this.storage.prepare(
+        'SELECT id, content, summary, indexed_at, importance_score, pinned, compression_tier FROM observations WHERE pinned = 0'
+      ).all() as Array<{
+        id: string; content: string; summary: string | null;
+        indexed_at: number; importance_score: number; pinned: number; compression_tier: string;
+      }>;
+
+      let compressed = 0;
+      for (const row of rows) {
+        const targetTier = getTargetTier(row.indexed_at, row.importance_score, row.pinned === 1);
+        if (targetTier === row.compression_tier) continue;
+
+        // Only compress forward (never decompress)
+        const tierOrder: CompressionTier[] = ['verbatim', 'light', 'medium', 'distilled'];
+        const currentIdx = tierOrder.indexOf(row.compression_tier as CompressionTier);
+        const targetIdx = tierOrder.indexOf(targetTier);
+        if (targetIdx <= currentIdx) continue;
+
+        const newSummary = compressToTier(row.content, row.summary, targetTier);
+        this.storage.exec(
+          'UPDATE observations SET summary = ?, compression_tier = ? WHERE id = ?',
+          [newSummary, targetTier, row.id],
+        );
+
+        this.logs.push({
+          type: 'compress',
+          entry_id: row.id,
+          message: `Compressed from ${row.compression_tier} to ${targetTier}`,
+          timestamp: Date.now(),
+        });
+        compressed++;
+      }
+
+      return compressed;
     } catch {
       return 0;
     }
