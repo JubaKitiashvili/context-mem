@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 13;
+export const LATEST_SCHEMA_VERSION = 14;
 
 export const migrations: Migration[] = [
   {
@@ -450,6 +450,28 @@ export const migrations: Migration[] = [
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (13, unixepoch(), 'Total Recall Phase 1: importance scoring, pinned observations, compression tiers, content FTS');
+    `,
+  },
+  {
+    version: 14,
+    description: 'Total Recall Phase 2: entity aliases, temporal facts, feedback tracking',
+    up: `
+      -- Entity Intelligence: alias resolution columns
+      ALTER TABLE entities ADD COLUMN canonical_id TEXT;
+      ALTER TABLE entities ADD COLUMN aliases TEXT DEFAULT '[]';
+      CREATE INDEX IF NOT EXISTS idx_entities_canonical ON entities(canonical_id);
+
+      -- Temporal Facts: validity windows on knowledge
+      ALTER TABLE knowledge ADD COLUMN valid_from INTEGER;
+      ALTER TABLE knowledge ADD COLUMN valid_to INTEGER;
+      ALTER TABLE knowledge ADD COLUMN superseded_by TEXT;
+
+      -- Memory Usefulness Feedback: tracking columns
+      ALTER TABLE observations ADD COLUMN last_useful_at INTEGER;
+      ALTER TABLE knowledge ADD COLUMN last_useful_at INTEGER;
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (14, unixepoch(), 'Total Recall Phase 2: entity aliases, temporal facts, feedback tracking');
     `,
   },
 ];
