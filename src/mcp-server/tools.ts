@@ -253,13 +253,14 @@ export const toolDefinitions: ToolDefinition[] = [
         shareable: { type: 'boolean', description: 'Whether this knowledge can be shared (default: true)' },
         source_type: { type: 'string', enum: ['explicit', 'inferred', 'observed'], description: 'How this knowledge was obtained: explicit (user stated directly), inferred (AI derived from context), observed (captured automatically). Default: observed' },
         force: { type: 'boolean', description: 'Force save even when contradictions exist (default: false)' },
+        valid_from: { type: 'number', description: 'Timestamp (ms) when this fact became true. Default: now' },
       },
       required: ['category', 'title', 'content'],
     },
   },
   {
     name: 'search_knowledge',
-    description: 'Search the knowledge base using 3-layer search (FTS5 → trigram → scan). Optionally include global cross-project knowledge.',
+    description: 'Search the knowledge base using 3-layer search (FTS5 → trigram → scan). Optionally include global cross-project knowledge. By default only returns currently-valid facts (valid_to IS NULL).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -267,6 +268,7 @@ export const toolDefinitions: ToolDefinition[] = [
         category: { type: 'string', enum: ['pattern', 'decision', 'error', 'api', 'component'], description: 'Filter by category' },
         limit: { type: 'number', description: 'Max results (default: 10)' },
         include_global: { type: 'boolean', description: 'Also search global cross-project knowledge store and merge results (project results first). Default: false' },
+        include_superseded: { type: 'boolean', description: 'Include superseded/expired facts. Default: false' },
       },
       required: ['query'],
     },
@@ -555,6 +557,21 @@ export const toolDefinitions: ToolDefinition[] = [
         limit: { type: 'number', description: 'Max results (default: 5)' },
       },
       required: ['query'],
+    },
+  },
+  // Total Recall — Temporal Query
+  {
+    name: 'temporal_query',
+    description: 'Query knowledge that was valid at a specific point in time. Returns facts that were active at the given timestamp.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search query' },
+        at: { type: 'number', description: 'Timestamp (ms) to query knowledge state at' },
+        category: { type: 'string', enum: ['pattern', 'decision', 'error', 'api', 'component'], description: 'Filter by category' },
+        limit: { type: 'number', description: 'Max results (default: 10)' },
+      },
+      required: ['query', 'at'],
     },
   },
   // Total Recall — Entity Detection
@@ -1107,7 +1124,7 @@ const KNOWLEDGE_CATEGORIES = ['pattern', 'decision', 'error', 'api', 'component'
 const SOURCE_TYPES = ['explicit', 'inferred', 'observed'] as const;
 
 export async function handleSaveKnowledge(
-  params: { category: string; title: string; content: string; tags?: string[]; shareable?: boolean; source_type?: string; force?: boolean },
+  params: { category: string; title: string; content: string; tags?: string[]; shareable?: boolean; source_type?: string; force?: boolean; valid_from?: number },
   kernel: ToolKernel,
 ): Promise<{ id: string; category: string; title: string; source_type: string; contradictions: ContradictionWarning[] } | { blocked: boolean; contradictions: ContradictionWarning[]; message: string } | { error: string }> {
   if (!params.title || !params.content) {
@@ -1152,6 +1169,24 @@ export async function handleSaveKnowledge(
       source_type: sourceType,
     });
 
+    // Set valid_from for temporal facts
+    const validFrom = params.valid_from ?? Date.now();
+    try {
+      kernel.storage.exec('UPDATE knowledge SET valid_from = ? WHERE id = ?', [validFrom, entry.id]);
+    } catch { /* non-critical */ }
+
+    // If contradictions were force-overridden, supersede old entries
+    if (forceOverride && contradictions.length > 0) {
+      for (const c of contradictions) {
+        try {
+          kernel.storage.exec(
+            'UPDATE knowledge SET valid_to = ?, superseded_by = ? WHERE id = ? AND valid_to IS NULL',
+            [Date.now(), entry.id, c.id],
+          );
+        } catch { /* non-critical */ }
+      }
+    }
+
     return {
       id: entry.id,
       category: entry.category,
@@ -1166,7 +1201,7 @@ export async function handleSaveKnowledge(
 }
 
 export async function handleSearchKnowledge(
-  params: { query: string; category?: string; limit?: number; include_global?: boolean },
+  params: { query: string; category?: string; limit?: number; include_global?: boolean; include_superseded?: boolean },
   kernel: ToolKernel,
 ): Promise<Array<{ id: string; category: string; title: string; content: string; relevance_score: number; tags: string[]; source_type: string; source_project?: string }> | { error: string }> {
   if (!params.query || typeof params.query !== 'string' || !params.query.trim()) {
@@ -1180,10 +1215,27 @@ export async function handleSearchKnowledge(
 
   const results = kernel.knowledgeBase.search(params.query, {
     category,
-    limit,
+    limit: params.include_superseded ? limit : limit * 2, // fetch extra to compensate for filtering
   }, kernel.sessionId);
 
-  const mapped = results.map(r => ({
+  // Filter out superseded entries unless explicitly requested
+  let filteredResults = results;
+  if (!params.include_superseded) {
+    const activeIds = new Set<string>();
+    for (const r of results) {
+      try {
+        const row = kernel.storage.prepare('SELECT valid_to FROM knowledge WHERE id = ?').get(r.id) as { valid_to: number | null } | undefined;
+        if (!row || row.valid_to === null) {
+          activeIds.add(r.id);
+        }
+      } catch {
+        activeIds.add(r.id); // include on error
+      }
+    }
+    filteredResults = results.filter(r => activeIds.has(r.id)).slice(0, limit);
+  }
+
+  const mapped = filteredResults.map(r => ({
     id: r.id,
     category: r.category,
     title: r.title,
@@ -1924,6 +1976,61 @@ export async function handleListPeople(
   } catch {
     return [];
   }
+}
+
+// Total Recall — Temporal Query handler
+export async function handleTemporalQuery(
+  params: { query: string; at: number; category?: string; limit?: number },
+  kernel: ToolKernel,
+): Promise<Array<{ id: string; category: string; title: string; content: string; valid_from: number | null; valid_to: number | null; superseded_by: string | null }> | { error: string }> {
+  if (!params.query || typeof params.query !== 'string' || !params.query.trim()) {
+    return { error: 'query is required and must be a non-empty string' };
+  }
+  if (!params.at || typeof params.at !== 'number') {
+    return { error: 'at timestamp is required' };
+  }
+
+  const limit = validateLimit(params.limit ?? 10);
+
+  // Search knowledge base, then filter by temporal validity
+  const results = kernel.knowledgeBase.search(params.query, {
+    category: params.category as KnowledgeCategory | undefined,
+    limit: limit * 3, // over-fetch to compensate for temporal filtering
+  }, kernel.sessionId);
+
+  const temporalResults: Array<{
+    id: string; category: string; title: string; content: string;
+    valid_from: number | null; valid_to: number | null; superseded_by: string | null;
+  }> = [];
+
+  for (const r of results) {
+    if (temporalResults.length >= limit) break;
+    try {
+      const row = kernel.storage.prepare(
+        'SELECT valid_from, valid_to, superseded_by FROM knowledge WHERE id = ?'
+      ).get(r.id) as { valid_from: number | null; valid_to: number | null; superseded_by: string | null } | undefined;
+
+      if (!row) continue;
+
+      // Check: valid_from <= at AND (valid_to IS NULL OR valid_to > at)
+      const validFrom = row.valid_from ?? 0;
+      const validAtTime = validFrom <= params.at && (row.valid_to === null || row.valid_to > params.at);
+
+      if (validAtTime) {
+        temporalResults.push({
+          id: r.id,
+          category: r.category,
+          title: r.title,
+          content: r.content,
+          valid_from: row.valid_from,
+          valid_to: row.valid_to,
+          superseded_by: row.superseded_by,
+        });
+      }
+    } catch { /* skip on error */ }
+  }
+
+  return temporalResults;
 }
 
 // Session Handoff
