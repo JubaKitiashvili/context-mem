@@ -559,6 +559,17 @@ export const toolDefinitions: ToolDefinition[] = [
       required: ['query'],
     },
   },
+  // Total Recall — Wake-Up Primer
+  {
+    name: 'wake_up',
+    description: 'Generate a scored session primer with 4-layer context: project profile, critical knowledge, recent decisions, and top entities.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        budget_tokens: { type: 'number', description: 'Total token budget for the primer (default: 700)' },
+      },
+    },
+  },
   // Total Recall — Temporal Query
   {
     name: 'temporal_query',
@@ -1936,6 +1947,15 @@ export async function handleRecall(
   } catch {
     return [];
   }
+}
+
+// Total Recall — Wake-Up Primer handler
+export async function handleWakeUp(
+  params: { budget_tokens?: number },
+  kernel: ToolKernel,
+): Promise<{ l0_profile: string; l1_critical: string; l2_recent: string; l3_entities: string; total_tokens: number }> {
+  const { assembleWakeUp } = await import('../core/wake-up.js');
+  return assembleWakeUp(kernel.storage, { total_budget_tokens: params.budget_tokens });
 }
 
 // Total Recall — Entity Detection handlers

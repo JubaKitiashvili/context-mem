@@ -37,6 +37,7 @@ import {
   handleHandoffSession,
   handleMergeSuggestions,
   handleRecall,
+  handleWakeUp,
   handleEntityDetect,
   handleListPeople,
   handleTemporalQuery,
@@ -171,6 +172,9 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'list_people':
           result = await handleListPeople(params as Parameters<typeof handleListPeople>[0], kernel);
+          break;
+        case 'wake_up':
+          result = await handleWakeUp(params as Parameters<typeof handleWakeUp>[0], kernel);
           break;
         case 'temporal_query':
           result = await handleTemporalQuery(params as Parameters<typeof handleTemporalQuery>[0], kernel);
