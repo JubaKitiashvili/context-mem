@@ -4,12 +4,12 @@ import Database from 'better-sqlite3';
 import { LATEST_SCHEMA_VERSION, migrations } from '../../../plugins/storage/migrations.js';
 
 describe('migrations', () => {
-  it('LATEST_SCHEMA_VERSION is 14', () => {
-    assert.equal(LATEST_SCHEMA_VERSION, 14);
+  it('LATEST_SCHEMA_VERSION is 15', () => {
+    assert.equal(LATEST_SCHEMA_VERSION, 15);
   });
 
-  it('migrations array has 14 entries', () => {
-    assert.equal(migrations.length, 14);
+  it('migrations array has 15 entries', () => {
+    assert.equal(migrations.length, 15);
   });
 
   it('each migration has version, description, and up', () => {
@@ -180,6 +180,33 @@ describe('migrations', () => {
     });
   });
 
+  describe('migration v15 SQL', () => {
+    const v15 = migrations.find(m => m.version === 15)!;
+
+    it('creates topics and observation_topics tables', () => {
+      assert.ok(v15.up.includes('CREATE TABLE IF NOT EXISTS topics'));
+      assert.ok(v15.up.includes('CREATE TABLE IF NOT EXISTS observation_topics'));
+      assert.ok(v15.up.includes('idx_ot_topic'));
+    });
+  });
+
+  it('v15 topics tables are usable after migration', () => {
+    const db = new Database(':memory:');
+    for (const m of migrations) { db.exec(m.up); }
+
+    db.exec(`INSERT INTO topics (id, name, observation_count, last_seen) VALUES ('t1', 'database', 5, 1000)`);
+    db.exec(`INSERT INTO observation_topics (observation_id, topic_id, confidence) VALUES ('obs1', 't1', 0.9)`);
+
+    const topic = db.prepare('SELECT name, observation_count FROM topics WHERE id = ?').get('t1') as { name: string; observation_count: number };
+    assert.equal(topic.name, 'database');
+    assert.equal(topic.observation_count, 5);
+
+    const ot = db.prepare('SELECT confidence FROM observation_topics WHERE observation_id = ? AND topic_id = ?').get('obs1', 't1') as { confidence: number };
+    assert.equal(ot.confidence, 0.9);
+
+    db.close();
+  });
+
   it('v14 columns are usable after migration', () => {
     const db = new Database(':memory:');
     for (const m of migrations) {
@@ -223,7 +250,7 @@ describe('migrations', () => {
 
       // Verify schema_version has all entries
       const versions = db.prepare('SELECT version FROM schema_version ORDER BY version').all() as Array<{ version: number }>;
-      assert.equal(versions.length, 14);
+      assert.equal(versions.length, 15);
       assert.equal(versions[0].version, 1);
       assert.equal(versions[1].version, 2);
       assert.equal(versions[2].version, 3);
@@ -238,6 +265,7 @@ describe('migrations', () => {
       assert.equal(versions[11].version, 12);
       assert.equal(versions[12].version, 13);
       assert.equal(versions[13].version, 14);
+      assert.equal(versions[14].version, 15);
 
       // Verify observations table exists and is insertable
       db.exec(`INSERT INTO observations (id, type, content, summary, metadata, indexed_at)

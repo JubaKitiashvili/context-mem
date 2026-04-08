@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 14;
+export const LATEST_SCHEMA_VERSION = 15;
 
 export const migrations: Migration[] = [
   {
@@ -472,6 +472,34 @@ export const migrations: Migration[] = [
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (14, unixepoch(), 'Total Recall Phase 2: entity aliases, temporal facts, feedback tracking');
+    `,
+  },
+  {
+    version: 15,
+    description: 'Total Recall Phase 3: topics and observation-topic mapping',
+    up: `
+      CREATE TABLE IF NOT EXISTS topics (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        parent_id TEXT,
+        observation_count INTEGER DEFAULT 0,
+        last_seen INTEGER,
+        FOREIGN KEY (parent_id) REFERENCES topics(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS observation_topics (
+        observation_id TEXT NOT NULL,
+        topic_id TEXT NOT NULL,
+        confidence REAL DEFAULT 1.0,
+        PRIMARY KEY (observation_id, topic_id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_ot_topic ON observation_topics(topic_id);
+      CREATE INDEX IF NOT EXISTS idx_ot_observation ON observation_topics(observation_id);
+      CREATE INDEX IF NOT EXISTS idx_topics_name ON topics(name);
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (15, unixepoch(), 'Total Recall Phase 3: topics and observation-topic mapping');
     `,
   },
 ];
