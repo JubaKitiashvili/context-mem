@@ -352,6 +352,62 @@ describe('Dreamer background agent', () => {
     });
   });
 
+  describe('consolidateRelated', () => {
+    it('runs without error on empty DB', async () => {
+      const storage2 = await createTestDb();
+      const kb2 = new KnowledgeBase(storage2);
+      const dreamer2 = new Dreamer(kb2, storage2, { cycleMs: 60_000 });
+      const count = await dreamer2.consolidateRelated();
+      assert.equal(count, 0);
+      dreamer2.stop();
+      await storage2.close();
+    });
+  });
+
+  describe('extractCausalChains', () => {
+    it('runs without error on empty DB', async () => {
+      const storage2 = await createTestDb();
+      const kb2 = new KnowledgeBase(storage2);
+      const dreamer2 = new Dreamer(kb2, storage2, { cycleMs: 60_000 });
+      const count = await dreamer2.extractCausalChains();
+      assert.equal(count, 0);
+      dreamer2.stop();
+      await storage2.close();
+    });
+  });
+
+  describe('boostCorroboration', () => {
+    it('boosts entries accessed in 3+ sessions', async () => {
+      const storage2 = await createTestDb();
+      const kb2 = new KnowledgeBase(storage2);
+
+      const entry = await kb2.save({
+        category: 'pattern',
+        title: 'Well-corroborated pattern',
+        content: 'This pattern is used across many sessions',
+        tags: [],
+        source_type: 'observed',
+      });
+
+      // Log access in 3 sessions
+      storage2.exec('INSERT INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)', [entry.id, 's1', Date.now()]);
+      storage2.exec('INSERT INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)', [entry.id, 's2', Date.now()]);
+      storage2.exec('INSERT INTO session_access_log (knowledge_id, session_id, accessed_at) VALUES (?, ?, ?)', [entry.id, 's3', Date.now()]);
+
+      const before = storage2.prepare('SELECT relevance_score FROM knowledge WHERE id = ?').get(entry.id) as { relevance_score: number };
+
+      const dreamer2 = new Dreamer(kb2, storage2, { cycleMs: 60_000 });
+      const count = await dreamer2.boostCorroboration();
+      assert.ok(count >= 1);
+
+      const after = storage2.prepare('SELECT relevance_score FROM knowledge WHERE id = ?').get(entry.id) as { relevance_score: number };
+      assert.ok(after.relevance_score > before.relevance_score, 'relevance should be boosted');
+
+      dreamer2.stop();
+      await storage2.close();
+    });
+  });
+
   describe('duplicateScan', () => {
     it('detects and logs duplicate entries in global store', async () => {
       const storage = await createTestDb();

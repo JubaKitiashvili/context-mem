@@ -209,4 +209,32 @@ describe('Pipeline', () => {
       assert.ok(obs.metadata.importance_score! >= 0.8);
     });
   });
+
+  describe('entity extraction integration', () => {
+    let storage: BetterSqlite3Storage;
+    let pipeline: Pipeline;
+
+    before(async () => {
+      storage = await createTestDb();
+      const registry = new PluginRegistry();
+      const privacy = makePrivacy();
+      pipeline = new Pipeline(registry, storage, privacy, 'session-entities');
+    });
+
+    after(async () => { await storage.close(); });
+
+    it('stores extracted entity names in metadata', async () => {
+      const obs = await pipeline.observe('We migrated from MySQL to PostgreSQL for better performance', 'decision', 'test');
+      assert.ok(obs.metadata.entities);
+      assert.ok(obs.metadata.entities!.length > 0, 'should extract at least one entity');
+      // PostgreSQL and MySQL should be detected
+      assert.ok(obs.metadata.entities!.includes('PostgreSQL') || obs.metadata.entities!.includes('MySQL'),
+        'should detect database technologies');
+    });
+
+    it('content without entities has no entities in metadata', async () => {
+      const obs = await pipeline.observe('just a plain text note about nothing', 'context', 'test');
+      assert.equal(obs.metadata.entities, undefined, 'no entities should mean undefined');
+    });
+  });
 });

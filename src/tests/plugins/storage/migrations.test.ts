@@ -4,12 +4,12 @@ import Database from 'better-sqlite3';
 import { LATEST_SCHEMA_VERSION, migrations } from '../../../plugins/storage/migrations.js';
 
 describe('migrations', () => {
-  it('LATEST_SCHEMA_VERSION is 13', () => {
-    assert.equal(LATEST_SCHEMA_VERSION, 13);
+  it('LATEST_SCHEMA_VERSION is 16', () => {
+    assert.equal(LATEST_SCHEMA_VERSION, 16);
   });
 
-  it('migrations array has 13 entries', () => {
-    assert.equal(migrations.length, 13);
+  it('migrations array has 16 entries', () => {
+    assert.equal(migrations.length, 16);
   });
 
   it('each migration has version, description, and up', () => {
@@ -159,6 +159,88 @@ describe('migrations', () => {
     db.close();
   });
 
+  describe('migration v14 SQL', () => {
+    const v14 = migrations.find(m => m.version === 14)!;
+
+    it('adds canonical_id and aliases to entities', () => {
+      assert.ok(v14.up.includes('ALTER TABLE entities ADD COLUMN canonical_id TEXT'));
+      assert.ok(v14.up.includes("ALTER TABLE entities ADD COLUMN aliases TEXT DEFAULT '[]'"));
+      assert.ok(v14.up.includes('idx_entities_canonical'));
+    });
+
+    it('adds temporal columns to knowledge', () => {
+      assert.ok(v14.up.includes('ALTER TABLE knowledge ADD COLUMN valid_from INTEGER'));
+      assert.ok(v14.up.includes('ALTER TABLE knowledge ADD COLUMN valid_to INTEGER'));
+      assert.ok(v14.up.includes('ALTER TABLE knowledge ADD COLUMN superseded_by TEXT'));
+    });
+
+    it('adds last_useful_at to observations and knowledge', () => {
+      assert.ok(v14.up.includes('ALTER TABLE observations ADD COLUMN last_useful_at INTEGER'));
+      assert.ok(v14.up.includes('ALTER TABLE knowledge ADD COLUMN last_useful_at INTEGER'));
+    });
+  });
+
+  describe('migration v15 SQL', () => {
+    const v15 = migrations.find(m => m.version === 15)!;
+
+    it('creates topics and observation_topics tables', () => {
+      assert.ok(v15.up.includes('CREATE TABLE IF NOT EXISTS topics'));
+      assert.ok(v15.up.includes('CREATE TABLE IF NOT EXISTS observation_topics'));
+      assert.ok(v15.up.includes('idx_ot_topic'));
+    });
+  });
+
+  it('v15 topics tables are usable after migration', () => {
+    const db = new Database(':memory:');
+    for (const m of migrations) { db.exec(m.up); }
+
+    db.exec(`INSERT INTO topics (id, name, observation_count, last_seen) VALUES ('t1', 'database', 5, 1000)`);
+    db.exec(`INSERT INTO observation_topics (observation_id, topic_id, confidence) VALUES ('obs1', 't1', 0.9)`);
+
+    const topic = db.prepare('SELECT name, observation_count FROM topics WHERE id = ?').get('t1') as { name: string; observation_count: number };
+    assert.equal(topic.name, 'database');
+    assert.equal(topic.observation_count, 5);
+
+    const ot = db.prepare('SELECT confidence FROM observation_topics WHERE observation_id = ? AND topic_id = ?').get('obs1', 't1') as { confidence: number };
+    assert.equal(ot.confidence, 0.9);
+
+    db.close();
+  });
+
+  it('v14 columns are usable after migration', () => {
+    const db = new Database(':memory:');
+    for (const m of migrations) {
+      db.exec(m.up);
+    }
+
+    // Test entity alias columns
+    db.exec(`INSERT INTO entities (id, name, entity_type, metadata, created_at, updated_at, canonical_id, aliases)
+             VALUES ('e1', 'React.js', 'library', '{}', 1000, 1000, 'e-react', '["React","ReactJS"]')`);
+    const entity = db.prepare('SELECT canonical_id, aliases FROM entities WHERE id = ?').get('e1') as {
+      canonical_id: string; aliases: string;
+    };
+    assert.equal(entity.canonical_id, 'e-react');
+    assert.equal(JSON.parse(entity.aliases).length, 2);
+
+    // Test temporal columns on knowledge
+    db.exec(`INSERT INTO knowledge (id, category, title, content, tags, created_at, valid_from, valid_to, superseded_by)
+             VALUES ('k1', 'decision', 'Use Redis', 'Cache with Redis', '[]', 1000, 1000, 2000, 'k2')`);
+    const kn = db.prepare('SELECT valid_from, valid_to, superseded_by FROM knowledge WHERE id = ?').get('k1') as {
+      valid_from: number; valid_to: number; superseded_by: string;
+    };
+    assert.equal(kn.valid_from, 1000);
+    assert.equal(kn.valid_to, 2000);
+    assert.equal(kn.superseded_by, 'k2');
+
+    // Test last_useful_at on observations
+    db.exec(`INSERT INTO observations (id, type, content, metadata, indexed_at, last_useful_at)
+             VALUES ('o1', 'context', 'test', '{}', 1000, 5000)`);
+    const obs = db.prepare('SELECT last_useful_at FROM observations WHERE id = ?').get('o1') as { last_useful_at: number };
+    assert.equal(obs.last_useful_at, 5000);
+
+    db.close();
+  });
+
   describe('running migrations on in-memory database', () => {
     it('applies all migrations without error', () => {
       const db = new Database(':memory:');
@@ -168,7 +250,7 @@ describe('migrations', () => {
 
       // Verify schema_version has all entries
       const versions = db.prepare('SELECT version FROM schema_version ORDER BY version').all() as Array<{ version: number }>;
-      assert.equal(versions.length, 13);
+      assert.equal(versions.length, 16);
       assert.equal(versions[0].version, 1);
       assert.equal(versions[1].version, 2);
       assert.equal(versions[2].version, 3);
@@ -182,6 +264,9 @@ describe('migrations', () => {
       assert.equal(versions[10].version, 11);
       assert.equal(versions[11].version, 12);
       assert.equal(versions[12].version, 13);
+      assert.equal(versions[13].version, 14);
+      assert.equal(versions[14].version, 15);
+      assert.equal(versions[15].version, 16);
 
       // Verify observations table exists and is insertable
       db.exec(`INSERT INTO observations (id, type, content, summary, metadata, indexed_at)

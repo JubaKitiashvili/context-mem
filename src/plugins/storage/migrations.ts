@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 13;
+export const LATEST_SCHEMA_VERSION = 16;
 
 export const migrations: Migration[] = [
   {
@@ -450,6 +450,87 @@ export const migrations: Migration[] = [
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (13, unixepoch(), 'Total Recall Phase 1: importance scoring, pinned observations, compression tiers, content FTS');
+    `,
+  },
+  {
+    version: 14,
+    description: 'Total Recall Phase 2: entity aliases, temporal facts, feedback tracking',
+    up: `
+      -- Entity Intelligence: alias resolution columns
+      ALTER TABLE entities ADD COLUMN canonical_id TEXT;
+      ALTER TABLE entities ADD COLUMN aliases TEXT DEFAULT '[]';
+      CREATE INDEX IF NOT EXISTS idx_entities_canonical ON entities(canonical_id);
+
+      -- Temporal Facts: validity windows on knowledge
+      ALTER TABLE knowledge ADD COLUMN valid_from INTEGER;
+      ALTER TABLE knowledge ADD COLUMN valid_to INTEGER;
+      ALTER TABLE knowledge ADD COLUMN superseded_by TEXT;
+
+      -- Memory Usefulness Feedback: tracking columns
+      ALTER TABLE observations ADD COLUMN last_useful_at INTEGER;
+      ALTER TABLE knowledge ADD COLUMN last_useful_at INTEGER;
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (14, unixepoch(), 'Total Recall Phase 2: entity aliases, temporal facts, feedback tracking');
+    `,
+  },
+  {
+    version: 15,
+    description: 'Total Recall Phase 3: topics and observation-topic mapping',
+    up: `
+      CREATE TABLE IF NOT EXISTS topics (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        parent_id TEXT,
+        observation_count INTEGER DEFAULT 0,
+        last_seen INTEGER,
+        FOREIGN KEY (parent_id) REFERENCES topics(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS observation_topics (
+        observation_id TEXT NOT NULL,
+        topic_id TEXT NOT NULL,
+        confidence REAL DEFAULT 1.0,
+        PRIMARY KEY (observation_id, topic_id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_ot_topic ON observation_topics(topic_id);
+      CREATE INDEX IF NOT EXISTS idx_ot_observation ON observation_topics(observation_id);
+      CREATE INDEX IF NOT EXISTS idx_topics_name ON topics(name);
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (15, unixepoch(), 'Total Recall Phase 3: topics and observation-topic mapping');
+    `,
+  },
+  {
+    version: 16,
+    description: 'Total Recall Phase 4: decision trails and working fingerprints',
+    up: `
+      CREATE TABLE IF NOT EXISTS decision_trails (
+        id TEXT PRIMARY KEY,
+        decision_summary TEXT NOT NULL,
+        file_path TEXT,
+        topic TEXT,
+        trail TEXT NOT NULL,
+        session_id TEXT,
+        created_at INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_dt_file ON decision_trails(file_path);
+      CREATE INDEX IF NOT EXISTS idx_dt_topic ON decision_trails(topic);
+
+      CREATE TABLE IF NOT EXISTS working_fingerprints (
+        id TEXT PRIMARY KEY,
+        session_id TEXT NOT NULL,
+        fingerprint TEXT NOT NULL,
+        trigger_event TEXT,
+        created_at INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_wf_session ON working_fingerprints(session_id);
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (16, unixepoch(), 'Total Recall Phase 4: decision trails and working fingerprints');
     `,
   },
 ];

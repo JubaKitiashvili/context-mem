@@ -8,6 +8,9 @@ import type { BudgetManager } from './budget.js';
 import type { SessionManager } from './session.js';
 import type { LLMService } from './llm-provider.js';
 import { classifyImportance } from './importance-classifier.js';
+import { extractEntities, resolveAlias } from './entity-extractor.js';
+import type { KnowledgeGraph } from './knowledge-graph.js';
+import { detectTopics, storeTopics } from './topic-detector.js';
 
 export class Pipeline {
   private budgetManager?: BudgetManager;
@@ -16,6 +19,7 @@ export class Pipeline {
   private readonly CHECKPOINT_INTERVAL = 20;
   private embedder: { embed(text: string): Promise<Float32Array | null>; toBuffer(e: Float32Array): Buffer } | null = null;
   private llmService?: LLMService;
+  private knowledgeGraph?: KnowledgeGraph;
 
   constructor(
     private registry: PluginRegistry,
@@ -38,6 +42,10 @@ export class Pipeline {
 
   setLLMService(llm: LLMService): void {
     this.llmService = llm;
+  }
+
+  setKnowledgeGraph(kg: KnowledgeGraph): void {
+    this.knowledgeGraph = kg;
   }
 
   private scheduleEmbedding(id: string, text: string): void {
@@ -103,6 +111,13 @@ export class Pipeline {
 
     // 2.5 Importance classification (zero-LLM, deterministic)
     const importance = classifyImportance(cleaned, type);
+
+    // 2.6 Entity extraction (zero-LLM, deterministic)
+    const extractedEntities = extractEntities(cleaned);
+    const entityNames = extractedEntities.map(e => e.name);
+
+    // 2.7 Topic detection (zero-LLM, deterministic)
+    const detectedTopics = detectTopics(cleaned, undefined, entityNames);
 
     // 3. Find summarizer
     const summarizers = this.registry.getAll('summarizer') as SummarizerPlugin[];
@@ -173,6 +188,7 @@ export class Pipeline {
         files_modified: opts?.files_modified,
         importance_score: importance.score,
         significance_flags: importance.flags,
+        entities: entityNames.length > 0 ? entityNames : undefined,
       },
       indexed_at: Date.now(),
     };
@@ -184,7 +200,37 @@ export class Pipeline {
       [obs.id, obs.type, obs.content, obs.summary || null, JSON.stringify(obs.metadata), obs.indexed_at, privacyLevel, this.sessionId, contentHash, opts?.correlation_id || null, importance.score, importance.pinned ? 1 : 0, 'verbatim']
     );
 
-    // 6b. Async embedding (fire-and-forget)
+    // 6b. Create/update entities in knowledge graph (sync but non-critical)
+    if (this.knowledgeGraph && extractedEntities.length > 0) {
+      try {
+        for (const entity of extractedEntities) {
+          const resolved = resolveAlias(entity.name);
+          const existing = this.knowledgeGraph.findEntity(resolved.canonical, entity.type);
+          if (existing.length === 0) {
+            this.knowledgeGraph.addEntity(resolved.canonical, entity.type, {
+              metadata: {
+                confidence: entity.confidence,
+                aliases: entity.aliases,
+                source_observation: obs.id,
+              },
+            });
+          }
+        }
+      } catch {
+        // Entity extraction is non-critical — never block observe()
+      }
+    }
+
+    // 6c. Store topic associations (non-critical)
+    if (detectedTopics.length > 0) {
+      try {
+        storeTopics(this.storage, obs.id, detectedTopics);
+      } catch {
+        // Topic storage is non-critical
+      }
+    }
+
+    // 6d. Async embedding (fire-and-forget)
     if (this.embedder) {
       this.scheduleEmbedding(obs.id, obs.summary || obs.content);
     }

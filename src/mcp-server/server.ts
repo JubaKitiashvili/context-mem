@@ -37,6 +37,17 @@ import {
   handleHandoffSession,
   handleMergeSuggestions,
   handleRecall,
+  handleGenerateStory,
+  handlePredictLoss,
+  handleExplainDecision,
+  handleImportConversations,
+  handleBrowse,
+  handleListTopics,
+  handleFindTunnels,
+  handleWakeUp,
+  handleEntityDetect,
+  handleListPeople,
+  handleTemporalQuery,
 } from './tools.js';
 
 export function createMcpServer(kernel: ToolKernel): Server {
@@ -162,6 +173,39 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'recall':
           result = await handleRecall(params as Parameters<typeof handleRecall>[0], kernel);
+          break;
+        case 'entity_detect':
+          result = await handleEntityDetect(params as Parameters<typeof handleEntityDetect>[0], kernel);
+          break;
+        case 'list_people':
+          result = await handleListPeople(params as Parameters<typeof handleListPeople>[0], kernel);
+          break;
+        case 'generate_story':
+          result = await handleGenerateStory(params as Parameters<typeof handleGenerateStory>[0], kernel);
+          break;
+        case 'predict_loss':
+          result = await handlePredictLoss(params as Parameters<typeof handlePredictLoss>[0], kernel);
+          break;
+        case 'explain_decision':
+          result = await handleExplainDecision(params as Parameters<typeof handleExplainDecision>[0], kernel);
+          break;
+        case 'import_conversations':
+          result = await handleImportConversations(params as Parameters<typeof handleImportConversations>[0], kernel);
+          break;
+        case 'browse':
+          result = await handleBrowse(params as Parameters<typeof handleBrowse>[0], kernel);
+          break;
+        case 'list_topics':
+          result = await handleListTopics(params as Parameters<typeof handleListTopics>[0], kernel);
+          break;
+        case 'find_tunnels':
+          result = await handleFindTunnels(params as Parameters<typeof handleFindTunnels>[0], kernel);
+          break;
+        case 'wake_up':
+          result = await handleWakeUp(params as Parameters<typeof handleWakeUp>[0], kernel);
+          break;
+        case 'temporal_query':
+          result = await handleTemporalQuery(params as Parameters<typeof handleTemporalQuery>[0], kernel);
           break;
         default:
           console.error(`context-mem: Unknown MCP tool requested: ${name}`);
