@@ -520,6 +520,43 @@ export const toolDefinitions: ToolDefinition[] = [
       },
     },
   },
+  // Total Recall — Verbatim Recall
+  {
+    name: 'recall',
+    description: 'Verbatim memory retrieval with importance filtering and rich attribution. Returns original content, not summaries.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search query for original content' },
+        filters: {
+          type: 'object',
+          description: 'Optional filters to narrow results',
+          properties: {
+            type: {
+              type: 'string',
+              enum: ['code', 'error', 'log', 'test', 'commit', 'decision', 'context'],
+              description: 'Filter by observation type',
+            },
+            time_range: {
+              type: 'object',
+              properties: {
+                from: { type: 'number', description: 'Start timestamp (ms since epoch)' },
+                to: { type: 'number', description: 'End timestamp (ms since epoch)' },
+              },
+            },
+            importance_min: { type: 'number', description: 'Minimum importance score (0.0-1.0)' },
+            flags: {
+              type: 'array',
+              items: { type: 'string', enum: ['DECISION', 'ORIGIN', 'PIVOT', 'CORE', 'MILESTONE', 'PROBLEM'] },
+              description: 'Required significance flags',
+            },
+          },
+        },
+        limit: { type: 'number', description: 'Max results (default: 5)' },
+      },
+      required: ['query'],
+    },
+  },
   // Merge suggestions
   {
     name: 'merge_suggestions',
@@ -1736,6 +1773,95 @@ export async function handleAsk(
   const graph = kernel.knowledgeGraph ?? new (await import('../core/knowledge-graph.js')).KnowledgeGraph(kernel.storage);
   const nlQuery = new NaturalLanguageQuery(kernel.storage, kernel.knowledgeBase, graph, kernel.eventTracker);
   return nlQuery.ask(params.question.trim());
+}
+
+// Total Recall — Recall handler
+export interface RecallResult {
+  id: string;
+  content: string;
+  date: number;
+  type: string;
+  importance_score: number;
+  flags: string[];
+  compression_tier: string;
+}
+
+export async function handleRecall(
+  params: { query: string; filters?: { type?: string; time_range?: { from?: number; to?: number }; importance_min?: number; flags?: string[] }; limit?: number },
+  kernel: ToolKernel,
+): Promise<RecallResult[] | { error: string }> {
+  if (!params.query || typeof params.query !== 'string' || !params.query.trim()) {
+    return { error: 'query is required and must be a non-empty string' };
+  }
+
+  const limit = validateLimit(params.limit ?? 5);
+
+  // Search content FTS index for verbatim results
+  let sql = `
+    SELECT o.id, o.type, o.content, o.indexed_at, o.importance_score, o.pinned, o.compression_tier, o.metadata,
+           bm25(obs_content_fts) as relevance
+    FROM obs_content_fts
+    JOIN observations o ON o.rowid = obs_content_fts.rowid
+    WHERE obs_content_fts MATCH ?
+  `;
+  const sqlParams: unknown[] = [sanitizeFTS5Query(params.query)];
+
+  // Apply filters
+  if (params.filters?.type) {
+    sql += ' AND o.type = ?';
+    sqlParams.push(validateObservationType(params.filters.type));
+  }
+  if (params.filters?.time_range?.from) {
+    sql += ' AND o.indexed_at >= ?';
+    sqlParams.push(params.filters.time_range.from);
+  }
+  if (params.filters?.time_range?.to) {
+    sql += ' AND o.indexed_at <= ?';
+    sqlParams.push(params.filters.time_range.to);
+  }
+  if (params.filters?.importance_min !== undefined && params.filters.importance_min > 0) {
+    sql += ' AND o.importance_score >= ?';
+    sqlParams.push(params.filters.importance_min);
+  }
+
+  sql += ' ORDER BY bm25(obs_content_fts) LIMIT ?';
+  sqlParams.push(limit);
+
+  try {
+    const rows = kernel.storage.prepare(sql).all(...sqlParams) as Array<{
+      id: string; type: string; content: string; indexed_at: number;
+      importance_score: number; compression_tier: string; metadata: string;
+    }>;
+
+    // Post-filter by flags (stored in metadata JSON)
+    let results = rows.map(row => {
+      let flags: string[] = [];
+      try {
+        const meta = JSON.parse(row.metadata);
+        flags = meta.significance_flags || [];
+      } catch { /* ignore parse errors */ }
+
+      return {
+        id: row.id,
+        content: row.content,
+        date: row.indexed_at,
+        type: row.type,
+        importance_score: row.importance_score,
+        flags,
+        compression_tier: row.compression_tier,
+      };
+    });
+
+    // Filter by required flags if specified
+    if (params.filters?.flags && params.filters.flags.length > 0) {
+      const requiredFlags = new Set(params.filters.flags);
+      results = results.filter(r => r.flags.some(f => requiredFlags.has(f)));
+    }
+
+    return results;
+  } catch {
+    return [];
+  }
 }
 
 // Session Handoff

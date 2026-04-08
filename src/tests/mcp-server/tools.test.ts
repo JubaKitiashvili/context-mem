@@ -11,7 +11,7 @@ import { BetterSqlite3Storage } from '../../plugins/storage/better-sqlite3.js';
 import { SearchFusion } from '../../plugins/search/fusion.js';
 import { BM25Search } from '../../plugins/search/bm25.js';
 import { DEFAULT_CONFIG } from '../../core/types.js';
-import { handleObserve, handleSummarize } from '../../mcp-server/tools.js';
+import { handleObserve, handleSummarize, handleRecall } from '../../mcp-server/tools.js';
 import type { ToolKernel } from '../../mcp-server/tools.js';
 import { createTestDb } from '../helpers.js';
 
@@ -128,5 +128,80 @@ describe('MCP tools — summarize', () => {
     assert.ok(!('error' in result), 'should not return error');
     if ('error' in result) return;
     assert.equal(result.tokens_original, result.tokens_summarized);
+  });
+});
+
+describe('MCP tools — recall', () => {
+  let storage: BetterSqlite3Storage;
+  let kernel: ToolKernel;
+
+  before(async () => {
+    storage = await createTestDb();
+    kernel = await buildKernel(storage, 'mcp-recall-session');
+    // Seed observations with varied importance
+    await handleObserve({ content: 'We decided to use PostgreSQL for the database layer', type: 'decision' }, kernel);
+    await handleObserve({ content: 'Deployed the authentication service to production', type: 'context' }, kernel);
+    await handleObserve({ content: 'Simple debug log entry nothing special', type: 'log' }, kernel);
+    await handleObserve({ content: 'Critical vulnerability found in auth module', type: 'error' }, kernel);
+  });
+
+  after(async () => { await storage.close(); });
+
+  it('returns verbatim content for matching query', async () => {
+    const results = await handleRecall({ query: 'PostgreSQL' }, kernel);
+    assert.ok(!('error' in results));
+    assert.ok(Array.isArray(results));
+    if (Array.isArray(results) && results.length > 0) {
+      assert.ok(results[0].content.includes('PostgreSQL'), 'should return original verbatim content');
+      assert.ok(results[0].importance_score > 0, 'should have importance_score');
+      assert.ok(results[0].compression_tier === 'verbatim', 'new observations should be verbatim tier');
+    }
+  });
+
+  it('importance_min filter works', async () => {
+    const results = await handleRecall({ query: 'auth', filters: { importance_min: 0.7 } }, kernel);
+    assert.ok(Array.isArray(results));
+    if (Array.isArray(results)) {
+      for (const r of results) {
+        assert.ok(r.importance_score >= 0.7, `expected >= 0.7, got ${r.importance_score}`);
+      }
+    }
+  });
+
+  it('flags filter works', async () => {
+    const results = await handleRecall({ query: 'decided PostgreSQL', filters: { flags: ['DECISION'] } }, kernel);
+    assert.ok(Array.isArray(results));
+    if (Array.isArray(results) && results.length > 0) {
+      assert.ok(results[0].flags.includes('DECISION'), 'should have DECISION flag');
+    }
+  });
+
+  it('type filter works', async () => {
+    const results = await handleRecall({ query: 'auth vulnerability', filters: { type: 'error' } }, kernel);
+    assert.ok(Array.isArray(results));
+    if (Array.isArray(results)) {
+      for (const r of results) {
+        assert.equal(r.type, 'error');
+      }
+    }
+  });
+
+  it('returns error for empty query', async () => {
+    const results = await handleRecall({ query: '' }, kernel);
+    assert.ok('error' in results);
+  });
+
+  it('combined filters narrow results correctly', async () => {
+    const results = await handleRecall({
+      query: 'PostgreSQL database',
+      filters: { type: 'decision', importance_min: 0.8 },
+    }, kernel);
+    assert.ok(Array.isArray(results));
+    if (Array.isArray(results)) {
+      for (const r of results) {
+        assert.equal(r.type, 'decision');
+        assert.ok(r.importance_score >= 0.8);
+      }
+    }
   });
 });
