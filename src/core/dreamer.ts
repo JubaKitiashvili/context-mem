@@ -87,6 +87,9 @@ export class Dreamer {
       await this.promotionScan();
       await this.duplicateScan();
       await this.progressiveCompress();
+      await this.consolidateRelated();
+      await this.extractCausalChains();
+      await this.boostCorroboration();
     } catch {
       // Dreamer is non-critical — never crash the host
     }
@@ -307,6 +310,148 @@ export class Dreamer {
       }
 
       return compressed;
+    } catch {
+      return 0;
+    }
+  }
+
+  // ---------- Consolidation ----------
+
+  async consolidateRelated(): Promise<number> {
+    try {
+      // Find topics with >5 unlinked observations
+      const topics = this.storage.prepare(`
+        SELECT t.id, t.name, t.observation_count
+        FROM topics t
+        WHERE t.observation_count > 5
+      `).all() as Array<{ id: string; name: string; observation_count: number }>;
+
+      let consolidated = 0;
+      for (const topic of topics) {
+        // Check if already consolidated (knowledge entry exists for this topic)
+        const existing = this.storage.prepare(
+          "SELECT id FROM knowledge WHERE title LIKE ? AND category = 'pattern'"
+        ).get(`%${topic.name}%`) as { id: string } | undefined;
+        if (existing) continue;
+
+        // Get observation summaries for this topic
+        const obs = this.storage.prepare(`
+          SELECT o.id, o.summary, o.content
+          FROM observation_topics ot
+          JOIN observations o ON o.id = ot.observation_id
+          WHERE ot.topic_id = ?
+          ORDER BY o.importance_score DESC
+          LIMIT 10
+        `).all(topic.id) as Array<{ id: string; summary: string | null; content: string }>;
+
+        if (obs.length < 5) continue;
+
+        // Create consolidated knowledge entry
+        const summaries = obs.map(o => o.summary || o.content.slice(0, 100)).join('; ');
+        const consolidatedContent = `Consolidated from ${obs.length} observations on ${topic.name}: ${summaries.slice(0, 500)}`;
+
+        try {
+          await this.knowledgeBase.save({
+            category: 'pattern',
+            title: `${topic.name} knowledge (consolidated)`,
+            content: consolidatedContent,
+            tags: [topic.name, 'consolidated'],
+            source_type: 'inferred',
+          });
+          consolidated++;
+          this.logs.push({
+            type: 'merge-suggestion',
+            entry_id: topic.id,
+            message: `Consolidated ${obs.length} observations on topic "${topic.name}"`,
+            timestamp: Date.now(),
+          });
+        } catch { /* non-critical */ }
+      }
+      return consolidated;
+    } catch {
+      return 0;
+    }
+  }
+
+  // ---------- Causal chain extraction ----------
+
+  async extractCausalChains(): Promise<number> {
+    try {
+      // Find DECISION observations followed by PROBLEM then MILESTONE
+      const decisions = this.storage.prepare(`
+        SELECT o.id, o.indexed_at, o.metadata
+        FROM observations o
+        WHERE o.metadata LIKE '%DECISION%'
+        ORDER BY o.indexed_at DESC
+        LIMIT 50
+      `).all() as Array<{ id: string; indexed_at: number; metadata: string }>;
+
+      let chains = 0;
+      for (const decision of decisions) {
+        // Look for PROBLEM within 7 days after
+        const problem = this.storage.prepare(`
+          SELECT id, indexed_at FROM observations
+          WHERE metadata LIKE '%PROBLEM%'
+            AND indexed_at > ? AND indexed_at < ?
+          ORDER BY indexed_at ASC LIMIT 1
+        `).get(decision.indexed_at, decision.indexed_at + 7 * 24 * 60 * 60 * 1000) as { id: string; indexed_at: number } | undefined;
+
+        if (!problem) continue;
+
+        // Look for MILESTONE within 14 days after the problem
+        const milestone = this.storage.prepare(`
+          SELECT id FROM observations
+          WHERE metadata LIKE '%MILESTONE%'
+            AND indexed_at > ? AND indexed_at < ?
+          ORDER BY indexed_at ASC LIMIT 1
+        `).get(problem.indexed_at, problem.indexed_at + 14 * 24 * 60 * 60 * 1000) as { id: string } | undefined;
+
+        if (!milestone) continue;
+
+        this.logs.push({
+          type: 'promote',
+          entry_id: decision.id,
+          message: `Causal chain: decision ${decision.id} → problem ${problem.id} → milestone ${milestone.id}`,
+          timestamp: Date.now(),
+        });
+        chains++;
+      }
+      return chains;
+    } catch {
+      return 0;
+    }
+  }
+
+  // ---------- Corroboration boost ----------
+
+  async boostCorroboration(): Promise<number> {
+    try {
+      // Find knowledge entries accessed in 3+ distinct sessions
+      const rows = this.storage.prepare(`
+        SELECT sal.knowledge_id, COUNT(DISTINCT sal.session_id) as sessions
+        FROM session_access_log sal
+        JOIN knowledge k ON k.id = sal.knowledge_id
+        WHERE k.archived = 0
+        GROUP BY sal.knowledge_id
+        HAVING sessions >= 3
+      `).all() as Array<{ knowledge_id: string; sessions: number }>;
+
+      let boosted = 0;
+      for (const row of rows) {
+        // Only boost if not already boosted recently (check access_count as proxy)
+        const entry = this.storage.prepare(
+          'SELECT relevance_score FROM knowledge WHERE id = ?'
+        ).get(row.knowledge_id) as { relevance_score: number } | undefined;
+
+        if (!entry || entry.relevance_score >= 3.0) continue; // cap boost
+
+        this.storage.exec(
+          'UPDATE knowledge SET relevance_score = MIN(relevance_score * 1.15, 5.0) WHERE id = ?',
+          [row.knowledge_id],
+        );
+        boosted++;
+      }
+      return boosted;
     } catch {
       return 0;
     }
