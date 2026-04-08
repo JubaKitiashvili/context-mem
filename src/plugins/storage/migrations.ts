@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 15;
+export const LATEST_SCHEMA_VERSION = 16;
 
 export const migrations: Migration[] = [
   {
@@ -500,6 +500,37 @@ export const migrations: Migration[] = [
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (15, unixepoch(), 'Total Recall Phase 3: topics and observation-topic mapping');
+    `,
+  },
+  {
+    version: 16,
+    description: 'Total Recall Phase 4: decision trails and working fingerprints',
+    up: `
+      CREATE TABLE IF NOT EXISTS decision_trails (
+        id TEXT PRIMARY KEY,
+        decision_summary TEXT NOT NULL,
+        file_path TEXT,
+        topic TEXT,
+        trail TEXT NOT NULL,
+        session_id TEXT,
+        created_at INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_dt_file ON decision_trails(file_path);
+      CREATE INDEX IF NOT EXISTS idx_dt_topic ON decision_trails(topic);
+
+      CREATE TABLE IF NOT EXISTS working_fingerprints (
+        id TEXT PRIMARY KEY,
+        session_id TEXT NOT NULL,
+        fingerprint TEXT NOT NULL,
+        trigger_event TEXT,
+        created_at INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_wf_session ON working_fingerprints(session_id);
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (16, unixepoch(), 'Total Recall Phase 4: decision trails and working fingerprints');
     `,
   },
 ];
