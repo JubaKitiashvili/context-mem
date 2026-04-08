@@ -559,6 +559,39 @@ export const toolDefinitions: ToolDefinition[] = [
       required: ['query'],
     },
   },
+  // Total Recall — Browse & Topics
+  {
+    name: 'browse',
+    description: 'Browse observations by topic, person, or time dimension.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        dimension: { type: 'string', enum: ['topic', 'person', 'time'], description: 'Dimension to browse by' },
+        value: { type: 'string', description: 'Value to filter (topic name, person name, or ISO date)' },
+        verbatim: { type: 'boolean', description: 'Return original content instead of summaries' },
+        limit: { type: 'number', description: 'Max results (default: 10)' },
+      },
+      required: ['dimension', 'value'],
+    },
+  },
+  {
+    name: 'list_topics',
+    description: 'List all detected topics with observation counts.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        limit: { type: 'number', description: 'Max results (default: 20)' },
+      },
+    },
+  },
+  {
+    name: 'find_tunnels',
+    description: 'Find topics that appear in 2+ projects (cross-project knowledge bridges).',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
   // Total Recall — Wake-Up Primer
   {
     name: 'wake_up',
@@ -1944,6 +1977,108 @@ export async function handleRecall(
     }
 
     return results;
+  } catch {
+    return [];
+  }
+}
+
+// Total Recall — Browse & Topics handlers
+export async function handleBrowse(
+  params: { dimension: string; value: string; verbatim?: boolean; limit?: number },
+  kernel: ToolKernel,
+): Promise<Array<{ id: string; type: string; text: string; timestamp: number; importance_score: number }>> {
+  const limit = validateLimit(params.limit ?? 10);
+  const textCol = params.verbatim ? 'content' : 'summary';
+
+  try {
+    switch (params.dimension) {
+      case 'topic': {
+        const rows = kernel.storage.prepare(`
+          SELECT o.id, o.type, o.${textCol} as text_val, o.indexed_at, o.importance_score
+          FROM observation_topics ot
+          JOIN topics t ON t.id = ot.topic_id
+          JOIN observations o ON o.id = ot.observation_id
+          WHERE t.name = ?
+          ORDER BY o.importance_score DESC, o.indexed_at DESC
+          LIMIT ?
+        `).all(params.value, limit) as Array<{ id: string; type: string; text_val: string; indexed_at: number; importance_score: number }>;
+        return rows.map(r => ({ id: r.id, type: r.type, text: r.text_val || '', timestamp: r.indexed_at, importance_score: r.importance_score }));
+      }
+      case 'person': {
+        const rows = kernel.storage.prepare(`
+          SELECT o.id, o.type, o.${textCol} as text_val, o.indexed_at, o.importance_score
+          FROM observations o
+          WHERE o.metadata LIKE ?
+          ORDER BY o.importance_score DESC, o.indexed_at DESC
+          LIMIT ?
+        `).all(`%${params.value}%`, limit) as Array<{ id: string; type: string; text_val: string; indexed_at: number; importance_score: number }>;
+        return rows.map(r => ({ id: r.id, type: r.type, text: r.text_val || '', timestamp: r.indexed_at, importance_score: r.importance_score }));
+      }
+      case 'time': {
+        const ts = new Date(params.value).getTime();
+        if (isNaN(ts)) return [];
+        const dayStart = ts;
+        const dayEnd = ts + 24 * 60 * 60 * 1000;
+        const rows = kernel.storage.prepare(`
+          SELECT id, type, ${textCol} as text_val, indexed_at, importance_score
+          FROM observations
+          WHERE indexed_at >= ? AND indexed_at < ?
+          ORDER BY importance_score DESC, indexed_at DESC
+          LIMIT ?
+        `).all(dayStart, dayEnd, limit) as Array<{ id: string; type: string; text_val: string; indexed_at: number; importance_score: number }>;
+        return rows.map(r => ({ id: r.id, type: r.type, text: r.text_val || '', timestamp: r.indexed_at, importance_score: r.importance_score }));
+      }
+      default:
+        return [];
+    }
+  } catch {
+    return [];
+  }
+}
+
+export async function handleListTopics(
+  params: { limit?: number },
+  kernel: ToolKernel,
+): Promise<Array<{ id: string; name: string; observation_count: number; last_seen: number | null }>> {
+  const limit = validateLimit(params.limit ?? 20);
+  try {
+    const rows = kernel.storage.prepare(
+      'SELECT id, name, observation_count, last_seen FROM topics ORDER BY observation_count DESC, last_seen DESC LIMIT ?'
+    ).all(limit) as Array<{ id: string; name: string; observation_count: number; last_seen: number | null }>;
+    return rows;
+  } catch {
+    return [];
+  }
+}
+
+export async function handleFindTunnels(
+  _params: Record<string, unknown>,
+  kernel: ToolKernel,
+): Promise<Array<{ topic: string; projects: string[] }>> {
+  if (!kernel.globalStore) return [];
+  try {
+    // Find topic names that appear in local DB
+    const localTopics = kernel.storage.prepare('SELECT name FROM topics WHERE observation_count > 0').all() as Array<{ name: string }>;
+    const tunnels: Array<{ topic: string; projects: string[] }> = [];
+
+    for (const lt of localTopics) {
+      // Check if this topic exists in global store (cross-project)
+      const globalResults = kernel.globalStore.search(lt.name, { limit: 5 });
+      if (globalResults.length > 0) {
+        const projects = new Set<string>();
+        projects.add(kernel.projectDir);
+        for (const gr of globalResults) {
+          const entry = gr as unknown as Record<string, unknown>;
+          if (entry.source_project) {
+            projects.add(entry.source_project as string);
+          }
+        }
+        if (projects.size >= 2) {
+          tunnels.push({ topic: lt.name, projects: [...projects] });
+        }
+      }
+    }
+    return tunnels;
   } catch {
     return [];
   }
