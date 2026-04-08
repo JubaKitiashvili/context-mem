@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 12;
+export const LATEST_SCHEMA_VERSION = 13;
 
 export const migrations: Migration[] = [
   {
@@ -400,6 +400,56 @@ export const migrations: Migration[] = [
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (12, unixepoch(), 'Contradiction count for confidence scoring');
+    `,
+  },
+  {
+    version: 13,
+    description: 'Total Recall Phase 1: importance scoring, pinned observations, compression tiers, content FTS',
+    up: `
+      -- Importance classification columns
+      ALTER TABLE observations ADD COLUMN importance_score REAL DEFAULT 0.5;
+      ALTER TABLE observations ADD COLUMN pinned INTEGER DEFAULT 0;
+      ALTER TABLE observations ADD COLUMN compression_tier TEXT DEFAULT 'verbatim';
+
+      -- Content-only FTS5 index for verbatim search
+      CREATE VIRTUAL TABLE IF NOT EXISTS obs_content_fts USING fts5(
+        content,
+        content=observations,
+        content_rowid=rowid,
+        tokenize='porter unicode61'
+      );
+
+      -- Recreate triggers to include obs_content_fts sync
+      DROP TRIGGER IF EXISTS obs_ai;
+      DROP TRIGGER IF EXISTS obs_ad;
+      DROP TRIGGER IF EXISTS obs_au;
+
+      CREATE TRIGGER obs_ai AFTER INSERT ON observations BEGIN
+        INSERT INTO obs_fts(rowid, summary, content) VALUES (NEW.rowid, NEW.summary, NEW.content);
+        INSERT INTO obs_trigram(rowid, summary) VALUES (NEW.rowid, NEW.summary);
+        INSERT INTO obs_content_fts(rowid, content) VALUES (NEW.rowid, NEW.content);
+      END;
+
+      CREATE TRIGGER obs_ad AFTER DELETE ON observations BEGIN
+        INSERT INTO obs_fts(obs_fts, rowid, summary, content) VALUES ('delete', OLD.rowid, OLD.summary, OLD.content);
+        INSERT INTO obs_trigram(obs_trigram, rowid, summary) VALUES ('delete', OLD.rowid, OLD.summary);
+        INSERT INTO obs_content_fts(obs_content_fts, rowid, content) VALUES ('delete', OLD.rowid, OLD.content);
+      END;
+
+      CREATE TRIGGER obs_au AFTER UPDATE ON observations BEGIN
+        INSERT INTO obs_fts(obs_fts, rowid, summary, content) VALUES ('delete', OLD.rowid, OLD.summary, OLD.content);
+        INSERT INTO obs_fts(rowid, summary, content) VALUES (NEW.rowid, NEW.summary, NEW.content);
+        INSERT INTO obs_trigram(obs_trigram, rowid, summary) VALUES ('delete', OLD.rowid, OLD.summary);
+        INSERT INTO obs_trigram(rowid, summary) VALUES (NEW.rowid, NEW.summary);
+        INSERT INTO obs_content_fts(obs_content_fts, rowid, content) VALUES ('delete', OLD.rowid, OLD.content);
+        INSERT INTO obs_content_fts(rowid, content) VALUES (NEW.rowid, NEW.content);
+      END;
+
+      -- Rebuild content FTS index with existing observation data
+      INSERT INTO obs_content_fts(obs_content_fts) VALUES('rebuild');
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (13, unixepoch(), 'Total Recall Phase 1: importance scoring, pinned observations, compression tiers, content FTS');
     `,
   },
 ];

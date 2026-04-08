@@ -4,12 +4,12 @@ import Database from 'better-sqlite3';
 import { LATEST_SCHEMA_VERSION, migrations } from '../../../plugins/storage/migrations.js';
 
 describe('migrations', () => {
-  it('LATEST_SCHEMA_VERSION is 12', () => {
-    assert.equal(LATEST_SCHEMA_VERSION, 12);
+  it('LATEST_SCHEMA_VERSION is 13', () => {
+    assert.equal(LATEST_SCHEMA_VERSION, 13);
   });
 
-  it('migrations array has 12 entries', () => {
-    assert.equal(migrations.length, 12);
+  it('migrations array has 13 entries', () => {
+    assert.equal(migrations.length, 13);
   });
 
   it('each migration has version, description, and up', () => {
@@ -100,6 +100,65 @@ describe('migrations', () => {
     assert.ok(sql.includes('ALTER TABLE knowledge ADD COLUMN auto_promoted INTEGER DEFAULT 0'));
   });
 
+  describe('migration v13 SQL', () => {
+    const v13 = migrations.find(m => m.version === 13)!;
+
+    it('adds importance_score, pinned, compression_tier columns', () => {
+      assert.ok(v13.up.includes('ALTER TABLE observations ADD COLUMN importance_score REAL DEFAULT 0.5'));
+      assert.ok(v13.up.includes('ALTER TABLE observations ADD COLUMN pinned INTEGER DEFAULT 0'));
+      assert.ok(v13.up.includes("ALTER TABLE observations ADD COLUMN compression_tier TEXT DEFAULT 'verbatim'"));
+    });
+
+    it('creates obs_content_fts table', () => {
+      assert.ok(v13.up.includes('CREATE VIRTUAL TABLE IF NOT EXISTS obs_content_fts USING fts5'));
+    });
+
+    it('recreates triggers with obs_content_fts sync', () => {
+      assert.ok(v13.up.includes('DROP TRIGGER IF EXISTS obs_ai'));
+      assert.ok(v13.up.includes('DROP TRIGGER IF EXISTS obs_ad'));
+      assert.ok(v13.up.includes('DROP TRIGGER IF EXISTS obs_au'));
+      assert.ok(v13.up.includes('INSERT INTO obs_content_fts(rowid, content) VALUES (NEW.rowid, NEW.content)'));
+    });
+
+    it('rebuilds content FTS index', () => {
+      assert.ok(v13.up.includes("INSERT INTO obs_content_fts(obs_content_fts) VALUES('rebuild')"));
+    });
+  });
+
+  it('v13 columns are usable after migration', () => {
+    const db = new Database(':memory:');
+    for (const m of migrations) {
+      db.exec(m.up);
+    }
+
+    // Insert with new columns
+    db.exec(`INSERT INTO observations (id, type, content, summary, metadata, indexed_at, importance_score, pinned, compression_tier)
+             VALUES ('tr1', 'decision', 'We decided to use Redis', 'Use Redis', '{}', 1000, 0.9, 1, 'verbatim')`);
+
+    const row = db.prepare('SELECT importance_score, pinned, compression_tier FROM observations WHERE id = ?').get('tr1') as {
+      importance_score: number; pinned: number; compression_tier: string;
+    };
+    assert.equal(row.importance_score, 0.9);
+    assert.equal(row.pinned, 1);
+    assert.equal(row.compression_tier, 'verbatim');
+
+    // Verify content FTS index works
+    const ftsResults = db.prepare("SELECT rowid FROM obs_content_fts WHERE obs_content_fts MATCH 'Redis'").all();
+    assert.ok(ftsResults.length >= 1);
+
+    // Verify defaults on insert without specifying new columns
+    db.exec(`INSERT INTO observations (id, type, content, summary, metadata, indexed_at)
+             VALUES ('tr2', 'context', 'some content', 'some summary', '{}', 2000)`);
+    const row2 = db.prepare('SELECT importance_score, pinned, compression_tier FROM observations WHERE id = ?').get('tr2') as {
+      importance_score: number; pinned: number; compression_tier: string;
+    };
+    assert.equal(row2.importance_score, 0.5);
+    assert.equal(row2.pinned, 0);
+    assert.equal(row2.compression_tier, 'verbatim');
+
+    db.close();
+  });
+
   describe('running migrations on in-memory database', () => {
     it('applies all migrations without error', () => {
       const db = new Database(':memory:');
@@ -109,7 +168,7 @@ describe('migrations', () => {
 
       // Verify schema_version has all entries
       const versions = db.prepare('SELECT version FROM schema_version ORDER BY version').all() as Array<{ version: number }>;
-      assert.equal(versions.length, 12);
+      assert.equal(versions.length, 13);
       assert.equal(versions[0].version, 1);
       assert.equal(versions[1].version, 2);
       assert.equal(versions[2].version, 3);
@@ -122,6 +181,7 @@ describe('migrations', () => {
       assert.equal(versions[9].version, 10);
       assert.equal(versions[10].version, 11);
       assert.equal(versions[11].version, 12);
+      assert.equal(versions[12].version, 13);
 
       // Verify observations table exists and is insertable
       db.exec(`INSERT INTO observations (id, type, content, summary, metadata, indexed_at)
