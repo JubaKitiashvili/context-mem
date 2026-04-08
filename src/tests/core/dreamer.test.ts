@@ -268,6 +268,90 @@ describe('Dreamer background agent', () => {
     });
   });
 
+  describe('progressiveCompress', () => {
+    it('compresses 8-day old observation from verbatim to light', async () => {
+      const storage2 = await createTestDb();
+      const kb2 = new KnowledgeBase(storage2);
+      const dreamer2 = new Dreamer(kb2, storage2, { cycleMs: 60_000 });
+
+      const EIGHT_DAYS_MS = 8 * 24 * 60 * 60 * 1000;
+      storage2.exec(
+        `INSERT INTO observations (id, type, content, summary, metadata, indexed_at, importance_score, pinned, compression_tier)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ['obs-8d', 'context', 'Some old content. Another sentence about testing.', null, '{}', Date.now() - EIGHT_DAYS_MS, 0.5, 0, 'verbatim'],
+      );
+
+      const count = await dreamer2.progressiveCompress();
+      assert.ok(count >= 1, `expected at least 1 compressed, got ${count}`);
+
+      const row = storage2.prepare('SELECT compression_tier FROM observations WHERE id = ?').get('obs-8d') as { compression_tier: string };
+      assert.equal(row.compression_tier, 'light');
+
+      dreamer2.stop();
+      await storage2.close();
+    });
+
+    it('compresses 31-day old observation from verbatim to medium', async () => {
+      const storage2 = await createTestDb();
+      const kb2 = new KnowledgeBase(storage2);
+      const dreamer2 = new Dreamer(kb2, storage2, { cycleMs: 60_000 });
+
+      const THIRTY_ONE_DAYS_MS = 31 * 24 * 60 * 60 * 1000;
+      storage2.exec(
+        `INSERT INTO observations (id, type, content, summary, metadata, indexed_at, importance_score, pinned, compression_tier)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ['obs-31d', 'context', 'Old content that needs medium compression', 'Old summary', '{}', Date.now() - THIRTY_ONE_DAYS_MS, 0.5, 0, 'verbatim'],
+      );
+
+      await dreamer2.progressiveCompress();
+      const row = storage2.prepare('SELECT compression_tier FROM observations WHERE id = ?').get('obs-31d') as { compression_tier: string };
+      assert.equal(row.compression_tier, 'medium');
+
+      dreamer2.stop();
+      await storage2.close();
+    });
+
+    it('compresses 91-day old observation to distilled', async () => {
+      const storage2 = await createTestDb();
+      const kb2 = new KnowledgeBase(storage2);
+      const dreamer2 = new Dreamer(kb2, storage2, { cycleMs: 60_000 });
+
+      const NINETY_ONE_DAYS_MS = 91 * 24 * 60 * 60 * 1000;
+      storage2.exec(
+        `INSERT INTO observations (id, type, content, summary, metadata, indexed_at, importance_score, pinned, compression_tier)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ['obs-91d', 'context', 'Very old content about decisions. We decided to use React.', 'Decided to use React.', '{}', Date.now() - NINETY_ONE_DAYS_MS, 0.5, 0, 'verbatim'],
+      );
+
+      await dreamer2.progressiveCompress();
+      const row = storage2.prepare('SELECT compression_tier FROM observations WHERE id = ?').get('obs-91d') as { compression_tier: string };
+      assert.equal(row.compression_tier, 'distilled');
+
+      dreamer2.stop();
+      await storage2.close();
+    });
+
+    it('skips pinned observations', async () => {
+      const storage2 = await createTestDb();
+      const kb2 = new KnowledgeBase(storage2);
+      const dreamer2 = new Dreamer(kb2, storage2, { cycleMs: 60_000 });
+
+      const HUNDRED_DAYS_MS = 100 * 24 * 60 * 60 * 1000;
+      storage2.exec(
+        `INSERT INTO observations (id, type, content, summary, metadata, indexed_at, importance_score, pinned, compression_tier)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ['obs-pinned', 'decision', 'This pinned observation should never compress', null, '{}', Date.now() - HUNDRED_DAYS_MS, 0.9, 1, 'verbatim'],
+      );
+
+      await dreamer2.progressiveCompress();
+      const row = storage2.prepare('SELECT compression_tier FROM observations WHERE id = ?').get('obs-pinned') as { compression_tier: string };
+      assert.equal(row.compression_tier, 'verbatim', 'pinned observation should stay verbatim');
+
+      dreamer2.stop();
+      await storage2.close();
+    });
+  });
+
   describe('duplicateScan', () => {
     it('detects and logs duplicate entries in global store', async () => {
       const storage = await createTestDb();
