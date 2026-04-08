@@ -10,6 +10,7 @@ import type { LLMService } from './llm-provider.js';
 import { classifyImportance } from './importance-classifier.js';
 import { extractEntities, resolveAlias } from './entity-extractor.js';
 import type { KnowledgeGraph } from './knowledge-graph.js';
+import { detectTopics, storeTopics } from './topic-detector.js';
 
 export class Pipeline {
   private budgetManager?: BudgetManager;
@@ -115,6 +116,9 @@ export class Pipeline {
     const extractedEntities = extractEntities(cleaned);
     const entityNames = extractedEntities.map(e => e.name);
 
+    // 2.7 Topic detection (zero-LLM, deterministic)
+    const detectedTopics = detectTopics(cleaned, undefined, entityNames);
+
     // 3. Find summarizer
     const summarizers = this.registry.getAll('summarizer') as SummarizerPlugin[];
     let summary: string | undefined;
@@ -217,7 +221,16 @@ export class Pipeline {
       }
     }
 
-    // 6c. Async embedding (fire-and-forget)
+    // 6c. Store topic associations (non-critical)
+    if (detectedTopics.length > 0) {
+      try {
+        storeTopics(this.storage, obs.id, detectedTopics);
+      } catch {
+        // Topic storage is non-critical
+      }
+    }
+
+    // 6d. Async embedding (fire-and-forget)
     if (this.embedder) {
       this.scheduleEmbedding(obs.id, obs.summary || obs.content);
     }
