@@ -19,10 +19,10 @@
 | Phase 1: Foundation | COMPLETE | 53/53 | [phase1-foundation.md](2026-04-09-total-recall-phase1.md) |
 | Phase 2: Core Intelligence | COMPLETE | 67/67 | [phase2-core-intelligence.md](2026-04-09-total-recall-phase2.md) |
 | Phase 3: Navigation & Import | COMPLETE | 48/48 | [phase3-navigation-import.md](2026-04-09-total-recall-phase3.md) |
-| Phase 4: Killer Features | NOT STARTED | 0/38 | [phase4-killer-features.md](2026-04-09-total-recall-phase4.md) |
+| Phase 4: Killer Features | COMPLETE | 38/38 | [phase4-killer-features.md](2026-04-09-total-recall-phase4.md) |
 | Phase 5: Marketing & Launch | NOT STARTED | 0/25 | [phase5-marketing-launch.md](2026-04-09-total-recall-phase5.md) |
 
-**Overall Progress: 168/231 tasks**
+**Overall Progress: 206/231 tasks**
 
 ---
 
@@ -106,10 +106,10 @@ Before marking a phase complete:
 | 2 | Conversation Import Engine | Phase 3 | COMPLETE |
 | 10 | Memory Consolidation in Dreamer | Phase 3 | COMPLETE |
 | 11 | Context-Triggered Wake-Up | Phase 3 | COMPLETE |
-| 13 | Decision Trail / `why` command | Phase 4 | NOT STARTED |
-| 15 | Session Narrative / `story` command | Phase 4 | NOT STARTED |
-| 14 | Regression Fingerprinting | Phase 4 | NOT STARTED |
-| 8 | Memory Pressure Predictor | Phase 4 | NOT STARTED |
+| 13 | Decision Trail / `why` command | Phase 4 | COMPLETE |
+| 15 | Session Narrative / `story` command | Phase 4 | COMPLETE |
+| 14 | Regression Fingerprinting | Phase 4 | COMPLETE |
+| 8 | Memory Pressure Predictor | Phase 4 | COMPLETE |
 
 ---
 
@@ -139,3 +139,4 @@ Before marking a phase complete:
 - 2026-04-08: Phase 1 complete. Migration v13, importance classifier, verbatim recall, adaptive compression, dreamer integration. 76 new tests (943→1019). 8 commits.
 - 2026-04-08: Phase 2 complete. Migration v14, entity extractor with 100+ aliases, temporal facts, wake-up primer, feedback engine. 47 new tests (1019→1066). 7 commits.
 - 2026-04-08: Phase 3 complete. Migration v15, topic detector, browse/list_topics/find_tunnels tools, 5 conversation parsers, dreamer consolidation (3 tasks), UserPromptSubmit hook. 33 new tests (1066→1099). 7 commits.
+- 2026-04-08: Phase 4 complete. Migration v16, decision trail builder, narrative generator (4 formats), regression fingerprinting, memory pressure predictor. 17 new tests (1099→1116). 2 commits.
