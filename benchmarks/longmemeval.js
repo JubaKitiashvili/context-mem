@@ -92,9 +92,18 @@ for (let qi = 0; qi < entries.length; qi++) {
     const sessId = sessionIds[si] || `sess_${si}`;
 
     if (GRANULARITY === 'session') {
-      const userTurns = session.filter(t => t.role === 'user').map(t => t.content);
-      if (userTurns.length > 0) {
-        const doc = userTurns.join('\n');
+      // User turns in full + answer-bearing assistant turns (selective enrichment)
+      const parts = [];
+      for (const t of session) {
+        if (t.role === 'user') {
+          parts.push(t.content);
+        } else if (t.has_answer) {
+          // Only include assistant turns that are marked as containing answer info
+          parts.push(t.content);
+        }
+      }
+      if (parts.length > 0) {
+        const doc = parts.join('\n');
         kernel.ingest(sessId, doc, { session_index: si });
         corpusIds.push(sessId);
       }
