@@ -1,4 +1,4 @@
-# context-mem
+# Context Mem
 
 > Your AI forgets everything. Every decision, every debug session, every architecture choice — gone when the session ends. **context-mem remembers.**
 
