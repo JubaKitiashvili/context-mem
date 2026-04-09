@@ -14,7 +14,7 @@ const Database = require('better-sqlite3');
 const projectRoot = path.resolve(__dirname, '..', '..');
 const { migrations } = require(path.join(projectRoot, 'dist/plugins/storage/migrations.js'));
 const { sanitizeFTS5Query } = require(path.join(projectRoot, 'dist/plugins/search/fts5-utils.js'));
-const { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, EXPANSIONS } = require(path.join(projectRoot, 'dist/plugins/search/query-builder.js'));
+const { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, resolveTemporalKeywords, EXPANSIONS } = require(path.join(projectRoot, 'dist/plugins/search/query-builder.js'));
 
 // ── Vector search helpers (optional) ────────────────────────────────────────
 let _embedder = null;
@@ -123,7 +123,7 @@ class BenchKernel {
    * Multi-strategy search using CORE query-builder module.
    * Same 4 strategies as core BM25Search: AND → Entity → Sanitized → OR+synonyms.
    */
-  search(query, limit = 10) {
+  search(query, limit = 10, opts = {}) {
     const seen = new Map(); // id → relevance score (higher = better)
 
     const runFTS = (matchExpr, weight) => {
@@ -164,13 +164,26 @@ class BenchKernel {
     const orQ = buildORQuery(query);
     if (orQ) runFTS(orQ, 1.0);
 
-    // Strategy 5: Individual keywords — catch long-tail
+    // Strategy 7: Individual keywords — catch long-tail
     const keywords = extractKeywords(query).filter(w => w.length >= 4);
     for (const kw of keywords.slice(0, 5)) {
       runFTS(`"${kw}"`, 0.5);
     }
 
-    // Strategy 6: Trigram fallback
+    // Strategy 8: Temporal resolution (relative dates → absolute)
+    if (opts.referenceDate) {
+      const temporalKws = resolveTemporalKeywords(query, new Date(opts.referenceDate));
+      if (temporalKws.length > 0) {
+        const temporalQuery = temporalKws.map(w => `"${w}"`).join(' AND ');
+        runFTS(temporalQuery, 1.6);
+        // Also try individual temporal keywords
+        for (const kw of temporalKws) {
+          if (kw.length >= 3) runFTS(`"${kw}"`, 0.8);
+        }
+      }
+    }
+
+    // Strategy 9: Trigram fallback
     if (seen.size < limit) {
       try {
         const triRows = this.db.prepare(`
@@ -270,14 +283,14 @@ class BenchKernel {
       .map(([id, score]) => ({ id, score }));
   }
 
-  async searchAsync(query, limit = 10) {
+  async searchAsync(query, limit = 10, opts = {}) {
     if (this._useVector && this._embeddings.size > 0) {
       const embedder = await getEmbedder();
       if (embedder) {
         try { this._queryEmbedding = await embedder.embed(query); } catch { this._queryEmbedding = null; }
       }
     }
-    return this.search(query, limit);
+    return this.search(query, limit, opts);
   }
 
   close() {

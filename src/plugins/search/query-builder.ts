@@ -89,6 +89,71 @@ export const EXPANSIONS: Record<string, string[]> = {
   level: ['degree', 'completed', 'graduated'],
 };
 
+const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const MONTH_NAMES = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+const MONTH_ABBR = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+/**
+ * Resolve relative temporal references to absolute date keywords.
+ * E.g., "10 days ago" with referenceDate → ["march", "29", "2026"]
+ */
+export function resolveTemporalKeywords(query: string, referenceDate?: Date): string[] {
+  if (!referenceDate) return [];
+  const q = query.toLowerCase();
+  const resolved: string[] = [];
+
+  // "N days/weeks/months ago"
+  const agoMatch = q.match(/(\d+)\s+(days?|weeks?|months?)\s+ago/);
+  if (agoMatch) {
+    const n = parseInt(agoMatch[1], 10);
+    const unit = agoMatch[2];
+    const d = new Date(referenceDate);
+    if (unit.startsWith('day')) d.setDate(d.getDate() - n);
+    else if (unit.startsWith('week')) d.setDate(d.getDate() - n * 7);
+    else if (unit.startsWith('month')) d.setMonth(d.getMonth() - n);
+    resolved.push(MONTH_NAMES[d.getMonth()], String(d.getDate()), String(d.getFullYear()));
+    resolved.push(MONTH_ABBR[d.getMonth()]);
+  }
+
+  // "last Saturday/Monday/etc."
+  const lastDayMatch = q.match(/last\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)/);
+  if (lastDayMatch) {
+    const targetDay = DAY_NAMES.indexOf(lastDayMatch[1]);
+    const d = new Date(referenceDate);
+    const currentDay = d.getDay();
+    let diff = currentDay - targetDay;
+    if (diff <= 0) diff += 7;
+    d.setDate(d.getDate() - diff);
+    resolved.push(MONTH_NAMES[d.getMonth()], String(d.getDate()), String(d.getFullYear()));
+  }
+
+  // "a couple of days ago" = ~2 days
+  if (q.includes('couple of days ago') || q.includes('couple days ago')) {
+    const d = new Date(referenceDate);
+    d.setDate(d.getDate() - 2);
+    resolved.push(MONTH_NAMES[d.getMonth()], String(d.getDate()));
+  }
+
+  // "a week ago"
+  if (q.match(/\ba\s+week\s+ago\b/)) {
+    const d = new Date(referenceDate);
+    d.setDate(d.getDate() - 7);
+    resolved.push(MONTH_NAMES[d.getMonth()], String(d.getDate()));
+  }
+
+  // "four/three/two weeks ago" (word form)
+  const wordWeeks = q.match(/\b(two|three|four|five|six|seven|eight)\s+weeks?\s+ago\b/);
+  if (wordWeeks) {
+    const map: Record<string, number> = { two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8 };
+    const n = map[wordWeeks[1]] || 2;
+    const d = new Date(referenceDate);
+    d.setDate(d.getDate() - n * 7);
+    resolved.push(MONTH_NAMES[d.getMonth()], String(d.getDate()));
+  }
+
+  return resolved;
+}
+
 /** Extract meaningful keywords from a query, filtering stop words. */
 export function extractKeywords(query: string): string[] {
   return query.toLowerCase()

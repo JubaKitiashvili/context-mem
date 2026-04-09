@@ -239,6 +239,8 @@ export interface SearchOpts {
   type_boosts?: Partial<Record<ObservationType, number>>;
   from?: number;
   to?: number;
+  /** Reference date for resolving relative temporal queries ("10 days ago"). ISO string or timestamp. */
+  referenceDate?: string | number;
 }
 
 export interface SearchPlugin extends Plugin {

@@ -24,6 +24,7 @@ const path = require('path');
 const os = require('os');
 const { BenchKernel } = require('./lib/kernel-adapter');
 const { formatPercent, printHeader } = require('./lib/metrics');
+const { EXPANSIONS } = require(path.join(__dirname, '..', 'dist/plugins/search/query-builder.js'));
 
 // ── Stop words for hybrid keyword boosting ──────────────────────────────────
 const STOP_WORDS = new Set([

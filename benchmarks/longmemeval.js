@@ -102,6 +102,9 @@ for (let qi = 0; qi < entries.length; qi++) {
           parts.push(t.content);
         }
       }
+      // NOTE: Session dates are available in entry.haystack_dates[si] but adding them
+      // to content creates noise (common month names match too many sessions).
+      // Temporal matching is handled by the temporal resolver in search instead.
       if (parts.length > 0) {
         const doc = parts.join('\n');
         kernel.ingest(sessId, doc, { session_index: si });
@@ -127,9 +130,11 @@ for (let qi = 0; qi < entries.length; qi++) {
   }
 
   // Query (hybrid when vector enabled)
+  const searchOpts = {};
+  if (entry.question_date) searchOpts.referenceDate = entry.question_date;
   const results = USE_VECTOR
-    ? await kernel.searchAsync(question, Math.max(TOP_K, 10))
-    : kernel.search(question, Math.max(TOP_K, 10));
+    ? await kernel.searchAsync(question, Math.max(TOP_K, 10), searchOpts)
+    : kernel.search(question, Math.max(TOP_K, 10), searchOpts);
   const retrievedIds = results.map(r => kernel.resolveId(r.id));
 
   // For turn granularity, map back to session IDs for scoring

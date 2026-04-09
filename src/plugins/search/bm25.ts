@@ -2,7 +2,7 @@ import type { SearchPlugin, PluginConfig, SearchResult, SearchOpts } from '../..
 import type { BetterSqlite3Storage } from '../storage/better-sqlite3.js';
 import { sanitizeFTS5Query } from './fts5-utils.js';
 import { extractBestSnippet } from './snippet-extractor.js';
-import { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, EXPANSIONS } from './query-builder.js';
+import { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, resolveTemporalKeywords, EXPANSIONS } from './query-builder.js';
 
 export class BM25Search implements SearchPlugin {
   name = 'bm25-search';
@@ -80,10 +80,19 @@ export class BM25Search implements SearchPlugin {
     const orQuery = buildORQuery(query);
     if (orQuery) runQuery(orQuery, 1.0);
 
-    // Strategy 6: Individual keyword fallback (long-tail catch)
+    // Strategy 7: Individual keyword fallback (long-tail catch)
     const keywords = extractKeywords(query).filter(w => w.length >= 4);
     for (const kw of keywords.slice(0, 5)) {
       runQuery(`"${kw}"`, 0.5);
+    }
+
+    // Strategy 8: Temporal resolution (relative dates → absolute date keywords)
+    if (opts.referenceDate) {
+      const temporalKws = resolveTemporalKeywords(query, new Date(opts.referenceDate));
+      if (temporalKws.length > 0) {
+        const temporalQuery = temporalKws.map(w => `"${w}"`).join(' AND ');
+        runQuery(temporalQuery, 1.6);
+      }
     }
 
     // Content-based reranking on full content (not just snippet)
