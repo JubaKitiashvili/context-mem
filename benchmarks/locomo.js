@@ -110,12 +110,37 @@ for (let ci = 0; ci < conversations.length; ci++) {
   const kernel = new BenchKernel().open();
   const diaIdToSessId = new Map(); // dia_id → sess_id
 
+  // Pre-extract summaries and observations for enrichment
+  const summaries = conv.session_summary || {};
+  const observations = conv.observation || {};
+
   for (const session of sessions) {
     const sessId = `sess_${session.index}`;
 
     if (GRANULARITY === 'session') {
       // One document per session: join all dialog turns
       const texts = session.dialogs.map(d => `${d.speaker}: ${d.text}`);
+
+      // Enrich with session summary (better keywords than raw dialog)
+      const summaryKey = `session_${session.index}_summary`;
+      if (summaries[summaryKey]) {
+        texts.push(`Summary: ${summaries[summaryKey]}`);
+      }
+
+      // Enrich with observations (structured facts)
+      const obsKey = `session_${session.index}_observation`;
+      if (observations[obsKey]) {
+        const obs = observations[obsKey];
+        for (const [speaker, facts] of Object.entries(obs)) {
+          if (Array.isArray(facts)) {
+            for (const fact of facts) {
+              const text = Array.isArray(fact) ? fact[0] : fact;
+              if (text) texts.push(`${speaker}: ${text}`);
+            }
+          }
+        }
+      }
+
       if (texts.length > 0) {
         kernel.ingest(sessId, texts.join('\n'), { session_index: session.index, date: session.date });
       }
