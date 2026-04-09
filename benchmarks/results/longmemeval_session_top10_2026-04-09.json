@@ -6,8 +6,8 @@
   "questions": 500,
   "recall_5": 0.972,
   "recall_10": 0.984,
-  "ndcg_10": 0.9319383087920647,
-  "elapsed_seconds": 10.764,
+  "ndcg_10": 0.932060648756608,
+  "elapsed_seconds": 10.929,
   "per_type": {
     "single-session-user": {
       "recall_5": 1,
@@ -240,13 +240,20 @@
         "answer_235eb6fb"
       ],
       "retrieved": [
-        "e93efd9a_1",
+        "ultrachat_371333",
+        "answer_235eb6fb",
         "sharegpt_ipLglky_48",
-        "answer_235eb6fb"
+        "sharegpt_ebWP6Hz_0",
+        "e93efd9a_1",
+        "sharegpt_BKl952A_23",
+        "ultrachat_106114",
+        "sharegpt_NdlHKlg_1",
+        "ultrachat_121159",
+        "ultrachat_86927"
       ],
       "recall_5": 1,
       "recall_10": 1,
-      "ndcg_10": 0.5
+      "ndcg_10": 0.6309297535714575
     },
     {
       "question": "How much did I spend on a designer handbag?",
@@ -355,8 +362,11 @@
         "answer_fea2e4d3",
         "89452526_2",
         "7732b1cc",
+        "aeb3818c_2",
         "798e4ba3_2",
+        "sharegpt_EvgMYt3_8",
         "76299a49_1",
+        "ultrachat_366348",
         "sharegpt_BvuMJIh_0"
       ],
       "recall_5": 1,
@@ -619,6 +629,7 @@
       ],
       "retrieved": [
         "answer_0df6aa4b",
+        "cd1f21d0_3",
         "d31c3ec8_3",
         "c578da1f_1"
       ],
@@ -1131,6 +1142,7 @@
       "retrieved": [
         "answer_d01949bf",
         "8064b6ca",
+        "7e17ae56_3",
         "94f460be_1",
         "48d385f0_1",
         "d2905eb6_2",
@@ -1308,6 +1320,7 @@
       ],
       "retrieved": [
         "answer_e6143162_abs",
+        "a51889ca_1",
         "375354d1_2",
         "sharegpt_SF6KWw1_9"
       ],
@@ -2078,19 +2091,19 @@
       ],
       "retrieved": [
         "answer_2504635e_2",
-        "sharegpt_dxirwR4_25",
         "2fe5510e_3",
+        "85a1c17b_1",
+        "0672cd7b_1",
+        "sharegpt_dxirwR4_25",
+        "a1166ecc_3",
         "73f4798f",
         "answer_2504635e_1",
-        "d8e33f5c_abs_2",
-        "sharegpt_oD90jY9_0",
         "f0c6ddb9_2",
-        "sharegpt_f7HEpin_0",
-        "ultrachat_55863"
+        "d8e33f5c_abs_2"
       ],
       "recall_5": 1,
       "recall_10": 1,
-      "ndcg_10": 0.8503449055347546
+      "ndcg_10": 0.8065735963827293
     },
     {
       "question": "How many doctor's appointments did I go to in March?",
@@ -2636,19 +2649,19 @@
       ],
       "retrieved": [
         "answer_35c5419d_3",
+        "answer_35c5419d_2",
         "answer_35c5419d_1",
         "4d04b866",
         "ultrachat_290513",
         "0d396995_1",
         "c95f88fd_1",
+        "sharegpt_6VqlSoL_25",
         "ff454885",
-        "ultrachat_308631",
-        "answer_35c5419d_2",
-        "809cabca_4"
+        "ultrachat_308631"
       ],
       "recall_5": 1,
       "recall_10": 1,
-      "ndcg_10": 0.9066276098484507
+      "ndcg_10": 1
     },
     {
       "question": "How many total pieces of writing have I completed since I started writing again three weeks ago, including short stories, poems, and pieces for the writing challenge?",
@@ -2820,20 +2833,20 @@
         "answer_35c5419d_abs_2"
       ],
       "retrieved": [
-        "answer_35c5419d_abs_1",
         "answer_35c5419d_abs_3",
+        "answer_35c5419d_abs_1",
+        "sharegpt_JuqFCEz_71",
+        "answer_35c5419d_abs_2",
         "85dec0b4_1",
         "f002a741_2",
         "sharegpt_eIgPNa5_0",
-        "sharegpt_JuqFCEz_71",
         "3214139b_1",
         "sharegpt_J410gdS_30",
-        "sharegpt_7ATc6lt_11",
         "880ee13e"
       ],
       "recall_5": 1,
       "recall_10": 1,
-      "ndcg_10": 1
+      "ndcg_10": 0.9674679834891693
     },
     {
       "question": "Can you recommend some resources where I can learn more about video editing?",
@@ -3261,15 +3274,15 @@
       ],
       "retrieved": [
         "answer_8ee04a2e",
+        "aec1af79_2",
+        "8ba845f4",
         "sharegpt_ijZ2Bps_0",
         "a394f6b5_1",
-        "8ba845f4",
-        "53dc1394",
         "2d74df23_4",
-        "95c9666f_5",
+        "53dc1394",
+        "sharegpt_KdbXhTW_13",
         "ultrachat_68525",
-        "ff67236f_3",
-        "adb1f904"
+        "c1d13b9e"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -3827,14 +3840,18 @@
       ],
       "retrieved": [
         "answer_c8cc60d6_2",
-        "ultrachat_561782",
         "answer_c8cc60d6_1",
         "sharegpt_Dewf2fQ_0",
-        "sharegpt_GYqnAhC_190"
+        "fe7b6394_4",
+        "ef71a35e_1",
+        "b52f03a1_1",
+        "ultrachat_561782",
+        "sharegpt_GYqnAhC_190",
+        "3a1ea336_4"
       ],
       "recall_5": 1,
       "recall_10": 1,
-      "ndcg_10": 0.9197207891481876
+      "ndcg_10": 1
     },
     {
       "question": "What was the total number of people reached by my Facebook ad campaign and Instagram influencer collaboration?",
@@ -3971,13 +3988,13 @@
       "retrieved": [
         "answer_688f9a3f_2",
         "answer_688f9a3f_1",
-        "sharegpt_BzX2Rwn_8",
-        "2b8fe437_1",
-        "0e349efa",
         "65698aa9_6",
-        "sharegpt_aQ4TU1X_49",
-        "sharegpt_k1buBRY_0",
-        "fd6e6b9a_3",
+        "2b8fe437_1",
+        "064f42ee_1",
+        "0e349efa",
+        "sharegpt_Yuw2LhQ_4",
+        "sharegpt_BzX2Rwn_8",
+        "sharegpt_PgmAp0p_0",
         "26bc645b_5"
       ],
       "recall_5": 1,
@@ -4456,9 +4473,12 @@
       "retrieved": [
         "answer_87e3a1cb_2",
         "answer_87e3a1cb_1",
+        "0275bceb_2",
+        "sharegpt_ToxFax1_56",
+        "2357de36_2",
+        "sharegpt_6fU0WOe_56",
         "0babf5b6_2",
-        "12dd7681_4",
-        "sharegpt_6fU0WOe_56"
+        "12dd7681_4"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -4520,11 +4540,14 @@
       "retrieved": [
         "answer_80d6d664_1",
         "answer_80d6d664_2",
-        "33877350_2",
+        "b1793bba",
         "95ce0e21_1",
         "sharegpt_s1I3UkG_0",
+        "33877350_2",
+        "5b014f9b_1",
+        "0e6e2ba5",
         "f5661236_1",
-        "sharegpt_IMESVlH_0"
+        "4acdd888"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -4629,10 +4652,10 @@
         "sharegpt_bYymtlW_0",
         "67388dfc_2",
         "a864e7aa_1",
+        "e862f726_1",
         "62be624f",
         "3176665b_1",
-        "sharegpt_7uSzi6w_2",
-        "33994682_3"
+        "sharegpt_7uSzi6w_2"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -5069,8 +5092,8 @@
         "dc7c53fa_4",
         "1a29bf1f",
         "20fa75e8_4",
-        "64574780",
-        "ultrachat_44085"
+        "ultrachat_437857",
+        "64574780"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -5085,14 +5108,14 @@
       "retrieved": [
         "answer_0b4a8adc_1",
         "398f23e7",
+        "ultrachat_263109",
         "sharegpt_CjoQMV6_0",
         "10889cf0_1",
         "sharegpt_tmFunkX_20",
         "sharegpt_tCLMKZY_0",
         "683c8358_1",
         "sharegpt_jZOf9E5_21",
-        "5ace29d7_2",
-        "a80c8ed4"
+        "5ace29d7_2"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -5203,12 +5226,13 @@
         "answer_add9b012_2",
         "answer_add9b012_1",
         "ultrachat_329640",
+        "1126be1e_2",
         "ultrachat_512282",
         "sharegpt_lH1wCbz_11",
         "b73a4d04_1",
         "ultrachat_139245",
-        "ultrachat_312687",
-        "1126be1e_2"
+        "c1e598cd_1",
+        "ultrachat_312687"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -6805,13 +6829,13 @@
         "answer_e936197f_1",
         "answer_e936197f_2",
         "826d51da_3",
+        "3c8e7c0e_3",
         "sharegpt_CcgnSUX_5",
         "a126eeab_3",
-        "73ba8380_5",
-        "c4e5d969_1",
-        "3c8e7c0e_3",
+        "d794dec9_2",
+        "sharegpt_CIPQtDW_0",
         "fce8bb8a_2",
-        "565929a2_2"
+        "sharegpt_6dPUCcK_13"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -7526,13 +7550,13 @@
         "answer_54f0d6f9_1",
         "answer_54f0d6f9_2",
         "sharegpt_v11Tpg9_0",
+        "sharegpt_q9s7fqn_0",
         "bcf96d28_3",
         "c69a28f0",
+        "sharegpt_aU0cpbU_6",
         "sharegpt_wpbTVG0_0",
-        "b16a8656_2",
-        "7f08e2e8_1",
-        "sharegpt_9pVk3fZ_8",
-        "sharegpt_q9s7fqn_0"
+        "c756d93e",
+        "c9292210_3"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -7830,9 +7854,9 @@
         "905d7d4e",
         "96f8be8b_2",
         "54df03d4_1",
+        "sharegpt_bq9G6bT_2",
         "4b3a0ee6_1",
-        "55ca8b20_3",
-        "sharegpt_bq9G6bT_2"
+        "55ca8b20_3"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -8433,11 +8457,11 @@
         "27aba903_2",
         "9f4bec78",
         "0c260a71_3",
+        "ultrachat_224967",
         "9760f4ca",
+        "sharegpt_HO1gGmm_4",
         "44678992_1",
-        "d81d9846",
-        "sharegpt_cfz0d02_36",
-        "6ac43c5b_5"
+        "d81d9846"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -8591,14 +8615,14 @@
       "retrieved": [
         "answer_b0f3dfff_2",
         "answer_b0f3dfff_1",
-        "57a6a404_2",
         "sharegpt_IMtsj65_0",
+        "sharegpt_AndeHJY_0",
+        "75302ce3",
+        "57a6a404_2",
+        "ultrachat_15288",
+        "af778ece_1",
         "9ac77ac9_1",
-        "sharegpt_1ZrnYv8_23",
-        "dba97bb1_3",
-        "007e7d81_2",
-        "1813a791",
-        "af778ece_1"
+        "sharegpt_1ZrnYv8_23"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -8758,19 +8782,19 @@
       ],
       "retrieved": [
         "answer_52382508_1",
+        "sharegpt_NCuLVp2_0",
         "answer_52382508_2",
         "1126be1e_2",
-        "sharegpt_WZhGKMr_0",
         "a63ad8e3_3",
+        "5e3c5a6b",
         "8ca0085a_1",
+        "sharegpt_WZhGKMr_0",
         "ultrachat_354956",
-        "b829045b",
-        "25b1afbc",
-        "09d14ddf_2"
+        "25b1afbc"
       ],
       "recall_5": 1,
       "recall_10": 1,
-      "ndcg_10": 1
+      "ndcg_10": 0.9197207891481876
     },
     {
       "question": "What brand of BBQ sauce am I currently obsessed with?",
@@ -9440,13 +9464,13 @@
         "answer_c6a0c6c2_1",
         "answer_c6a0c6c2_2",
         "339f5034_2",
+        "114c1fb7_6",
         "sharegpt_hcaZN94_546",
         "1b26bdd5_6",
+        "362aa011",
         "ultrachat_357650",
-        "sharegpt_hLkmbBL_0",
-        "e85e0eaf_1",
-        "ultrachat_140677",
-        "114c1fb7_6"
+        "16ece55f_2",
+        "sharegpt_hLkmbBL_0"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -9702,19 +9726,19 @@
       ],
       "retrieved": [
         "answer_52382508_abs_1",
+        "ultrachat_277933",
         "a864e7aa_5",
         "sharegpt_asoSnhq_0",
-        "answer_52382508_abs_2",
         "d0cfe938_1",
-        "ultrachat_277933",
-        "6c7079a1",
         "911142e1",
+        "sharegpt_vboNC2U_0",
         "sharegpt_M5JnA12_12",
-        "fe6d8377_1"
+        "sharegpt_BPhweN9_0",
+        "answer_52382508_abs_2"
       ],
       "recall_5": 1,
       "recall_10": 1,
-      "ndcg_10": 0.8772153153380493
+      "ndcg_10": 0.7903864795495061
     },
     {
       "question": "How many autographed football have I added to my collection in the first three months of collection?",
@@ -10675,12 +10699,12 @@
       "retrieved": [
         "answer_ultrachat_289157",
         "ultrachat_79945",
-        "sharegpt_WqYA9hK_0",
-        "sharegpt_WZzri9J_0",
         "sharegpt_tiXLrgw_0",
+        "sharegpt_WZzri9J_0",
         "ultrachat_157423",
-        "031061e6_4",
+        "sharegpt_WqYA9hK_0",
         "5534efcb_1",
+        "031061e6_4",
         "ultrachat_556482",
         "sharegpt_MHiC4J8_0"
       ],
@@ -10722,11 +10746,11 @@
         "b3619c2c",
         "sharegpt_fV5wNsl_0",
         "a68db5db_1",
+        "9345f7dc_1",
         "47b924c1_4",
         "33a39aa7_1",
-        "ultrachat_30360",
-        "46afc4c7",
-        "eee803c7"
+        "sharegpt_ljMj9Uo_15",
+        "ultrachat_30360"
       ],
       "recall_5": 1,
       "recall_10": 1,
@@ -10963,12 +10987,12 @@
         "3fd56ebf",
         "ultrachat_238317",
         "0eb28b73_1",
+        "sharegpt_f7HEpin_0",
         "e388463b_1",
         "ab9ba1b6_1",
         "476b1cbb",
         "ultrachat_99935",
-        "ultrachat_283303",
-        "8fb3fe3a_3"
+        "ultrachat_283303"
       ],
       "recall_5": 1,
       "recall_10": 1,

@@ -5,7 +5,7 @@
   "top_k": 10,
   "questions": 1977,
   "avg_recall": 0.9802731411229135,
-  "elapsed_seconds": 3.582,
+  "elapsed_seconds": 3.675,
   "per_category": {
     "multi-hop": {
       "hits": 317,
@@ -7554,15 +7554,15 @@
       ],
       "retrieved": [
         "sess_28",
+        "sess_8",
         "sess_2",
+        "sess_29",
         "sess_1",
-        "sess_4",
-        "sess_6",
-        "sess_9",
-        "sess_26",
-        "sess_32",
         "sess_23",
-        "sess_15"
+        "sess_17",
+        "sess_31",
+        "sess_19",
+        "sess_4"
       ],
       "recall": 1
     },
@@ -7834,16 +7834,16 @@
         "sess_1"
       ],
       "retrieved": [
-        "sess_1",
         "sess_9",
+        "sess_1",
         "sess_12",
         "sess_22",
         "sess_4",
         "sess_5",
+        "sess_31",
         "sess_14",
-        "sess_23",
-        "sess_2",
-        "sess_6"
+        "sess_10",
+        "sess_23"
       ],
       "recall": 1
     },
@@ -8422,16 +8422,16 @@
         "sess_13"
       ],
       "retrieved": [
+        "sess_13",
         "sess_2",
         "sess_16",
-        "sess_13",
+        "sess_31",
         "sess_23",
         "sess_6",
-        "sess_31",
-        "sess_32",
+        "sess_8",
         "sess_24",
-        "sess_3",
-        "sess_11"
+        "sess_32",
+        "sess_3"
       ],
       "recall": 1
     },
@@ -8892,8 +8892,8 @@
         "sess_19",
         "sess_5",
         "sess_22",
-        "sess_25",
-        "sess_24"
+        "sess_24",
+        "sess_11"
       ],
       "recall": 1
     },
@@ -9368,15 +9368,15 @@
       ],
       "retrieved": [
         "sess_28",
+        "sess_8",
         "sess_9",
         "sess_26",
+        "sess_17",
+        "sess_29",
         "sess_12",
         "sess_6",
         "sess_14",
-        "sess_11",
-        "sess_17",
-        "sess_8",
-        "sess_1"
+        "sess_11"
       ],
       "recall": 1
     },
@@ -9960,11 +9960,11 @@
         "sess_13",
         "sess_23",
         "sess_6",
+        "sess_8",
         "sess_32",
         "sess_31",
         "sess_24",
-        "sess_3",
-        "sess_11"
+        "sess_3"
       ],
       "recall": 1
     },
@@ -10171,10 +10171,10 @@
         "sess_2",
         "sess_19",
         "sess_22",
-        "sess_25",
         "sess_24",
-        "sess_30",
-        "sess_10"
+        "sess_11",
+        "sess_8",
+        "sess_25"
       ],
       "recall": 1
     },
@@ -10615,12 +10615,12 @@
         "sess_8",
         "sess_23",
         "sess_28",
-        "sess_16",
-        "sess_4",
-        "sess_11",
+        "sess_19",
+        "sess_9",
+        "sess_18",
         "sess_26",
-        "sess_25",
-        "sess_18"
+        "sess_5",
+        "sess_2"
       ],
       "recall": 1
     },
@@ -14093,15 +14093,15 @@
       ],
       "retrieved": [
         "sess_23",
-        "sess_1",
         "sess_19",
+        "sess_1",
         "sess_15",
         "sess_29",
+        "sess_27",
         "sess_10",
-        "sess_20",
-        "sess_21",
-        "sess_17",
-        "sess_13"
+        "sess_22",
+        "sess_26",
+        "sess_20"
       ],
       "recall": 1
     },
@@ -14179,10 +14179,10 @@
         "sess_24",
         "sess_14",
         "sess_27",
-        "sess_20",
         "sess_12",
-        "sess_16",
         "sess_18",
+        "sess_20",
+        "sess_16",
         "sess_19",
         "sess_4",
         "sess_11"
@@ -14450,15 +14450,15 @@
       ],
       "retrieved": [
         "sess_27",
-        "sess_19",
         "sess_18",
         "sess_24",
+        "sess_19",
         "sess_14",
-        "sess_1",
-        "sess_26",
         "sess_12",
         "sess_16",
-        "sess_28"
+        "sess_1",
+        "sess_26",
+        "sess_22"
       ],
       "recall": 1
     },
@@ -15629,12 +15629,12 @@
         "sess_19",
         "sess_1",
         "sess_15",
+        "sess_27",
         "sess_10",
         "sess_9",
         "sess_3",
-        "sess_21",
-        "sess_20",
-        "sess_17"
+        "sess_22",
+        "sess_21"
       ],
       "recall": 1
     },
@@ -15691,10 +15691,10 @@
         "sess_24",
         "sess_14",
         "sess_27",
-        "sess_20",
         "sess_12",
-        "sess_16",
         "sess_18",
+        "sess_20",
+        "sess_16",
         "sess_19",
         "sess_4",
         "sess_13"
@@ -15836,15 +15836,15 @@
       ],
       "retrieved": [
         "sess_27",
-        "sess_19",
         "sess_18",
-        "sess_1",
-        "sess_26",
-        "sess_14",
+        "sess_19",
         "sess_24",
         "sess_12",
         "sess_16",
-        "sess_28"
+        "sess_1",
+        "sess_26",
+        "sess_22",
+        "sess_14"
       ],
       "recall": 1
     },
@@ -16231,12 +16231,12 @@
         "sess_3",
         "sess_29",
         "sess_21",
+        "sess_6",
         "sess_11",
+        "sess_26",
+        "sess_28",
         "sess_7",
-        "sess_1",
-        "sess_2",
-        "sess_16",
-        "sess_23"
+        "sess_1"
       ],
       "recall": 1
     },
@@ -17518,12 +17518,12 @@
         "sess_11",
         "sess_2",
         "sess_9",
+        "sess_15",
         "sess_1",
         "sess_14",
+        "sess_26",
         "sess_21",
-        "sess_6",
-        "sess_4",
-        "sess_16"
+        "sess_6"
       ],
       "recall": 1
     },
@@ -17622,15 +17622,15 @@
       ],
       "retrieved": [
         "sess_1",
+        "sess_14",
         "sess_3",
-        "sess_7",
         "sess_6",
         "sess_16",
+        "sess_22",
+        "sess_7",
         "sess_29",
-        "sess_24",
-        "sess_14",
-        "sess_11",
-        "sess_22"
+        "sess_10",
+        "sess_24"
       ],
       "recall": 1
     },
@@ -18779,13 +18779,13 @@
         "sess_15",
         "sess_24",
         "sess_19",
+        "sess_3",
         "sess_5",
         "sess_22",
         "sess_9",
         "sess_14",
         "sess_6",
-        "sess_17",
-        "sess_2"
+        "sess_17"
       ],
       "recall": 1
     },
@@ -19807,14 +19807,14 @@
       "retrieved": [
         "sess_29",
         "sess_25",
+        "sess_26",
+        "sess_6",
         "sess_3",
-        "sess_21",
         "sess_11",
-        "sess_23",
-        "sess_24",
-        "sess_13",
-        "sess_20",
-        "sess_9"
+        "sess_28",
+        "sess_21",
+        "sess_9",
+        "sess_23"
       ],
       "recall": 1
     },
@@ -19869,15 +19869,15 @@
       ],
       "retrieved": [
         "sess_1",
+        "sess_14",
         "sess_3",
-        "sess_7",
         "sess_6",
         "sess_16",
+        "sess_22",
+        "sess_7",
         "sess_29",
-        "sess_24",
-        "sess_14",
-        "sess_11",
-        "sess_22"
+        "sess_10",
+        "sess_24"
       ],
       "recall": 1
     },
@@ -20606,13 +20606,13 @@
         "sess_15",
         "sess_24",
         "sess_19",
+        "sess_3",
         "sess_5",
         "sess_22",
         "sess_9",
         "sess_14",
         "sess_6",
-        "sess_17",
-        "sess_2"
+        "sess_17"
       ],
       "recall": 1
     },
@@ -21172,14 +21172,14 @@
       "retrieved": [
         "sess_29",
         "sess_25",
+        "sess_26",
+        "sess_6",
         "sess_3",
-        "sess_21",
         "sess_11",
-        "sess_23",
         "sess_28",
-        "sess_13",
-        "sess_18",
-        "sess_24"
+        "sess_21",
+        "sess_9",
+        "sess_23"
       ],
       "recall": 1
     },
@@ -21929,11 +21929,11 @@
         "sess_19",
         "sess_12",
         "sess_28",
+        "sess_26",
         "sess_17",
+        "sess_1",
         "sess_24",
-        "sess_5",
-        "sess_15",
-        "sess_26"
+        "sess_5"
       ],
       "recall": 1
     },
@@ -22346,13 +22346,13 @@
         "sess_1"
       ],
       "retrieved": [
-        "sess_22",
         "sess_20",
+        "sess_22",
+        "sess_6",
         "sess_10",
         "sess_18",
         "sess_12",
         "sess_2",
-        "sess_6",
         "sess_27",
         "sess_8",
         "sess_28"
@@ -22652,14 +22652,14 @@
       "retrieved": [
         "sess_5",
         "sess_28",
+        "sess_1",
         "sess_14",
         "sess_11",
+        "sess_21",
         "sess_25",
-        "sess_1",
-        "sess_10",
         "sess_2",
-        "sess_24",
-        "sess_12"
+        "sess_12",
+        "sess_10"
       ],
       "recall": 1
     },
@@ -23891,14 +23891,14 @@
       "retrieved": [
         "sess_5",
         "sess_28",
-        "sess_25",
         "sess_1",
-        "sess_10",
+        "sess_21",
+        "sess_25",
         "sess_2",
-        "sess_24",
-        "sess_14",
         "sess_12",
-        "sess_21"
+        "sess_10",
+        "sess_24",
+        "sess_14"
       ],
       "recall": 1
     },
@@ -25367,14 +25367,14 @@
       "retrieved": [
         "sess_17",
         "sess_30",
-        "sess_9",
-        "sess_29",
-        "sess_7",
         "sess_21",
-        "sess_28",
+        "sess_20",
+        "sess_9",
         "sess_31",
-        "sess_1",
-        "sess_19"
+        "sess_22",
+        "sess_29",
+        "sess_2",
+        "sess_7"
       ],
       "recall": 1
     },
@@ -25797,15 +25797,15 @@
       ],
       "retrieved": [
         "sess_28",
-        "sess_6",
         "sess_23",
         "sess_17",
+        "sess_6",
+        "sess_2",
         "sess_31",
         "sess_16",
-        "sess_19",
-        "sess_9",
         "sess_25",
-        "sess_27"
+        "sess_19",
+        "sess_29"
       ],
       "recall": 1
     },
@@ -26772,9 +26772,9 @@
         "sess_17",
         "sess_18",
         "sess_3",
-        "sess_25",
-        "sess_14",
-        "sess_19"
+        "sess_21",
+        "sess_8",
+        "sess_25"
       ],
       "recall": 1
     },
@@ -27124,14 +27124,14 @@
       "retrieved": [
         "sess_23",
         "sess_13",
-        "sess_27",
-        "sess_4",
-        "sess_20",
-        "sess_3",
-        "sess_25",
+        "sess_10",
         "sess_8",
+        "sess_15",
+        "sess_11",
+        "sess_20",
         "sess_26",
-        "sess_28"
+        "sess_25",
+        "sess_5"
       ],
       "recall": 1
     },
@@ -27732,15 +27732,15 @@
       ],
       "retrieved": [
         "sess_31",
+        "sess_30",
+        "sess_17",
+        "sess_2",
+        "sess_20",
         "sess_21",
         "sess_5",
         "sess_19",
         "sess_8",
-        "sess_14",
-        "sess_15",
-        "sess_1",
-        "sess_30",
-        "sess_10"
+        "sess_14"
       ],
       "recall": 1
     },
@@ -27986,13 +27986,13 @@
         "sess_15",
         "sess_10",
         "sess_11",
+        "sess_17",
         "sess_26",
         "sess_2",
+        "sess_30",
         "sess_29",
-        "sess_27",
-        "sess_20",
-        "sess_12",
-        "sess_4"
+        "sess_21",
+        "sess_27"
       ],
       "recall": 1
     },
@@ -28032,9 +28032,9 @@
         "sess_17",
         "sess_18",
         "sess_3",
-        "sess_25",
-        "sess_14",
-        "sess_19"
+        "sess_21",
+        "sess_8",
+        "sess_25"
       ],
       "recall": 1
     },
@@ -28572,15 +28572,15 @@
       ],
       "retrieved": [
         "sess_31",
+        "sess_30",
+        "sess_17",
+        "sess_2",
+        "sess_20",
         "sess_21",
         "sess_5",
         "sess_19",
         "sess_8",
-        "sess_14",
-        "sess_15",
-        "sess_1",
-        "sess_30",
-        "sess_10"
+        "sess_14"
       ],
       "recall": 1
     },
@@ -28640,12 +28640,12 @@
         "sess_2",
         "sess_22",
         "sess_6",
-        "sess_4",
         "sess_24",
-        "sess_28",
         "sess_30",
+        "sess_4",
         "sess_13",
-        "sess_12"
+        "sess_28",
+        "sess_29"
       ],
       "recall": 1
     },
@@ -28661,12 +28661,12 @@
         "sess_2",
         "sess_22",
         "sess_6",
-        "sess_4",
         "sess_24",
-        "sess_28",
         "sess_30",
+        "sess_4",
         "sess_13",
-        "sess_12"
+        "sess_28",
+        "sess_29"
       ],
       "recall": 1
     },
@@ -28700,15 +28700,15 @@
       ],
       "retrieved": [
         "sess_1",
-        "sess_11",
+        "sess_2",
         "sess_19",
+        "sess_11",
         "sess_26",
         "sess_23",
+        "sess_24",
         "sess_14",
         "sess_4",
-        "sess_2",
-        "sess_20",
-        "sess_21"
+        "sess_20"
       ],
       "recall": 1
     },
@@ -28743,14 +28743,14 @@
       "retrieved": [
         "sess_23",
         "sess_1",
-        "sess_28",
-        "sess_20",
         "sess_2",
+        "sess_24",
         "sess_22",
+        "sess_20",
+        "sess_28",
         "sess_29",
         "sess_12",
-        "sess_21",
-        "sess_4"
+        "sess_21"
       ],
       "recall": 1
     },
@@ -28787,15 +28787,15 @@
       ],
       "retrieved": [
         "sess_2",
+        "sess_22",
+        "sess_24",
         "sess_1",
         "sess_6",
-        "sess_22",
         "sess_30",
         "sess_13",
         "sess_26",
         "sess_25",
-        "sess_29",
-        "sess_15"
+        "sess_29"
       ],
       "recall": 1
     },
@@ -28900,15 +28900,15 @@
       ],
       "retrieved": [
         "sess_2",
-        "sess_19",
-        "sess_13",
-        "sess_1",
-        "sess_28",
+        "sess_24",
         "sess_22",
+        "sess_19",
+        "sess_1",
+        "sess_13",
         "sess_4",
         "sess_12",
-        "sess_24",
-        "sess_20"
+        "sess_29",
+        "sess_23"
       ],
       "recall": 1
     },
@@ -32235,12 +32235,12 @@
         "sess_2",
         "sess_19",
         "sess_24",
+        "sess_29",
         "sess_20",
         "sess_7",
         "sess_12",
         "sess_16",
         "sess_3",
-        "sess_29",
         "sess_22"
       ],
       "recall": 1
@@ -33474,12 +33474,12 @@
         "sess_2",
         "sess_19",
         "sess_24",
+        "sess_29",
         "sess_20",
         "sess_7",
         "sess_12",
         "sess_16",
         "sess_3",
-        "sess_29",
         "sess_22"
       ],
       "recall": 1
@@ -33820,14 +33820,14 @@
       "retrieved": [
         "sess_1",
         "sess_11",
+        "sess_13",
         "sess_18",
         "sess_2",
         "sess_17",
-        "sess_13",
         "sess_10",
-        "sess_20",
+        "sess_21",
         "sess_3",
-        "sess_19"
+        "sess_9"
       ],
       "recall": 1
     },
@@ -34724,15 +34724,15 @@
       ],
       "retrieved": [
         "sess_11",
-        "sess_10",
-        "sess_20",
         "sess_1",
-        "sess_2",
+        "sess_10",
+        "sess_21",
+        "sess_20",
         "sess_16",
-        "sess_17",
+        "sess_2",
         "sess_13",
-        "sess_19",
-        "sess_21"
+        "sess_7",
+        "sess_23"
       ],
       "recall": 1
     },
@@ -38446,15 +38446,15 @@
         "sess_27"
       ],
       "retrieved": [
-        "sess_7",
         "sess_17",
-        "sess_12",
+        "sess_7",
         "sess_19",
+        "sess_12",
         "sess_20",
-        "sess_5",
-        "sess_21",
-        "sess_18",
         "sess_23",
+        "sess_5",
+        "sess_10",
+        "sess_21",
         "sess_9"
       ],
       "recall": 1
@@ -38837,15 +38837,15 @@
       ],
       "retrieved": [
         "sess_22",
+        "sess_12",
+        "sess_20",
+        "sess_26",
         "sess_5",
         "sess_25",
         "sess_18",
-        "sess_12",
         "sess_21",
         "sess_27",
-        "sess_2",
-        "sess_16",
-        "sess_26"
+        "sess_2"
       ],
       "recall": 1
     },
@@ -40472,14 +40472,14 @@
       "retrieved": [
         "sess_24",
         "sess_3",
+        "sess_1",
         "sess_6",
         "sess_14",
         "sess_15",
         "sess_7",
+        "sess_9",
         "sess_16",
-        "sess_5",
-        "sess_13",
-        "sess_2"
+        "sess_10"
       ],
       "recall": 1
     },
@@ -40976,14 +40976,14 @@
       "retrieved": [
         "sess_8",
         "sess_7",
+        "sess_23",
         "sess_19",
         "sess_30",
-        "sess_23",
-        "sess_22",
         "sess_5",
-        "sess_12",
-        "sess_21",
-        "sess_10"
+        "sess_27",
+        "sess_22",
+        "sess_17",
+        "sess_12"
       ],
       "recall": 1
     },
@@ -41773,15 +41773,15 @@
       ],
       "retrieved": [
         "sess_24",
+        "sess_3",
         "sess_6",
         "sess_15",
-        "sess_3",
         "sess_7",
+        "sess_1",
         "sess_14",
+        "sess_9",
         "sess_16",
-        "sess_13",
-        "sess_2",
-        "sess_20"
+        "sess_10"
       ],
       "recall": 1
     },

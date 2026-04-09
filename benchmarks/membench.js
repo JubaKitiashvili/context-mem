@@ -194,8 +194,7 @@ for (let idx = 0; idx < items.length; idx++) {
       const gidx = parseInt(r.id.replace('t_', ''), 10);
       const info = turnMap.get(gidx);
       const overlap = info ? keywordOverlap(queryKws, info.text) : 0;
-      // Score is positive (higher = better), boost by keyword overlap
-      const fused = (r.score || 0) * (1.0 + 0.50 * overlap);
+      const fused = (r.score || 0) * (1.0 + 1.0 * overlap);
       return { ...r, gidx, sid: info?.sid, fused };
     });
     scored.sort((a, b) => b.fused - a.fused); // descending: higher = better
