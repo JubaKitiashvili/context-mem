@@ -63,6 +63,18 @@ export const EXPANSIONS: Record<string, string[]> = {
   digestive: ['stomach', 'health', 'issue', 'problem'],
   bookshelf: ['furniture', 'shelf', 'storage', 'living'],
   journal: ['write', 'diary', 'notebook', 'supplies'],
+  // Person attributes (MemBench patterns)
+  hometown: ['city', 'town', 'lives', 'born', 'from', 'home'],
+  location: ['city', 'town', 'place', 'address', 'lives', 'area'],
+  education: ['degree', 'university', 'college', 'school', 'studied', 'graduated'],
+  position: ['role', 'title', 'job', 'work', 'occupation'],
+  workplace: ['company', 'office', 'employer', 'firm', 'works'],
+  age: ['years', 'old', 'born', 'birthday'],
+  occupation: ['job', 'work', 'career', 'profession', 'position'],
+  coworker: ['colleague', 'workmate', 'office'],
+  cousin: ['relative', 'family'],
+  mother: ['mom', 'parent', 'mama'],
+  father: ['dad', 'parent', 'papa'],
 };
 
 /** Extract meaningful keywords from a query, filtering stop words. */
