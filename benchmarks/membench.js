@@ -187,17 +187,18 @@ for (let idx = 0; idx < items.length; idx++) {
   const retrieveCount = MODE === 'hybrid' ? TOP_K * 3 : TOP_K;
   let results = kernel.search(item.question, Math.min(retrieveCount, globalIdx));
 
-  // Hybrid re-scoring
+  // Hybrid re-scoring: boost results with keyword overlap
   if (MODE === 'hybrid' && results.length > 0) {
     const queryKws = extractKeywords(item.question);
     const scored = results.map(r => {
       const gidx = parseInt(r.id.replace('t_', ''), 10);
       const info = turnMap.get(gidx);
       const overlap = info ? keywordOverlap(queryKws, info.text) : 0;
-      const fused = (r.score || 0) * (1.0 - 0.50 * overlap);
+      // Score is positive (higher = better), boost by keyword overlap
+      const fused = (r.score || 0) * (1.0 + 0.50 * overlap);
       return { ...r, gidx, sid: info?.sid, fused };
     });
-    scored.sort((a, b) => a.fused - b.fused);
+    scored.sort((a, b) => b.fused - a.fused); // descending: higher = better
     results = scored.slice(0, TOP_K);
   } else {
     results = results.slice(0, TOP_K);

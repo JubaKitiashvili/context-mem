@@ -1,19 +1,21 @@
 /**
  * Lightweight adapter to use context-mem's storage + search directly.
  * Bypasses MCP for speed. Creates a fresh temp DB per benchmark item.
+ * Supports hybrid search: FTS5 BM25 + vector cosine similarity.
  */
 'use strict';
 
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+const crypto = require('crypto');
 const Database = require('better-sqlite3');
 
 const projectRoot = path.resolve(__dirname, '..', '..');
 const { migrations } = require(path.join(projectRoot, 'dist/plugins/storage/migrations.js'));
 const { sanitizeFTS5 } = require(path.join(projectRoot, 'dist/plugins/search/fts5-utils.js'));
 
-// Stop words to filter from search queries (same as mempalace)
+// Stop words to filter from search queries
 const STOP_WORDS = new Set([
   'what', 'when', 'where', 'who', 'how', 'which', 'did', 'do', 'does',
   'was', 'were', 'have', 'has', 'had', 'is', 'are', 'the', 'a', 'an',
@@ -23,26 +25,59 @@ const STOP_WORDS = new Set([
   'made', 'make', 'can', 'will', 'would', 'could', 'should', 'might',
 ]);
 
-/**
- * Build an OR-joined FTS5 query from natural language.
- * Strips stop words, keeps meaningful terms, joins with OR for partial matching.
- */
 function buildFTS5Query(query) {
   const words = query.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w));
   if (words.length === 0) return null;
-  // Use OR for partial matching (like embedding similarity)
   return words.map(w => `"${w}"`).join(' OR ');
 }
+
+// ── Vector search helpers ───────────────────────────────────────────────────
+let _embedder = null;
+let _embedderLoading = null;
+
+async function getEmbedder() {
+  if (_embedder) return _embedder;
+  if (_embedderLoading) return _embedderLoading;
+  _embedderLoading = (async () => {
+    try {
+      const { Embedder } = require(path.join(projectRoot, 'dist/plugins/search/embedder.js'));
+      if (await Embedder.isAvailable()) {
+        // Warm up pipeline
+        await Embedder.embed('warmup');
+        _embedder = Embedder;
+        return Embedder;
+      }
+    } catch {}
+    return null;
+  })();
+  return _embedderLoading;
+}
+
+function cosineSimilarity(a, b) {
+  if (a.length !== b.length) return 0;
+  let dot = 0, normA = 0, normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  const denom = Math.sqrt(normA) * Math.sqrt(normB);
+  return denom === 0 ? 0 : dot / denom;
+}
+
+// ── BenchKernel ─────────────────────────────────────────────────────────────
 
 class BenchKernel {
   constructor(opts = {}) {
     this.dbPath = opts.dbPath || path.join(os.tmpdir(), `cm-bench-${Date.now()}-${Math.random().toString(36).slice(2)}.db`);
     this.db = null;
     this._insertStmt = null;
-    this._searchStmt = null;
+    this._updateEmbedStmt = null;
     this._counter = 0;
     this._seenIds = new Set();
-    this._idMap = new Map(); // internal id → original corpus id
+    this._idMap = new Map();
+    this._embeddings = new Map(); // id → Float32Array
+    this._useVector = opts.vector !== false; // enabled by default
   }
 
   open() {
@@ -51,7 +86,6 @@ class BenchKernel {
     this.db.pragma('synchronous = NORMAL');
     this.db.pragma('cache_size = -8192');
 
-    // Apply migrations
     for (const m of migrations) {
       try { this.db.exec(m.up); } catch { /* already applied */ }
     }
@@ -61,26 +95,25 @@ class BenchKernel {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
+    this._updateEmbedStmt = this.db.prepare(
+      'UPDATE observations SET embeddings = ? WHERE id = ?'
+    );
+
     return this;
   }
 
-  /**
-   * Ingest a document with a known corpus_id for later scoring.
-   */
   ingest(corpusId, content, metadata = {}) {
     this._counter++;
     let id = corpusId;
     const now = Date.now();
-    const hash = require('crypto').createHash('sha256').update(content + this._counter).digest('hex');
+    const hash = crypto.createHash('sha256').update(content + this._counter).digest('hex');
     const metaJson = JSON.stringify({ ...metadata, _originalId: corpusId });
     const summary = content.slice(0, 200);
 
-    // Handle duplicate IDs by appending suffix
     if (this._seenIds.has(id)) {
       id = `${corpusId}_dup${this._counter}`;
     }
     this._seenIds.add(id);
-    // Map back to original corpus ID for scoring
     this._idMap.set(id, corpusId);
 
     this._insertStmt.run(id, 'context', content, summary, metaJson, now, 'bench', hash);
@@ -88,25 +121,40 @@ class BenchKernel {
   }
 
   /**
-   * Ingest many documents in a single transaction (fast).
+   * Embed all ingested documents. Call once after all ingests.
+   * Stores embeddings in SQLite + in-memory cache for fast search.
    */
-  ingestBatch(items) {
-    const tx = this.db.transaction(() => {
-      for (const { id, content, metadata } of items) {
-        this.ingest(id, content, metadata || {});
-      }
-    });
-    tx();
+  async embedAll() {
+    const embedder = await getEmbedder();
+    if (!embedder) return 0;
+
+    const rows = this.db.prepare('SELECT id, summary, content FROM observations').all();
+    let count = 0;
+
+    for (const row of rows) {
+      try {
+        // Dual embedding: embed both summary (focused) and content (comprehensive)
+        // Store as { summary, content } so search can take best match
+        const summaryEmb = await embedder.embed(row.summary || row.content.slice(0, 200));
+        const contentEmb = row.content.length > 200 ? await embedder.embed(row.content) : summaryEmb;
+        if (summaryEmb) {
+          this._updateEmbedStmt.run(embedder.toBuffer(summaryEmb), row.id);
+          this._embeddings.set(row.id, { summary: summaryEmb, content: contentEmb || summaryEmb });
+          count++;
+        }
+      } catch { /* skip */ }
+    }
+
+    return count;
   }
 
   /**
-   * Search using multi-strategy approach for maximum recall.
-   * Returns array of { id, score } ordered by relevance.
+   * Hybrid search: FTS5 BM25 + vector cosine similarity, merged by score.
    */
   search(query, limit = 10) {
-    const seen = new Map(); // id → best score
+    const seen = new Map(); // id → best score (lower = better for BM25, we normalize)
 
-    // Strategy 1: OR-joined meaningful terms (best for natural language questions)
+    // ── FTS5 BM25 search ────────────────────────────────────────────────────
     const orQuery = buildFTS5Query(query);
     if (orQuery) {
       try {
@@ -119,104 +167,94 @@ class BenchKernel {
           LIMIT ?
         `).all(orQuery, limit * 3);
         for (const r of rows) {
-          if (!seen.has(r.id) || r.score < seen.get(r.id)) seen.set(r.id, r.score);
+          // BM25 scores are negative (lower = better), normalize to positive relevance
+          const relevance = Math.abs(r.score);
+          if (!seen.has(r.id) || relevance > seen.get(r.id)) seen.set(r.id, relevance);
         }
       } catch { /* fallthrough */ }
     }
 
-    // Strategy 2: Individual high-value keyword searches (catches vocabulary gaps)
+    // Individual keyword searches
     const keywords = query.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/)
       .filter(w => w.length >= 4 && !STOP_WORDS.has(w));
-    // Search for individual important keywords separately
     for (const kw of keywords.slice(0, 5)) {
       try {
         const rows = this.db.prepare(`
           SELECT o.id, bm25(obs_fts, 1.0, 0.75) AS score
-          FROM obs_fts
-          JOIN observations o ON o.rowid = obs_fts.rowid
-          WHERE obs_fts MATCH ?
-          ORDER BY score
-          LIMIT ?
+          FROM obs_fts JOIN observations o ON o.rowid = obs_fts.rowid
+          WHERE obs_fts MATCH ? ORDER BY score LIMIT 5
         `).all(`"${kw}"`, 5);
         for (const r of rows) {
-          // Individual keyword matches get a penalty (less relevant than multi-keyword)
-          const penalized = (r.score || 0) + 2.0;
-          if (!seen.has(r.id) || penalized < seen.get(r.id)) seen.set(r.id, penalized);
+          const relevance = Math.abs(r.score) * 0.5; // penalty for single keyword
+          if (!seen.has(r.id) || relevance > seen.get(r.id)) seen.set(r.id, relevance);
         }
-      } catch { /* skip bad keywords */ }
+      } catch {}
     }
 
-    // Strategy 3: Trigram (catches partial word matches)
+    // Trigram fallback
     if (seen.size < limit) {
       const trigramResults = this._searchTrigram(query, limit);
       for (const r of trigramResults) {
-        const penalized = (r.score || 0) + 5.0;
-        if (!seen.has(r.id) || penalized < seen.get(r.id)) seen.set(r.id, penalized);
+        const relevance = Math.abs(r.score) * 0.3;
+        if (!seen.has(r.id)) seen.set(r.id, relevance);
       }
     }
 
-    // Strategy 4: LIKE fallback
-    if (seen.size < limit) {
-      const fallback = this._searchFallback(query, limit);
-      for (const r of fallback) {
-        if (!seen.has(r.id)) seen.set(r.id, 10.0);
+    // ── Vector search (dual embedding: max of summary + content similarity) ──
+    if (this._useVector && this._queryEmbedding) {
+      for (const [docId, docEmb] of this._embeddings) {
+        // Take max similarity from summary and content embeddings
+        const simSummary = docEmb.summary ? cosineSimilarity(this._queryEmbedding, docEmb.summary) : 0;
+        const simContent = docEmb.content ? cosineSimilarity(this._queryEmbedding, docEmb.content) : 0;
+        const sim = Math.max(simSummary, simContent);
+        if (sim >= 0.15) {
+          const relevance = sim * 8.0;
+          if (!seen.has(docId)) {
+            seen.set(docId, relevance);
+          } else {
+            // Strong multi-match boost: found by both FTS5 and vector
+            seen.set(docId, seen.get(docId) + relevance);
+          }
+        }
       }
     }
 
-    // Sort by score and return top-K
+    // Sort by relevance (higher = better) and return top-K
     return [...seen.entries()]
-      .sort((a, b) => a[1] - b[1])
+      .sort((a, b) => b[1] - a[1])
       .slice(0, limit)
       .map(([id, score]) => ({ id, score }));
   }
 
+  /**
+   * Async search with vector embedding of query.
+   * Use this instead of search() when vector search is enabled.
+   */
+  async searchAsync(query, limit = 10) {
+    // Embed the query
+    if (this._useVector && this._embeddings.size > 0) {
+      const embedder = await getEmbedder();
+      if (embedder) {
+        try {
+          this._queryEmbedding = await embedder.embed(query);
+        } catch {
+          this._queryEmbedding = null;
+        }
+      }
+    }
+    return this.search(query, limit);
+  }
+
   _searchTrigram(query, limit) {
     const sanitized = sanitizeFTS5(query);
-    if (!sanitized || sanitized.length < 3) return this._searchFallback(query, limit);
-    try {
-      const rows = this.db.prepare(`
-        SELECT o.id, bm25(obs_trigram) AS score
-        FROM obs_trigram
-        JOIN observations o ON o.rowid = obs_trigram.rowid
-        WHERE obs_trigram MATCH ?
-        ORDER BY score
-        LIMIT ?
-      `).all(sanitized, limit);
-      return rows;
-    } catch {
-      return this._searchFallback(query, limit);
-    }
-  }
-
-  _searchFallback(query, limit) {
-    // LIKE-based substring search as ultimate fallback
-    const rows = this.db.prepare(`
-      SELECT id, 0 AS score FROM observations
-      WHERE content LIKE ? OR summary LIKE ?
-      ORDER BY indexed_at DESC
-      LIMIT ?
-    `).all(`%${query.slice(0, 100)}%`, `%${query.slice(0, 100)}%`, limit);
-    return rows;
-  }
-
-  /**
-   * Search knowledge base (for benchmarks that test knowledge retrieval).
-   */
-  searchKnowledge(query, limit = 10) {
-    const sanitized = sanitizeFTS5(query);
-    if (!sanitized || sanitized.trim().length < 2) return [];
+    if (!sanitized || sanitized.length < 3) return [];
     try {
       return this.db.prepare(`
-        SELECT k.id, k.title, k.content, bm25(knowledge_fts, 1.0, 0.75) AS score
-        FROM knowledge_fts
-        JOIN knowledge k ON k.rowid = knowledge_fts.rowid
-        WHERE knowledge_fts MATCH ?
-        ORDER BY score
-        LIMIT ?
+        SELECT o.id, bm25(obs_trigram) AS score
+        FROM obs_trigram JOIN observations o ON o.rowid = obs_trigram.rowid
+        WHERE obs_trigram MATCH ? ORDER BY score LIMIT ?
       `).all(sanitized, limit);
-    } catch {
-      return [];
-    }
+    } catch { return []; }
   }
 
   close() {
@@ -224,20 +262,19 @@ class BenchKernel {
       this.db.close();
       this.db = null;
     }
-    try { fs.unlinkSync(this.dbPath); } catch { /* ok */ }
+    this._embeddings.clear();
+    this._queryEmbedding = null;
+    try { fs.unlinkSync(this.dbPath); } catch {}
   }
 
-  /** Resolve an internal ID back to the original corpus ID */
   resolveId(id) {
     return this._idMap.get(id) || id;
   }
 
-  /** Get total observations count */
   get count() {
     if (!this.db) return 0;
-    const row = this.db.prepare('SELECT COUNT(*) as c FROM observations').get();
-    return row.c;
+    return this.db.prepare('SELECT COUNT(*) as c FROM observations').get().c;
   }
 }
 
-module.exports = { BenchKernel };
+module.exports = { BenchKernel, getEmbedder };
