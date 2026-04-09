@@ -3,8 +3,8 @@
   "system": "context-mem",
   "top_k": 10,
   "items": 250,
-  "avg_recall": 0.98,
-  "elapsed_seconds": 90.786,
+  "avg_recall": 0.984,
+  "elapsed_seconds": 35.842,
   "per_category": {
     "user_evidence": {
       "avg_recall": 1,
@@ -22,8 +22,8 @@
       "total": 50
     },
     "preference_evidence": {
-      "avg_recall": 0.94,
-      "perfect": 47,
+      "avg_recall": 0.96,
+      "perfect": 48,
       "total": 50
     },
     "implicit_connection_evidence": {
@@ -1282,8 +1282,8 @@
     {
       "question": "I'm trying to find a bookshelf for my living room. Any suggestions on where to look?",
       "category": "preference_evidence",
-      "recall": 0,
-      "found": 0,
+      "recall": 1,
+      "found": 1,
       "evidence_count": 1
     },
     {
@@ -1310,8 +1310,8 @@
     {
       "question": "I'm thinking about getting into journaling. What are the essential supplies someone should get to start?",
       "category": "preference_evidence",
-      "recall": 0,
-      "found": 0,
+      "recall": 1,
+      "found": 1,
       "evidence_count": 1
     },
     {
@@ -1380,8 +1380,8 @@
     {
       "question": "Which sales certifications are known to have the most significant impact on salary for professionals in the SaaS industry?",
       "category": "preference_evidence",
-      "recall": 1,
-      "found": 1,
+      "recall": 0,
+      "found": 0,
       "evidence_count": 1
     },
     {

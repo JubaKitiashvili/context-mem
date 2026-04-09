@@ -4,7 +4,7 @@
   "top_k": 20,
   "questions": 355,
   "avg_recall": 0.8028169014084507,
-  "elapsed_seconds": 4.329,
+  "elapsed_seconds": 2.718,
   "per_ability": {
     "contradiction_resolution": {
       "hits": 40,
