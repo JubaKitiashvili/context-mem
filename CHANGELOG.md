@@ -2,6 +2,35 @@
 
 All notable changes to context-mem are documented here.
 
+## [3.0.0] — 2026-04-09 — Total Recall
+
+### Added
+- **Total Recall** — dual-mode AI memory: real-time optimization AND long-term institutional memory across 15 components.
+- **Importance Classification** — every observation scored 0.0–1.0 at ingest with 6 significance flags (DECISION, ORIGIN, PIVOT, CORE, MILESTONE, PROBLEM). Auto-pin for decisions and milestones.
+- **Verbatim Recall** — new `recall` tool surfaces original content (not summaries) via dedicated content FTS5 index. `search` and `timeline` gain `verbatim` parameter.
+- **Adaptive Compression** — 4-tier progressive compression (verbatim → light → medium → distilled) based on observation age. Pinned entries never compress. High-importance entries compress slower.
+- **Entity Intelligence** — auto-detect technologies, people, file paths, CamelCase components, ALL_CAPS constants with 100+ technology alias resolution. Pipeline-integrated.
+- **Temporal Facts** — knowledge entries have `valid_from`/`valid_to` validity windows. Supersession chains track what was true when. New `temporal_query` tool.
+- **Wake-Up Primer** — 4-layer token-budgeted context injected at session start (profile, critical knowledge, recent decisions, top entities). New `wake_up` tool.
+- **Memory Usefulness Feedback** — tracks search→action correlation. Entries that lead to file modifications get boosted; never-useful entries decay faster.
+- **Topic Navigation** — auto-detect 13 topic categories. New `browse`, `list_topics`, `find_tunnels` tools for navigating by topic/person/time.
+- **Conversation Import** — 5 format parsers (Claude Code JSONL, Claude AI JSON, ChatGPT JSON, Slack JSON, plain text) with auto-detection. New `import_conversations` tool.
+- **Dreamer Consolidation** — 3 new background tasks: consolidate related observations, extract causal chains (DECISION→PROBLEM→MILESTONE), boost corroborated facts.
+- **Context-Triggered Wake-Up** — UserPromptSubmit hook injects relevant memories on every user message (rate-limited, topic-cooldown).
+- **Decision Trails** — reconstruct evidence chain behind any decision with `explain_decision` tool. Finds preceding events, errors, searches, and superseded alternatives.
+- **Session Narratives** — generate PR descriptions, standup updates, ADRs, or onboarding guides from session data with `generate_story` tool.
+- **Regression Fingerprinting** — capture working-state snapshots at success events; diff against current state when errors appear.
+- **Memory Pressure Predictor** — `predict_loss` scores entries by forgetting risk (importance × recency × access × usefulness).
+- 12 new MCP tools (32 → 44): `recall`, `wake_up`, `entity_detect`, `list_people`, `temporal_query`, `browse`, `list_topics`, `find_tunnels`, `import_conversations`, `explain_decision`, `generate_story`, `predict_loss`
+- 4 new database migrations (v13–v16)
+- 173 new tests (943 → 1116)
+
+### Changed
+- Pipeline now runs importance classification + entity extraction + topic detection on every observation
+- `save_knowledge` sets `valid_from` and supersedes contradicted entries
+- `search_knowledge` filters out superseded entries by default (use `include_superseded: true` to include)
+- Dreamer cycle expanded with progressive compression + consolidation + causal chains + corroboration
+
 ## [2.6.0] — 2026-04-06
 
 ### Added

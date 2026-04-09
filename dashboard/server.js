@@ -845,6 +845,289 @@ function getAgents() {
   } catch { return []; }
 }
 
+// --- Total Recall API helpers ---
+
+function getImportanceDistribution() {
+  try {
+    const rows = db.prepare(`
+      SELECT
+        CASE
+          WHEN importance_score >= 0.9 THEN '0.9-1.0'
+          WHEN importance_score >= 0.8 THEN '0.8-0.9'
+          WHEN importance_score >= 0.7 THEN '0.7-0.8'
+          WHEN importance_score >= 0.6 THEN '0.6-0.7'
+          WHEN importance_score >= 0.5 THEN '0.5-0.6'
+          WHEN importance_score >= 0.4 THEN '0.4-0.5'
+          WHEN importance_score >= 0.3 THEN '0.3-0.4'
+          ELSE '0.0-0.3'
+        END as bucket,
+        COUNT(*) as count
+      FROM observations
+      GROUP BY bucket
+      ORDER BY bucket DESC
+    `).all();
+    return rows;
+  } catch { return []; }
+}
+
+function getCompressionTiers() {
+  try {
+    const rows = db.prepare(`
+      SELECT compression_tier as tier, COUNT(*) as count
+      FROM observations
+      GROUP BY compression_tier
+      ORDER BY CASE compression_tier
+        WHEN 'verbatim' THEN 1
+        WHEN 'light' THEN 2
+        WHEN 'medium' THEN 3
+        WHEN 'distilled' THEN 4
+        ELSE 5
+      END
+    `).all();
+    const total = rows.reduce((s, r) => s + r.count, 0);
+    return { tiers: rows, total };
+  } catch { return { tiers: [], total: 0 }; }
+}
+
+function getSignificanceFlags() {
+  try {
+    const flags = { DECISION: 0, ORIGIN: 0, PIVOT: 0, CORE: 0, MILESTONE: 0, PROBLEM: 0 };
+    const rows = db.prepare("SELECT metadata FROM observations WHERE metadata LIKE '%significance_flags%'").all();
+    for (const row of rows) {
+      try {
+        const meta = JSON.parse(row.metadata);
+        if (Array.isArray(meta.significance_flags)) {
+          for (const f of meta.significance_flags) {
+            if (flags[f] !== undefined) flags[f]++;
+          }
+        }
+      } catch {}
+    }
+    const pinned = db.prepare('SELECT COUNT(*) as v FROM observations WHERE pinned = 1').get();
+    return { flags, pinned_count: pinned?.v || 0 };
+  } catch { return { flags: {}, pinned_count: 0 }; }
+}
+
+function getTopicsList(limit = 50) {
+  try {
+    return db.prepare(
+      'SELECT id, name, observation_count, last_seen FROM topics ORDER BY observation_count DESC LIMIT ?'
+    ).all(limit);
+  } catch { return []; }
+}
+
+function getTopicObservations(topicName, limit = 20) {
+  try {
+    return db.prepare(`
+      SELECT o.id, o.type, o.summary, substr(o.content, 1, 300) as content_preview,
+             o.indexed_at, o.importance_score, o.pinned, o.compression_tier, o.metadata
+      FROM observation_topics ot
+      JOIN topics t ON t.id = ot.topic_id
+      JOIN observations o ON o.id = ot.observation_id
+      WHERE t.name = ?
+      ORDER BY o.importance_score DESC, o.indexed_at DESC
+      LIMIT ?
+    `).all(topicName, limit);
+  } catch { return []; }
+}
+
+function getEntitiesSummary() {
+  try {
+    const byType = db.prepare(
+      'SELECT entity_type, COUNT(*) as count FROM entities GROUP BY entity_type ORDER BY count DESC'
+    ).all();
+    const total = byType.reduce((s, r) => s + r.count, 0);
+    const topByRelationships = db.prepare(`
+      SELECT e.name, e.entity_type,
+             (SELECT COUNT(*) FROM relationships r WHERE r.from_entity = e.id OR r.to_entity = e.id) as rel_count
+      FROM entities e
+      ORDER BY rel_count DESC LIMIT 10
+    `).all();
+    return { by_type: byType, total, top_connected: topByRelationships };
+  } catch { return { by_type: [], total: 0, top_connected: [] }; }
+}
+
+function getPeopleList(limit = 20) {
+  try {
+    return db.prepare(`
+      SELECT e.id, e.name, e.created_at,
+             (SELECT COUNT(*) FROM relationships r WHERE r.from_entity = e.id OR r.to_entity = e.id) as rel_count
+      FROM entities e WHERE e.entity_type = 'person'
+      ORDER BY rel_count DESC, e.created_at DESC LIMIT ?
+    `).all(limit);
+  } catch { return []; }
+}
+
+function getTemporalFacts() {
+  try {
+    const active = db.prepare('SELECT COUNT(*) as v FROM knowledge WHERE archived = 0 AND valid_to IS NULL').get();
+    const superseded = db.prepare('SELECT COUNT(*) as v FROM knowledge WHERE valid_to IS NOT NULL').get();
+    const recent = db.prepare(`
+      SELECT id, title, valid_from, valid_to, superseded_by
+      FROM knowledge WHERE valid_to IS NOT NULL
+      ORDER BY valid_to DESC LIMIT 5
+    `).all();
+    return { active: active?.v || 0, superseded: superseded?.v || 0, recent_supersessions: recent };
+  } catch { return { active: 0, superseded: 0, recent_supersessions: [] }; }
+}
+
+function getPressureEntries(limit = 10) {
+  try {
+    const now = Date.now();
+    const rows = db.prepare(`
+      SELECT id, type, summary, content, indexed_at, importance_score, access_count, pinned, last_useful_at
+      FROM observations WHERE pinned = 0
+      ORDER BY importance_score ASC, indexed_at ASC LIMIT 50
+    `).all();
+    const entries = [];
+    for (const o of rows) {
+      const ageDays = (now - o.indexed_at) / (24 * 60 * 60 * 1000);
+      const recency = Math.pow(0.5, ageDays / 14);
+      const accessFactor = Math.log2(Math.max(1, (o.access_count || 0) + 1)) / 5;
+      const usefulFactor = o.last_useful_at ? 0.5 : 0;
+      const importance = o.importance_score || 0.5;
+      const survival = importance * 0.4 + recency * 0.3 + accessFactor * 0.2 + usefulFactor * 0.1;
+      const risk = Math.max(0, Math.min(1, 1 - survival));
+      const reasons = [];
+      if (importance < 0.4) reasons.push('low importance');
+      if (ageDays > 30) reasons.push(Math.round(ageDays) + ' days old');
+      if (!o.access_count) reasons.push('never accessed');
+      if (!o.last_useful_at) reasons.push('never useful');
+      entries.push({
+        id: o.id, title: (o.summary || o.content || '').slice(0, 100), type: o.type,
+        risk_score: Math.round(risk * 100) / 100, reasons, age_days: Math.round(ageDays),
+        access_count: o.access_count || 0, importance_score: o.importance_score
+      });
+    }
+    return entries.sort((a, b) => b.risk_score - a.risk_score).slice(0, limit);
+  } catch { return []; }
+}
+
+function getWakeUpPreview() {
+  try {
+    const profile = db.prepare('SELECT content FROM project_profile WHERE id = 1').get();
+    const knowledge = db.prepare(`
+      SELECT title, content, relevance_score, access_count FROM knowledge
+      WHERE archived = 0 AND valid_to IS NULL
+      ORDER BY relevance_score DESC, access_count DESC LIMIT 5
+    `).all();
+    const entities = db.prepare(`
+      SELECT e.name, e.entity_type,
+             (SELECT COUNT(*) FROM relationships r WHERE r.from_entity = e.id OR r.to_entity = e.id) as rel_count
+      FROM entities e ORDER BY rel_count DESC, e.updated_at DESC LIMIT 5
+    `).all();
+    return {
+      l0_profile: profile?.content || '',
+      l1_critical: knowledge.map(k => ({ title: k.title, content: k.content.slice(0, 120), score: k.relevance_score })),
+      l3_entities: entities.filter(e => e.rel_count > 0).map(e => ({ name: e.name, type: e.entity_type, connections: e.rel_count })),
+    };
+  } catch { return { l0_profile: '', l1_critical: [], l3_entities: [] }; }
+}
+
+function getDecisionTrail(query) {
+  try {
+    const decisions = db.prepare(`
+      SELECT id, content, summary, indexed_at, metadata, session_id
+      FROM observations
+      WHERE (type = 'decision' OR metadata LIKE '%DECISION%')
+        AND (content LIKE ? OR summary LIKE ?)
+      ORDER BY indexed_at DESC LIMIT 5
+    `).all('%' + query + '%', '%' + query + '%');
+    if (decisions.length === 0) return null;
+    const d = decisions[0];
+    const evidence = [];
+    if (d.session_id) {
+      const events = db.prepare(`
+        SELECT event_type, data, timestamp FROM events
+        WHERE session_id = ? AND timestamp < ? AND timestamp > ?
+        ORDER BY timestamp ASC LIMIT 15
+      `).all(d.session_id, d.indexed_at, d.indexed_at - 3600000);
+      for (const e of events) {
+        let data = {}; try { data = JSON.parse(e.data); } catch {}
+        evidence.push({ type: e.event_type, content: data.file || JSON.stringify(data).slice(0, 150), timestamp: e.timestamp });
+      }
+    }
+    evidence.push({ type: 'decision', content: (d.summary || d.content).slice(0, 300), timestamp: d.indexed_at });
+    let flags = []; try { flags = JSON.parse(d.metadata).significance_flags || []; } catch {}
+    return { decision: (d.summary || d.content).slice(0, 200), date: d.indexed_at, evidence, flags };
+  } catch { return null; }
+}
+
+function generateNarrativeApi(format, sessionId, topic) {
+  try {
+    const data = { decisions: [], errors: [], changes: [], patterns: [], people: [] };
+    let where = '1=1'; const params = [];
+    if (sessionId) { where += ' AND session_id = ?'; params.push(sessionId); }
+    if (topic) { where += ' AND (content LIKE ? OR summary LIKE ?)'; params.push('%' + topic + '%', '%' + topic + '%'); }
+    try {
+      data.decisions = db.prepare(`SELECT summary, content FROM observations WHERE ${where} AND type = 'decision' ORDER BY indexed_at DESC LIMIT 10`).all(...params).map(d => (d.summary || d.content).slice(0, 150));
+      data.errors = db.prepare(`SELECT summary, content FROM observations WHERE ${where} AND type = 'error' ORDER BY indexed_at DESC LIMIT 5`).all(...params).map(e => (e.summary || e.content).slice(0, 150));
+      data.changes = db.prepare(`SELECT summary, content FROM observations WHERE ${where} AND type IN ('code','commit') ORDER BY indexed_at DESC LIMIT 10`).all(...params).map(c => (c.summary || c.content).slice(0, 150));
+    } catch {}
+    try { data.patterns = db.prepare("SELECT title FROM knowledge WHERE category = 'pattern' AND archived = 0 ORDER BY access_count DESC LIMIT 5").all().map(p => p.title); } catch {}
+    try { data.people = db.prepare("SELECT name FROM entities WHERE entity_type = 'person' ORDER BY updated_at DESC LIMIT 5").all().map(p => p.name); } catch {}
+    // Template rendering
+    if (format === 'pr') {
+      let t = '## Summary\n'; t += data.changes.length ? data.changes.map(c => '- ' + c).join('\n') : 'No changes recorded.';
+      if (data.decisions.length) t += '\n\n## Decisions\n' + data.decisions.map(d => '- ' + d).join('\n');
+      if (data.errors.length) t += '\n\n## Issues Resolved\n' + data.errors.map(e => '- ' + e).join('\n');
+      t += '\n\n## Test Plan\n- [ ] Verify changes\n- [ ] Run test suite'; return t;
+    } else if (format === 'standup') {
+      const done = data.changes.length ? data.changes.slice(0, 3).map(c => '- ' + c).join('\n') : '- No changes';
+      const blockers = data.errors.length ? data.errors.slice(0, 2).map(e => '- ' + e).join('\n') : '- None';
+      return '**Done:**\n' + done + '\n\n**Next:**\n- Continue current work\n\n**Blockers:**\n' + blockers;
+    } else if (format === 'adr') {
+      const title = data.decisions[0] || 'Untitled Decision';
+      const ctx = data.errors.length ? data.errors.map(e => '- ' + e).join('\n') : '- Context not recorded';
+      const dec = data.decisions.length ? data.decisions.map(d => '- ' + d).join('\n') : '- Decision not recorded';
+      const con = data.changes.length ? data.changes.slice(0, 3).map(c => '- ' + c).join('\n') : '- Not yet observed';
+      return '# ' + title + '\n\n## Context\n' + ctx + '\n\n## Decision\n' + dec + '\n\n## Consequences\n' + con;
+    } else if (format === 'onboarding') {
+      let t = '# Project Overview';
+      if (data.patterns.length) t += '\n\n## Patterns\n' + data.patterns.map(p => '- ' + p).join('\n');
+      if (data.decisions.length) t += '\n\n## Key Decisions\n' + data.decisions.map(d => '- ' + d).join('\n');
+      if (data.people.length) t += '\n\n## Team\n' + data.people.map(p => '- ' + p).join('\n');
+      return t;
+    }
+    return 'Unknown format: ' + format;
+  } catch (e) { return 'Error: ' + e.message; }
+}
+
+function getPinnedObservations(limit = 20) {
+  try {
+    return db.prepare(`
+      SELECT id, type, summary, substr(content, 1, 300) as content_preview,
+             indexed_at, importance_score, compression_tier, metadata
+      FROM observations WHERE pinned = 1
+      ORDER BY indexed_at DESC LIMIT ?
+    `).all(limit);
+  } catch { return []; }
+}
+
+function getTunnels() {
+  try {
+    const topics = db.prepare('SELECT name FROM topics WHERE observation_count > 0').all();
+    // Check global store for cross-project matches
+    const globalDbPath = path.join(os.homedir(), '.context-mem', 'global', 'store.db');
+    if (!fs.existsSync(globalDbPath)) return [];
+    const globalDb = new Database(globalDbPath, { readonly: true });
+    const tunnels = [];
+    for (const t of topics) {
+      try {
+        const matches = globalDb.prepare("SELECT source_project FROM global_knowledge WHERE title LIKE ? OR content LIKE ? LIMIT 5")
+          .all('%' + t.name + '%', '%' + t.name + '%');
+        if (matches.length > 0) {
+          const projects = new Set([currentProject || PROJECT_DIR]);
+          for (const m of matches) if (m.source_project) projects.add(m.source_project);
+          if (projects.size >= 2) tunnels.push({ topic: t.name, projects: [...projects] });
+        }
+      } catch {}
+    }
+    globalDb.close();
+    return tunnels;
+  } catch { return []; }
+}
+
 // --- API router ---
 function handleApi(req, res) {
   const url = new URL(req.url, `http://localhost:${PORT}`);
@@ -1220,6 +1503,58 @@ function handleApi(req, res) {
           Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100),
           url.searchParams.get('category') || null
         );
+        break;
+      // --- Total Recall API routes ---
+      case '/api/importance-distribution':
+        data = getImportanceDistribution();
+        break;
+      case '/api/compression-tiers':
+        data = getCompressionTiers();
+        break;
+      case '/api/significance-flags':
+        data = getSignificanceFlags();
+        break;
+      case '/api/topics':
+        data = getTopicsList(Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 200));
+        break;
+      case '/api/topic-observations':
+        data = getTopicObservations(
+          url.searchParams.get('topic') || '',
+          Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100)
+        );
+        break;
+      case '/api/entities-summary':
+        data = getEntitiesSummary();
+        break;
+      case '/api/people':
+        data = getPeopleList(Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100));
+        break;
+      case '/api/temporal-facts':
+        data = getTemporalFacts();
+        break;
+      case '/api/pressure':
+        data = getPressureEntries(Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 50));
+        break;
+      case '/api/wake-up-preview':
+        data = getWakeUpPreview();
+        break;
+      case '/api/decision-trail':
+        data = getDecisionTrail(url.searchParams.get('q') || '');
+        break;
+      case '/api/narrative': {
+        const narrative = generateNarrativeApi(
+          url.searchParams.get('format') || 'pr',
+          url.searchParams.get('session') || null,
+          url.searchParams.get('topic') || null
+        );
+        data = { narrative, format: url.searchParams.get('format') || 'pr' };
+        break;
+      }
+      case '/api/pinned':
+        data = getPinnedObservations(Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100));
+        break;
+      case '/api/tunnels':
+        data = getTunnels();
         break;
       default:
         // Path-based observation lookup: /api/observation/<id>
@@ -3140,11 +3475,14 @@ function getDashboardHtml() {
 <header class="header">
   <div class="header-left">
     <div class="logo">cm</div>
-    <span class="header-title">context-mem</span>
+    <span class="header-title">context-mem <span style="font-size:10px;color:var(--text-muted);font-weight:400;">v3.0</span></span>
     <nav class="nav-links">
       <a href="/" class="nav-link active">Home</a>
+      <a href="/topics" class="nav-link">Topics</a>
       <a href="/graph" class="nav-link">Graph</a>
       <a href="/timeline" class="nav-link">Timeline</a>
+      <a href="/trail" class="nav-link">Trail</a>
+      <a href="/narrative" class="nav-link">Narrative</a>
     </nav>
   </div>
   <div class="header-right">
@@ -3201,6 +3539,24 @@ function getDashboardHtml() {
       <div class="intel-card-value" id="intelLlmValue" style="font-size:18px;color:var(--text-dim);">Disabled</div>
       <div class="intel-card-sub" id="intelLlmSub">No provider configured</div>
     </div>
+    <!-- Memory Tiers -->
+    <div class="intel-card" style="--card-accent: var(--orange);" id="intel-tiers">
+      <div class="intel-card-label">Memory Tiers</div>
+      <div class="intel-card-value" id="intelTiersValue" style="font-size:16px;color:var(--orange);">--</div>
+      <div class="intel-card-sub" id="intelTiersSub">Loading...</div>
+    </div>
+    <!-- Entities -->
+    <div class="intel-card" style="--card-accent: var(--pink);" id="intel-entities" onclick="window.location='/#entities-section'">
+      <div class="intel-card-label">Entities</div>
+      <div class="intel-card-value" id="intelEntitiesValue" style="color:var(--pink);">--</div>
+      <div class="intel-card-sub" id="intelEntitiesSub">Loading...</div>
+    </div>
+    <!-- Pressure Alert -->
+    <div class="intel-card" style="--card-accent: var(--red);" id="intel-pressure" onclick="document.getElementById('pressureSection')?.scrollIntoView({behavior:'smooth'})">
+      <div class="intel-card-label">At Risk</div>
+      <div class="intel-card-value" id="intelPressureValue" style="color:var(--green);">0</div>
+      <div class="intel-card-sub" id="intelPressureSub">No entries at risk</div>
+    </div>
   </div>
 
   <!-- ===== SMART SEARCH ===== -->
@@ -3210,6 +3566,26 @@ function getDashboardHtml() {
       <input type="text" class="smart-search-input" id="smartSearchInput" placeholder="Smart search — find 'auth problem' when stored as 'login token expired'..." autocomplete="off" spellcheck="false">
       <span class="smart-search-hint">&#x23CE; Enter</span>
       <button class="smart-search-clear" id="smartSearchClear">Clear</button>
+    </div>
+    <div class="search-filters" style="display:flex;gap:8px;padding:4px 12px;flex-wrap:wrap;align-items:center;">
+      <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-dim);cursor:pointer;">
+        <input type="checkbox" id="verbatimToggle" style="accent-color:var(--accent);"> Verbatim
+      </label>
+      <select id="importanceFilter" style="font-size:11px;background:var(--bg-elevated);color:var(--text-dim);border:1px solid var(--border);border-radius:var(--radius-xs);padding:2px 6px;">
+        <option value="">Any importance</option>
+        <option value="0.9">&#x2265; 0.9 Critical</option>
+        <option value="0.7">&#x2265; 0.7 High</option>
+        <option value="0.5">&#x2265; 0.5 Medium</option>
+        <option value="0.3">&#x2265; 0.3 Low</option>
+      </select>
+      <select id="topicFilter" style="font-size:11px;background:var(--bg-elevated);color:var(--text-dim);border:1px solid var(--border);border-radius:var(--radius-xs);padding:2px 6px;">
+        <option value="">All topics</option>
+      </select>
+      <div id="flagFilters" style="display:flex;gap:3px;">
+        <span class="flag-pill" data-flag="DECISION" onclick="toggleFlag(this)" style="font-size:10px;padding:1px 6px;border-radius:8px;background:var(--purple-dim);color:var(--purple);cursor:pointer;border:1px solid transparent;">DECISION</span>
+        <span class="flag-pill" data-flag="MILESTONE" onclick="toggleFlag(this)" style="font-size:10px;padding:1px 6px;border-radius:8px;background:var(--green-dim);color:var(--green);cursor:pointer;border:1px solid transparent;">MILESTONE</span>
+        <span class="flag-pill" data-flag="PROBLEM" onclick="toggleFlag(this)" style="font-size:10px;padding:1px 6px;border-radius:8px;background:var(--red-dim);color:var(--red);cursor:pointer;border:1px solid transparent;">PROBLEM</span>
+      </div>
     </div>
     <div class="smart-search-info" id="smartSearchInfo">
       <span>Found <span class="hl" id="sfResultCount">0</span> results</span>
@@ -3287,6 +3663,53 @@ function getDashboardHtml() {
   <div class="savings-callout" id="savingsCallout" style="display:none;">
     <div class="savings-callout-icon">S</div>
     <div class="savings-callout-text" id="savingsText"></div>
+  </div>
+
+  <!-- ===== TOTAL RECALL: MEMORY TIERS ===== -->
+  <div class="token-bar-section" id="tiersSection">
+    <div class="section-title">
+      <div class="icon" style="background:var(--orange-dim);color:var(--orange);">&#x2630;</div>
+      Compression Tiers
+    </div>
+    <div id="tiersBars" style="display:flex;flex-direction:column;gap:6px;">
+      <div class="token-row"><div class="token-label" style="color:var(--blue);">Verbatim</div><div class="token-bar-bg"><div class="token-bar-fill" id="tierVerbatim" style="width:0%;background:var(--blue);"></div></div><div class="token-number" id="tierVerbatimN">0</div></div>
+      <div class="token-row"><div class="token-label" style="color:var(--green);">Light</div><div class="token-bar-bg"><div class="token-bar-fill" id="tierLight" style="width:0%;background:var(--green);"></div></div><div class="token-number" id="tierLightN">0</div></div>
+      <div class="token-row"><div class="token-label" style="color:var(--orange);">Medium</div><div class="token-bar-bg"><div class="token-bar-fill" id="tierMedium" style="width:0%;background:var(--orange);"></div></div><div class="token-number" id="tierMediumN">0</div></div>
+      <div class="token-row"><div class="token-label" style="color:var(--red);">Distilled</div><div class="token-bar-bg"><div class="token-bar-fill" id="tierDistilled" style="width:0%;background:var(--red);"></div></div><div class="token-number" id="tierDistilledN">0</div></div>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;" id="flagsDisplay">
+      <span style="font-size:11px;color:var(--text-dim);" id="flagsDECISION">DECISION: --</span>
+      <span style="font-size:11px;color:var(--text-dim);" id="flagsMILESTONE">MILESTONE: --</span>
+      <span style="font-size:11px;color:var(--text-dim);" id="flagsPROBLEM">PROBLEM: --</span>
+      <span style="font-size:11px;color:var(--text-dim);" id="flagsORIGIN">ORIGIN: --</span>
+      <span style="font-size:11px;color:var(--text-dim);" id="flagsPIVOT">PIVOT: --</span>
+      <span style="font-size:11px;color:var(--text-dim);" id="flagsCORE">CORE: --</span>
+      <span style="font-size:11px;color:var(--text-dim);" id="pinnedCount">Pinned: --</span>
+    </div>
+  </div>
+
+  <!-- ===== TOTAL RECALL: PRESSURE + WAKE-UP ===== -->
+  <div class="two-col">
+    <!-- Memory Pressure -->
+    <div class="token-bar-section" id="pressureSection">
+      <div class="section-title">
+        <div class="icon" style="background:var(--red-dim);color:var(--red);">&#x26A0;</div>
+        Memory Pressure <span style="font-size:11px;color:var(--text-muted);margin-left:8px;" id="pressureCount"></span>
+      </div>
+      <div id="pressureList" style="max-height:300px;overflow-y:auto;"></div>
+    </div>
+    <!-- Wake-Up Primer Preview -->
+    <div class="token-bar-section" id="wakeupSection">
+      <div class="section-title">
+        <div class="icon" style="background:var(--cyan-dim);color:var(--cyan);">&#x2600;</div>
+        Wake-Up Primer Preview
+      </div>
+      <div id="wakeupPreview" style="font-size:12px;color:var(--text-dim);max-height:300px;overflow-y:auto;">
+        <div style="margin-bottom:8px;"><strong style="color:var(--text);font-size:11px;">L0 — Project Profile</strong><div id="wakeL0" style="margin-top:4px;"></div></div>
+        <div style="margin-bottom:8px;"><strong style="color:var(--text);font-size:11px;">L1 — Critical Knowledge</strong><div id="wakeL1" style="margin-top:4px;"></div></div>
+        <div><strong style="color:var(--text);font-size:11px;">L3 — Top Entities</strong><div id="wakeL3" style="margin-top:4px;"></div></div>
+      </div>
+    </div>
   </div>
 
   <!-- ===== TOKEN ECONOMICS ===== -->
@@ -3683,6 +4106,124 @@ async function loadIntelligence() {
     const ccEl = document.getElementById('contradictionCount');
     if (ccEl) ccEl.textContent = contraArr.length;
   } catch (e) { /* silent */ }
+}
+
+// --- Total Recall data loader ---
+async function loadTotalRecall() {
+  try {
+    const [tiersData, flagsData, entitiesData, pressureData, wakeupData, topicsData] = await Promise.all([
+      fetch('/api/compression-tiers').then(r => r.json()).catch(() => ({ tiers: [], total: 0 })),
+      fetch('/api/significance-flags').then(r => r.json()).catch(() => ({ flags: {}, pinned_count: 0 })),
+      fetch('/api/entities-summary').then(r => r.json()).catch(() => ({ total: 0, by_type: [] })),
+      fetch('/api/pressure').then(r => r.json()).catch(() => []),
+      fetch('/api/wake-up-preview').then(r => r.json()).catch(() => ({ l0_profile: '', l1_critical: [], l3_entities: [] })),
+      fetch('/api/topics').then(r => r.json()).catch(() => []),
+    ]);
+
+    // --- Intel cards ---
+    const tiersVal = document.getElementById('intelTiersValue');
+    const tiersSub = document.getElementById('intelTiersSub');
+    if (tiersVal && tiersData.tiers) {
+      const tMap = {}; tiersData.tiers.forEach(t => tMap[t.tier] = t.count);
+      tiersVal.textContent = (tMap.verbatim || 0) + ' V / ' + (tMap.light || 0) + ' L / ' + (tMap.medium || 0) + ' M / ' + (tMap.distilled || 0) + ' D';
+    }
+    if (tiersSub) tiersSub.textContent = tiersData.total + ' total observations';
+
+    const entVal = document.getElementById('intelEntitiesValue');
+    const entSub = document.getElementById('intelEntitiesSub');
+    if (entVal) entVal.textContent = entitiesData.total || 0;
+    if (entSub) entSub.textContent = (entitiesData.by_type || []).map(t => t.count + ' ' + t.entity_type).slice(0, 3).join(', ') || 'No entities';
+
+    const pressVal = document.getElementById('intelPressureValue');
+    const pressSub = document.getElementById('intelPressureSub');
+    const highRisk = Array.isArray(pressureData) ? pressureData.filter(e => e.risk_score > 0.6).length : 0;
+    if (pressVal) {
+      pressVal.textContent = highRisk;
+      pressVal.style.color = highRisk > 5 ? 'var(--red)' : highRisk > 0 ? 'var(--orange)' : 'var(--green)';
+    }
+    if (pressSub) pressSub.textContent = highRisk > 0 ? highRisk + ' entries at high risk' : 'All memories safe';
+
+    // --- Compression tiers bars ---
+    if (tiersData.tiers && tiersData.total > 0) {
+      const tMap = {}; tiersData.tiers.forEach(t => tMap[t.tier] = t.count);
+      const max = Math.max(...tiersData.tiers.map(t => t.count), 1);
+      ['verbatim', 'light', 'medium', 'distilled'].forEach(tier => {
+        const Tier = tier.charAt(0).toUpperCase() + tier.slice(1);
+        const bar = document.getElementById('tier' + Tier);
+        const num = document.getElementById('tier' + Tier + 'N');
+        const count = tMap[tier] || 0;
+        if (bar) bar.style.width = (count / max * 100) + '%';
+        if (num) num.textContent = count + ' (' + Math.round(count / tiersData.total * 100) + '%)';
+      });
+    }
+
+    // --- Significance flags ---
+    if (flagsData.flags) {
+      ['DECISION', 'MILESTONE', 'PROBLEM', 'ORIGIN', 'PIVOT', 'CORE'].forEach(f => {
+        const el = document.getElementById('flags' + f);
+        if (el) {
+          const count = flagsData.flags[f] || 0;
+          el.textContent = f + ': ' + count;
+          el.style.color = count > 0 ? 'var(--text)' : 'var(--text-muted)';
+        }
+      });
+      const pinnedEl = document.getElementById('pinnedCount');
+      if (pinnedEl) pinnedEl.textContent = 'Pinned: ' + (flagsData.pinned_count || 0);
+    }
+
+    // --- Pressure list ---
+    const pressureList = document.getElementById('pressureList');
+    if (pressureList) {
+      const entries = Array.isArray(pressureData) ? pressureData.slice(0, 8) : [];
+      if (entries.length === 0) {
+        pressureList.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px;">No entries at risk of loss.</div>';
+      } else {
+        pressureList.innerHTML = entries.map(e => {
+          const riskColor = e.risk_score > 0.7 ? 'var(--red)' : e.risk_score > 0.4 ? 'var(--orange)' : 'var(--green)';
+          return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-subtle);">' +
+            '<div style="min-width:40px;text-align:center;font-size:13px;font-weight:600;color:' + riskColor + ';">' + (e.risk_score * 100).toFixed(0) + '%</div>' +
+            '<div style="flex:1;min-width:0;"><div style="font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(e.title) + '</div>' +
+            '<div style="font-size:10px;color:var(--text-muted);">' + e.reasons.join(' · ') + '</div></div>' +
+            '<div style="font-size:10px;padding:2px 6px;border-radius:6px;background:var(--bg-elevated);color:var(--text-dim);">' + e.type + '</div></div>';
+        }).join('');
+      }
+      const pressureCountEl = document.getElementById('pressureCount');
+      if (pressureCountEl) pressureCountEl.textContent = entries.length + ' entries';
+    }
+
+    // --- Wake-up preview ---
+    const wakeL0 = document.getElementById('wakeL0');
+    const wakeL1 = document.getElementById('wakeL1');
+    const wakeL3 = document.getElementById('wakeL3');
+    if (wakeL0) wakeL0.textContent = wakeupData.l0_profile || '(no profile set)';
+    if (wakeL1) {
+      wakeL1.innerHTML = (wakeupData.l1_critical || []).map(k =>
+        '<div style="padding:3px 0;border-bottom:1px solid var(--border-subtle);"><span style="color:var(--text);">' + escHtml(k.title) + '</span> <span style="color:var(--text-muted);font-size:10px;">score: ' + (k.score || 0).toFixed(1) + '</span></div>'
+      ).join('') || '(no knowledge entries)';
+    }
+    if (wakeL3) {
+      wakeL3.innerHTML = (wakeupData.l3_entities || []).map(e =>
+        '<span style="display:inline-block;padding:2px 8px;margin:2px;border-radius:8px;background:var(--bg-elevated);font-size:11px;color:var(--text);">' + escHtml(e.name) + ' <span style="color:var(--text-muted);">(' + e.connections + ')</span></span>'
+      ).join('') || '(no entities)';
+    }
+
+    // --- Populate topic filter dropdown ---
+    const topicFilter = document.getElementById('topicFilter');
+    if (topicFilter && Array.isArray(topicsData)) {
+      const current = topicFilter.value;
+      topicFilter.innerHTML = '<option value="">All topics</option>' +
+        topicsData.slice(0, 20).map(t => '<option value="' + t.name + '">' + t.name + ' (' + t.observation_count + ')</option>').join('');
+      topicFilter.value = current;
+    }
+  } catch (e) { /* silent */ }
+}
+
+// --- Flag filter toggle ---
+let activeFlags = new Set();
+function toggleFlag(el) {
+  const flag = el.dataset.flag;
+  if (activeFlags.has(flag)) { activeFlags.delete(flag); el.style.borderColor = 'transparent'; el.style.opacity = '0.6'; }
+  else { activeFlags.add(flag); el.style.borderColor = 'currentColor'; el.style.opacity = '1'; }
 }
 
 // --- Render contradictions panel ---
@@ -4449,8 +4990,9 @@ async function refresh() {
     document.getElementById('statusText').textContent = 'connected';
     document.getElementById('refreshInfo').textContent = 'updated ' + new Date().toLocaleTimeString();
 
-    // Refresh intelligence strip on each data refresh
+    // Refresh intelligence strip + Total Recall data on each data refresh
     loadIntelligence();
+    loadTotalRecall();
   } catch (err) {
     document.getElementById('statusText').textContent = 'error: ' + err.message;
   }
@@ -6861,10 +7403,261 @@ const server = http.createServer((req, res) => {
     res.end(getGraphPageHtml());
   } else if (pagePath === '/timeline') {
     res.end(getTimelinePageHtml());
+  } else if (pagePath === '/topics') {
+    res.end(getTopicsPageHtml());
+  } else if (pagePath === '/trail') {
+    res.end(getTrailPageHtml());
+  } else if (pagePath === '/narrative') {
+    res.end(getNarrativePageHtml());
   } else {
     res.end(getDashboardHtml());
   }
 });
+
+// --- Total Recall Pages ---
+
+function getTopicsPageHtml() {
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>context-mem - Topics</title>
+<style>
+  :root { --bg:#08080d;--bg-card:#0f0f17;--bg-card-hover:#161622;--bg-elevated:#1a1a28;--border:#1e1e30;--text:#e8e8ef;--text-dim:#7a7a90;--text-muted:#4a4a60;--accent:#818cf8;--green:#34d399;--orange:#fbbf24;--red:#f87171;--blue:#60a5fa;--purple:#c084fc;--cyan:#22d3ee;--pink:#f472b6;--radius:16px;--radius-sm:10px;--font-ui:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;--font-mono:'SF Mono','Cascadia Code',monospace; }
+  * { margin:0;padding:0;box-sizing:border-box; }
+  body { font-family:var(--font-ui);background:var(--bg);color:var(--text);min-height:100vh; }
+  .header { display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;border-bottom:1px solid var(--border);background:rgba(8,8,13,0.85);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px); }
+  .header-left { display:flex;align-items:center;gap:10px; }
+  .logo { width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white; }
+  .nav-links { display:flex;gap:2px;margin-left:12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:3px; }
+  .nav-link { font-size:12px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:4px 12px;border-radius:7px; }
+  .nav-link:hover { color:var(--text);background:var(--bg-card-hover); }
+  .nav-link.active { color:var(--text);background:var(--bg-card); }
+  .main { max-width:1200px;margin:0 auto;padding:24px; }
+  .section-title { display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin-bottom:16px; }
+  .topic-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px; }
+  .topic-card { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;cursor:pointer;transition:all 0.15s; }
+  .topic-card:hover { background:var(--bg-card-hover);border-color:var(--accent); }
+  .topic-name { font-size:14px;font-weight:600;margin-bottom:4px; }
+  .topic-count { font-size:24px;font-weight:700;color:var(--accent); }
+  .topic-sub { font-size:11px;color:var(--text-muted); }
+  .obs-list { display:flex;flex-direction:column;gap:8px; }
+  .obs-item { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px; }
+  .obs-title { font-size:12px;color:var(--text);margin-bottom:4px; }
+  .obs-meta { font-size:10px;color:var(--text-muted); }
+  .importance-dot { display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px; }
+</style></head><body>
+<div class="header"><div class="header-left">
+  <div class="logo">cm</div><span style="font-size:14px;font-weight:600;">context-mem <span style="font-size:10px;color:var(--text-muted);font-weight:400;">v3.0</span></span>
+  <nav class="nav-links">
+    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link active">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link">Trail</a><a href="/narrative" class="nav-link">Narrative</a>
+  </nav>
+</div></div>
+<div class="main">
+  <div class="section-title">Topic Explorer</div>
+  <div class="topic-grid" id="topicGrid">Loading topics...</div>
+  <div id="topicDetail" style="display:none;">
+    <div class="section-title" id="topicDetailTitle" style="margin-top:24px;"></div>
+    <div class="obs-list" id="topicObsList"></div>
+  </div>
+  <div style="margin-top:32px;">
+    <div class="section-title">Cross-Project Tunnels</div>
+    <div id="tunnelsList" style="color:var(--text-dim);font-size:12px;">Loading...</div>
+  </div>
+</div>
+<script>
+async function load() {
+  const topics = await fetch('/api/topics').then(r=>r.json()).catch(()=>[]);
+  const grid = document.getElementById('topicGrid');
+  if (!topics.length) { grid.innerHTML = '<div style="color:var(--text-muted);">No topics detected yet.</div>'; return; }
+  grid.innerHTML = topics.map(t => '<div class="topic-card" onclick="showTopic(\\'' + t.name + '\\')">' +
+    '<div class="topic-name">' + t.name + '</div>' +
+    '<div class="topic-count">' + t.observation_count + '</div>' +
+    '<div class="topic-sub">observations</div></div>').join('');
+  // Tunnels
+  const tunnels = await fetch('/api/tunnels').then(r=>r.json()).catch(()=>[]);
+  const tEl = document.getElementById('tunnelsList');
+  if (!tunnels.length) { tEl.textContent = 'No cross-project topic bridges found.'; }
+  else { tEl.innerHTML = tunnels.map(t => '<div style="padding:6px 0;border-bottom:1px solid var(--border);"><strong>' + t.topic + '</strong> — ' + t.projects.join(', ') + '</div>').join(''); }
+}
+async function showTopic(name) {
+  document.getElementById('topicDetail').style.display = 'block';
+  document.getElementById('topicDetailTitle').textContent = 'Topic: ' + name;
+  const obs = await fetch('/api/topic-observations?topic=' + encodeURIComponent(name)).then(r=>r.json()).catch(()=>[]);
+  const list = document.getElementById('topicObsList');
+  list.innerHTML = obs.map(o => {
+    const imp = o.importance_score || 0.5;
+    const dotColor = imp >= 0.8 ? 'var(--green)' : imp >= 0.5 ? 'var(--orange)' : 'var(--red)';
+    return '<div class="obs-item"><div class="obs-title"><span class="importance-dot" style="background:' + dotColor + ';"></span>' +
+      (o.summary || o.content_preview || '').slice(0, 200) + '</div>' +
+      '<div class="obs-meta">' + o.type + ' · importance: ' + imp.toFixed(2) + ' · ' + (o.compression_tier || 'verbatim') + ' · ' + new Date(o.indexed_at).toLocaleString() + '</div></div>';
+  }).join('') || '<div style="color:var(--text-muted);">No observations for this topic.</div>';
+  document.getElementById('topicDetail').scrollIntoView({behavior:'smooth'});
+}
+load();
+</script></body></html>`;
+}
+
+function getTrailPageHtml() {
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>context-mem - Decision Trail</title>
+<style>
+  :root { --bg:#08080d;--bg-card:#0f0f17;--bg-card-hover:#161622;--bg-elevated:#1a1a28;--border:#1e1e30;--text:#e8e8ef;--text-dim:#7a7a90;--text-muted:#4a4a60;--accent:#818cf8;--green:#34d399;--orange:#fbbf24;--red:#f87171;--blue:#60a5fa;--purple:#c084fc;--cyan:#22d3ee;--pink:#f472b6;--radius:16px;--radius-sm:10px;--font-ui:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;--font-mono:'SF Mono','Cascadia Code',monospace; }
+  * { margin:0;padding:0;box-sizing:border-box; }
+  body { font-family:var(--font-ui);background:var(--bg);color:var(--text);min-height:100vh; }
+  .header { display:flex;align-items:center;padding:0 24px;height:56px;border-bottom:1px solid var(--border);background:rgba(8,8,13,0.85);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px); }
+  .header-left { display:flex;align-items:center;gap:10px; }
+  .logo { width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white; }
+  .nav-links { display:flex;gap:2px;margin-left:12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:3px; }
+  .nav-link { font-size:12px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:4px 12px;border-radius:7px; }
+  .nav-link:hover { color:var(--text);background:var(--bg-card-hover); }
+  .nav-link.active { color:var(--text);background:var(--bg-card); }
+  .main { max-width:900px;margin:0 auto;padding:24px; }
+  .search-box { display:flex;gap:8px;margin-bottom:24px; }
+  .search-box input { flex:1;padding:10px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;outline:none; }
+  .search-box input:focus { border-color:var(--accent); }
+  .search-box button { padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:13px; }
+  .trail-timeline { position:relative;padding-left:32px; }
+  .trail-line { position:absolute;left:12px;top:0;bottom:0;width:2px;background:var(--border); }
+  .trail-item { position:relative;margin-bottom:16px;animation:fadeIn 0.3s ease; }
+  .trail-dot { position:absolute;left:-26px;top:6px;width:12px;height:12px;border-radius:50%;border:2px solid var(--border);background:var(--bg-card); }
+  .trail-dot.decision { background:var(--purple);border-color:var(--purple); }
+  .trail-dot.error { background:var(--red);border-color:var(--red); }
+  .trail-dot.file_read { background:var(--blue);border-color:var(--blue); }
+  .trail-dot.fix { background:var(--green);border-color:var(--green); }
+  .trail-dot.search { background:var(--orange);border-color:var(--orange); }
+  .trail-content { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px; }
+  .trail-type { font-size:10px;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;margin-bottom:4px; }
+  .trail-text { font-size:12px;color:var(--text-dim);line-height:1.5; }
+  .trail-time { font-size:10px;color:var(--text-muted);margin-top:4px; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+</style></head><body>
+<div class="header"><div class="header-left">
+  <div class="logo">cm</div><span style="font-size:14px;font-weight:600;">context-mem <span style="font-size:10px;color:var(--text-muted);font-weight:400;">v3.0</span></span>
+  <nav class="nav-links">
+    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link active">Trail</a><a href="/narrative" class="nav-link">Narrative</a>
+  </nav>
+</div></div>
+<div class="main">
+  <h2 style="font-size:18px;margin-bottom:8px;">Decision Trail</h2>
+  <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;">Reconstruct the evidence chain behind any code change or decision.</p>
+  <div class="search-box">
+    <input type="text" id="trailQuery" placeholder="Enter file path or topic (e.g. PostgreSQL, src/auth/login.ts)..." autofocus>
+    <button onclick="searchTrail()">Explain</button>
+  </div>
+  <div id="trailResult"></div>
+</div>
+<script>
+document.getElementById('trailQuery').addEventListener('keydown', e => { if (e.key === 'Enter') searchTrail(); });
+async function searchTrail() {
+  const q = document.getElementById('trailQuery').value.trim();
+  if (!q) return;
+  const el = document.getElementById('trailResult');
+  el.innerHTML = '<div style="color:var(--text-muted);">Searching...</div>';
+  const data = await fetch('/api/decision-trail?q=' + encodeURIComponent(q)).then(r => r.json()).catch(() => null);
+  if (!data) { el.innerHTML = '<div style="color:var(--text-muted);padding:20px 0;">No decision trail found for "' + q + '"</div>'; return; }
+  const typeColors = { decision:'var(--purple)', error:'var(--red)', file_read:'var(--blue)', fix:'var(--green)', search:'var(--orange)', file_modify:'var(--green)' };
+  let html = '<div style="margin-bottom:16px;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);">' +
+    '<div style="font-size:16px;font-weight:600;color:var(--purple);margin-bottom:4px;">' + data.decision + '</div>' +
+    '<div style="font-size:11px;color:var(--text-muted);">' + new Date(data.date).toLocaleString() + '</div></div>';
+  if (data.evidence && data.evidence.length) {
+    html += '<div class="trail-timeline"><div class="trail-line"></div>';
+    for (const e of data.evidence) {
+      const dotClass = e.type || 'search';
+      const color = typeColors[e.type] || 'var(--text-dim)';
+      html += '<div class="trail-item"><div class="trail-dot ' + dotClass + '"></div><div class="trail-content">' +
+        '<div class="trail-type" style="color:' + color + ';">' + (e.type || 'event') + '</div>' +
+        '<div class="trail-text">' + (e.content || '').replace(/</g,'&lt;') + '</div>' +
+        '<div class="trail-time">' + new Date(e.timestamp).toLocaleTimeString() + '</div></div></div>';
+    }
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+</script></body></html>`;
+}
+
+function getNarrativePageHtml() {
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>context-mem - Narrative</title>
+<style>
+  :root { --bg:#08080d;--bg-card:#0f0f17;--bg-card-hover:#161622;--bg-elevated:#1a1a28;--border:#1e1e30;--text:#e8e8ef;--text-dim:#7a7a90;--text-muted:#4a4a60;--accent:#818cf8;--green:#34d399;--orange:#fbbf24;--red:#f87171;--blue:#60a5fa;--purple:#c084fc;--cyan:#22d3ee;--radius:16px;--radius-sm:10px;--font-ui:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;--font-mono:'SF Mono','Cascadia Code',monospace; }
+  * { margin:0;padding:0;box-sizing:border-box; }
+  body { font-family:var(--font-ui);background:var(--bg);color:var(--text);min-height:100vh; }
+  .header { display:flex;align-items:center;padding:0 24px;height:56px;border-bottom:1px solid var(--border);background:rgba(8,8,13,0.85);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px); }
+  .header-left { display:flex;align-items:center;gap:10px; }
+  .logo { width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white; }
+  .nav-links { display:flex;gap:2px;margin-left:12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:3px; }
+  .nav-link { font-size:12px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:4px 12px;border-radius:7px; }
+  .nav-link:hover { color:var(--text);background:var(--bg-card-hover); }
+  .nav-link.active { color:var(--text);background:var(--bg-card); }
+  .main { max-width:900px;margin:0 auto;padding:24px; }
+  .format-tabs { display:flex;gap:4px;margin-bottom:16px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:3px;width:fit-content; }
+  .format-tab { padding:6px 16px;font-size:12px;font-weight:500;color:var(--text-dim);cursor:pointer;border-radius:7px;border:none;background:none; }
+  .format-tab.active { background:var(--bg-card);color:var(--text); }
+  .format-tab:hover { color:var(--text); }
+  .filters { display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap; }
+  .filters input, .filters select { padding:6px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;outline:none; }
+  .preview { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;min-height:200px;white-space:pre-wrap;font-family:var(--font-mono);font-size:13px;line-height:1.7;color:var(--text-dim); }
+  .preview h1,.preview h2,.preview h3 { color:var(--text);font-family:var(--font-ui); }
+  .preview strong { color:var(--text); }
+  .actions { display:flex;gap:8px;margin-top:12px; }
+  .actions button { padding:8px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-card);color:var(--text);font-size:12px;cursor:pointer; }
+  .actions button:hover { background:var(--bg-card-hover); }
+  .actions button.primary { background:var(--accent);border-color:var(--accent);color:white; }
+</style></head><body>
+<div class="header"><div class="header-left">
+  <div class="logo">cm</div><span style="font-size:14px;font-weight:600;">context-mem <span style="font-size:10px;color:var(--text-muted);font-weight:400;">v3.0</span></span>
+  <nav class="nav-links">
+    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link">Trail</a><a href="/narrative" class="nav-link active">Narrative</a>
+  </nav>
+</div></div>
+<div class="main">
+  <h2 style="font-size:18px;margin-bottom:8px;">Session Narrative</h2>
+  <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;">Generate PR descriptions, standup updates, ADRs, or onboarding guides from your session data.</p>
+  <div class="format-tabs" id="formatTabs">
+    <button class="format-tab active" data-format="pr" onclick="setFormat('pr',this)">PR Description</button>
+    <button class="format-tab" data-format="standup" onclick="setFormat('standup',this)">Standup</button>
+    <button class="format-tab" data-format="adr" onclick="setFormat('adr',this)">ADR</button>
+    <button class="format-tab" data-format="onboarding" onclick="setFormat('onboarding',this)">Onboarding</button>
+  </div>
+  <div class="filters">
+    <input type="text" id="narrativeTopic" placeholder="Filter by topic...">
+  </div>
+  <div class="preview" id="narrativePreview">Generating...</div>
+  <div class="actions">
+    <button class="primary" onclick="copyNarrative()">Copy to Clipboard</button>
+    <button onclick="generateNarrative()">Regenerate</button>
+  </div>
+</div>
+<script>
+let currentFormat = 'pr';
+function setFormat(fmt, el) {
+  currentFormat = fmt;
+  document.querySelectorAll('.format-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  generateNarrative();
+}
+async function generateNarrative() {
+  const topic = document.getElementById('narrativeTopic').value.trim();
+  const params = new URLSearchParams({ format: currentFormat });
+  if (topic) params.set('topic', topic);
+  const el = document.getElementById('narrativePreview');
+  el.textContent = 'Generating...';
+  const data = await fetch('/api/narrative?' + params).then(r => r.json()).catch(() => ({ narrative: 'Error generating narrative' }));
+  // Simple markdown rendering
+  let html = (data.narrative || '').replace(/^## (.+)$/gm, '<h2>$1</h2>').replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>').replace(/^- \\[ \\] (.+)$/gm, '- [ ] $1').replace(/^- (.+)$/gm, '&bull; $1');
+  el.innerHTML = html || '<span style="color:var(--text-muted);">No data available for this format.</span>';
+}
+function copyNarrative() {
+  const text = document.getElementById('narrativePreview').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.actions .primary');
+    btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy to Clipboard', 2000);
+  });
+}
+document.getElementById('narrativeTopic').addEventListener('input', () => { clearTimeout(window._nt); window._nt = setTimeout(generateNarrative, 500); });
+generateNarrative();
+</script></body></html>`;
+}
 
 // --- WebSocket for real-time push (optional, requires 'ws' package) ---
 // Uses ObservationStream-compatible protocol: { type: string, data: unknown }

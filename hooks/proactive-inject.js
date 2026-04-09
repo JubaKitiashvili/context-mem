@@ -372,6 +372,25 @@ function searchRelevantContext(db, query, filePath, globalDbPath) {
           });
         }
       }
+
+      // Also find entities mentioned in observations about this file
+      try {
+        const relatedObs = db.prepare(`
+          SELECT metadata FROM observations
+          WHERE metadata LIKE ? AND importance_score >= 0.6
+          ORDER BY importance_score DESC LIMIT 5
+        `).all('%' + (filePath || '').replace(/'/g, '') + '%');
+        for (const obs of relatedObs) {
+          try {
+            const meta = JSON.parse(obs.metadata);
+            if (meta.entities && meta.entities.length > 0) {
+              const entityList = meta.entities.slice(0, 3).join(', ');
+              results.push({ text: `Related: ${entityList}`, score: 0.4, priority: 'graph' });
+              break;
+            }
+          } catch {}
+        }
+      } catch {}
     } catch {}
   }
 

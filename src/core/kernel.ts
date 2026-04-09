@@ -79,7 +79,8 @@ export class Kernel {
   globalStore?: GlobalKnowledgeStore;
   knowledgeGraph!: KnowledgeGraph;
   agentRegistry?: AgentRegistry;
-  private llmService?: LLMService;
+  llmService?: LLMService;
+  feedbackEngine?: import('./feedback-engine.js').FeedbackEngine;
 
   constructor(projectDir: string) {
     this.projectDir = projectDir;
@@ -117,6 +118,12 @@ export class Kernel {
 
     // 3b. Knowledge graph
     this.knowledgeGraph = new KnowledgeGraph(this.storage);
+
+    // 3b2. Feedback engine
+    try {
+      const { FeedbackEngine } = await import('./feedback-engine.js');
+      this.feedbackEngine = new FeedbackEngine(this.storage);
+    } catch { /* non-critical */ }
 
     // 3c. Dreamer background agent
     this.dreamer = new Dreamer(this.knowledgeBase, this.storage);
@@ -168,6 +175,7 @@ export class Kernel {
     this.pipeline.setBudgetManager(this.budgetManager);
     this.pipeline.setSessionManager(this.sessionManager);
     this.pipeline.setLLMService(this.llmService);
+    this.pipeline.setKnowledgeGraph(this.knowledgeGraph);
 
     // 5. Summarizers — registered in priority order (most specific first)
     const summarizers = [

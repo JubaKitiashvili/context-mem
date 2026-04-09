@@ -120,7 +120,7 @@ export interface ContradictionWarning {
 export const ENTITY_TYPES = ['file', 'module', 'pattern', 'decision', 'bug', 'person', 'library', 'service', 'api', 'config'] as const;
 export type EntityType = typeof ENTITY_TYPES[number];
 
-export const RELATIONSHIP_TYPES = ['uses', 'depends-on', 'fixed-by', 'contradicts', 'supersedes', 'implements', 'tests', 'documents'] as const;
+export const RELATIONSHIP_TYPES = ['uses', 'depends-on', 'fixed-by', 'contradicts', 'supersedes', 'implements', 'tests', 'documents', 'mentions'] as const;
 export type RelationshipType = typeof RELATIONSHIP_TYPES[number];
 
 export interface Entity {

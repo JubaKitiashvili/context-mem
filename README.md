@@ -1,40 +1,60 @@
 # context-mem
 
-> Context optimization for AI coding assistants — 99% token savings, deterministic by default, optional LLM enhancement.
+> Your AI forgets everything. Every decision, every debug session, every architecture choice — gone when the session ends. **context-mem remembers.**
 
 [![npm version](https://img.shields.io/npm/v/context-mem)](https://www.npmjs.com/package/context-mem)
-[![tests](https://img.shields.io/badge/tests-658%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-1116%20passing-brightgreen)]()
+[![tools](https://img.shields.io/badge/MCP%20tools-44-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-green)]()
 
-AI coding assistants waste 60–80% of their context window on raw tool outputs — full npm logs, verbose test results, uncompressed JSON. This means shorter sessions, lost context, and repeated work.
+**context-mem** is a dual-mode AI memory system: real-time context optimization (99% token savings) AND long-term institutional memory. It captures tool outputs via hooks, compresses them with 14 content-aware summarizers, stores everything in local SQLite with full-text search, and serves it back through [MCP](https://modelcontextprotocol.io). Fully deterministic and free by default. Optional LLM enhancement (Ollama, OpenRouter, Claude API) when you want it.
 
-**context-mem** captures tool outputs via hooks, compresses them using 14 content-aware summarizers, stores everything in local SQLite with full-text search, and serves compressed context back through the [MCP protocol](https://modelcontextprotocol.io). Fully deterministic and free by default — no cloud, no cost. Optional LLM enhancement (Ollama, OpenRouter, or Claude API) adds query expansion, smarter titles/tags, and contradiction explanations when you want it.
+**v3.0 "Total Recall"** adds importance scoring, verbatim recall, entity intelligence, adaptive compression, decision trails, session narratives, and 12 more features that make AI assistants genuinely remember.
+
+## Real-World Examples
+
+```
+You: "Why did we choose Postgres?"
+  → recall returns the exact verbatim quote from March 15, importance 0.95,
+    with the full evidence chain: error → file_read → search → decision
+
+You: "What did Sarah work on last sprint?"
+  → browse by person shows 14 observations mentioning Sarah,
+    grouped by topic (auth, database, deployment)
+
+You: "This worked last week"
+  → regression fingerprint shows 3 knowledge entries changed since
+    last working state, 2 new error patterns appeared
+
+You: "Generate a PR description"
+  → context-mem story --format pr assembles changes, decisions, resolved
+    issues, and test plan from the current session
+
+You: "What are we about to forget?"
+  → predict_loss shows 8 entries at risk: low importance, 45+ days old,
+    never accessed. Pin the critical ones before they decay.
+```
 
 ## How It Compares
 
-| | context-mem | claude-mem | context-mode | Context7 |
+| | context-mem v3.0 | MemPalace | claude-mem | Context7 |
 |---|---|---|---|---|
-| **Approach** | 14 specialized summarizers | LLM-based compression | Sandbox + intent filter | External docs injection |
-| **Token Savings** | 99% (benchmarked) | ~95% (claimed) | 98% (claimed) | N/A |
-| **Search** | BM25 + Trigram + Fuzzy + **Vector** + reranking | Basic recall | BM25 + Trigram + Fuzzy | Doc lookup |
-| **Semantic Search** | Local embeddings (free) + vector contradiction detection | LLM-based ($$$) | No | No |
-| **Search Tuning** | Configurable BM25/Trigram/Levenshtein/Vector weights | No | No | No |
-| **LLM Calls** | Optional (free by default, 3 providers) | Every observation (~$57/mo) | None | None |
-| **Activity Journal** | File edits, commands, reads | No | No | No |
-| **Cross-Session Memory** | Journal + snapshots + DB | LLM summaries | Yes | No |
-| **Knowledge Base** | 5 categories, auto-extraction, 14-day half-life decay, semantic contradiction detection, source tracking | No | No | No |
-| **Background Agent** | Dreamer: auto-validates, marks stale (30d), archives (90d) | No | No | No |
-| **Quick Profile** | Auto-generated project profile on session start | No | No | No |
-| **Budget Management** | Configurable limits + overflow | No | Basic throttling | No |
-| **Event Tracking** | P1–P4, error-fix detection | No | Session events only | No |
-| **Dashboard** | Intelligence dashboard (search pipeline, authority, contradictions) | Basic view | No | No |
-| **Session Continuity** | Snapshot save/restore | Partial | Yes | No |
-| **Content Types** | 14 specialized detectors | Generic LLM | Generic sandbox | Docs only |
-| **Model Lock-in** | None (MCP protocol) | Claude-only | Claude-only | Any |
-| **Privacy** | Fully local, tag stripping, 9 secret detectors, auto-redaction | Local | Local | Cloud |
-| **Security** | CORS localhost-only, input validation, error sanitization | N/A | N/A | N/A |
-| **License** | MIT | AGPL-3.0 | Elastic v2 | Open |
+| **Approach** | 14 summarizers + importance scoring | Verbatim storage | LLM compression | External docs |
+| **Token Savings** | 99% (benchmarked) | 0% (stores everything) | ~95% (claimed) | N/A |
+| **Long-Term Recall** | Verbatim + adaptive compression | Verbatim only | LLM summaries | No |
+| **Search** | BM25 + Trigram + Fuzzy + Vector + reranking | Basic search | Basic recall | Doc lookup |
+| **Entity Intelligence** | Auto-detect + 100 aliases + graph | No | No | No |
+| **Importance Scoring** | 0.0-1.0 with 6 significance flags | No | No | No |
+| **Decision Trails** | Evidence chain reconstruction | No | No | No |
+| **Temporal Facts** | Valid-from/to + supersession chains | No | No | No |
+| **Session Narratives** | PR/Standup/ADR/Onboarding generation | No | No | No |
+| **Conversation Import** | ChatGPT, Claude, Slack, plaintext | No | No | No |
+| **Cross-Project Memory** | Global store + topic tunnels | No | No | No |
+| **Background Agent** | Dreamer: validates, compresses, consolidates | No | No | No |
+| **LLM Dependency** | Optional (free by default) | None | Required (~$57/mo) | None |
+| **Privacy** | Fully local, 9 secret detectors | Local | Local | Cloud |
+| **License** | MIT | Proprietary | AGPL-3.0 | Open |
 
 ## Quick Start
 
@@ -47,226 +67,180 @@ One command. `init` auto-detects your editor and creates everything:
 
 | Editor | What gets created | Restart needed? |
 |--------|-------------------|-----------------|
-| **Claude Code** | `.mcp.json` + `.claude/settings.local.json` (6 hooks) + CLAUDE.md rules | No |
+| **Claude Code** | `.mcp.json` + hooks (8 hooks incl. context-triggered injection) + CLAUDE.md | No |
 | **Cursor** | `.cursor/mcp.json` + `.cursor/rules/context-mem.mdc` | No |
 | **Windsurf** | `.windsurf/mcp.json` + `.windsurf/rules/context-mem.md` | No |
 | **VS Code / Copilot** | `.vscode/mcp.json` + `.github/copilot-instructions.md` | No |
 | **Cline** | `.cline/mcp_settings.json` + `.clinerules/context-mem.md` | No |
 | **Roo Code** | `.roo-code/mcp_settings.json` + `.roo/rules/context-mem.md` | No |
 
-**What init sets up:**
-- MCP server config (so your editor can use context-mem's 32 tools)
-- AI rules (so the AI knows when to call `observe`, `search`, `restore_session`)
-- Claude Code hooks (activity journal, observation capture, proactive injection, session restore, dashboard)
-- `.context-mem.json` config + `.context-mem/` data directory
-
-**Verify it works** (in Claude Code):
-```bash
-cat .context-mem/journal.md | tail -5    # Should show recent tool activity
-```
-
-<details>
-<summary>Manual setup (if init doesn't auto-detect your editor)</summary>
-
-Create `.mcp.json` in your project root:
-```json
-{ "mcpServers": { "context-mem": { "command": "npx", "args": ["-y", "context-mem", "serve"] } } }
-```
-
-For VS Code / Copilot, use `.vscode/mcp.json`:
-```json
-{ "servers": { "context-mem": { "type": "stdio", "command": "npx", "args": ["-y", "context-mem", "serve"] } } }
-```
-
-For Goose, add to profile extensions:
-```yaml
-extensions:
-  context-mem:
-    type: stdio
-    cmd: npx
-    args: ["-y", "context-mem", "serve"]
-```
-
-For CrewAI / LangChain — see [configs/](configs/) for Python integration examples.
-
-</details>
-
-<details>
-<summary>Alternative: Claude Code plugin mode (development)</summary>
-
-```bash
-claude --plugin-dir /path/to/context-mem
-```
-
-This loads hooks directly from the plugin directory. Useful for development and testing.
-
-</details>
-
-## Runtime Context Optimization (benchmark-verified)
-
-| Mechanism | How it works | Savings |
-|---|---|---|
-| **Content summarizer** | Auto-detects 14 content types, produces statistical summaries | **97–100%** per output |
-| **Index + Search** | FTS5 BM25 retrieval returns only relevant chunks, code preserved exactly | **80%** per search |
-| **Smart truncation** | 4-tier fallback with 60/40 head/tail split for error preservation | **83–100%** per output |
-| **Session snapshots** | Captures full session state in <8 KB | **~50%** vs log replay |
-| **Budget enforcement** | Throttling at 80% prevents runaway token consumption | Prevents overflow |
-
-**Result:** In a full coding session, **99% of tool output tokens are eliminated** — leaving 99.6% of your context window free for actual problem solving. See **[BENCHMARK.md](docs/benchmarks/results.md)** for complete results.
-
-### Headline Numbers
-
-| Scenario | Raw | Compressed | Savings |
-|---|---|---|---|
-| Full coding session (50 tools) | 365.5 KB | 3.2 KB | **99%** |
-| 14 content types (555.9 KB) | 555.9 KB | 5.6 KB | **99%** |
-| Index + Search (6 scenarios) | 38.9 KB | 8.0 KB | **80%** |
-| BM25 search latency | — | 0.3ms avg | **3,342 ops/s** |
-| Trigram search latency | — | 0.008ms avg | **120,122 ops/s** |
-
-<sup>Verified on Apple M3 Pro, Node.js v22.22.0, 555.9 KB real-world test data across 21 scenarios.</sup>
-
-## What Gets Compressed
-
-14 summarizers detect content type automatically and apply the optimal compression:
-
-| Content Type | Example | Strategy |
-|---|---|---|
-| Shell output | npm install, build logs | Command + exit code + error extraction |
-| JSON | API responses, configs | Schema extraction (keys + types, no values) |
-| Errors | Stack traces, crashes | Error type + message + top frames |
-| Test results | Jest, Vitest | Pass/fail/skip counts + failure details |
-| TypeScript errors | `error TS2345:` | Error count by file + top error codes |
-| Build output | Webpack, Vite, Next.js | Routes + bundle sizes + warnings |
-| Git log | Commits, diffs | Commit count + authors + date range |
-| CSV/TSV | Data files, analytics | Row/column count + headers + aggregation |
-| Markdown | Docs, READMEs | Heading tree + code blocks + links |
-| HTML | Web pages | Title + nav + headings + forms |
-| Network | HTTP logs, access logs | Method/status distribution |
-| Code | Source files | Function/class signatures |
-| Log files | App logs, access logs | Level distribution + error extraction |
-| Binary | Images, compiled files | SHA256 hash + byte count |
-
-## Features
-
-**Search** — 4-layer hybrid: BM25 full-text → trigram fuzzy → Levenshtein typo-tolerant → optional vector/semantic search. Sub-millisecond latency with intent classification. Semantic search finds "auth problem" when stored as "login token expired" — local embeddings via all-MiniLM-L6-v2, no cloud, no cost. **Adaptive Reranking** uses intent-specific weight vectors (causal / temporal / lookup / general) so results are prioritized differently depending on query type — general-intent queries apply result-aware weight adjustment for further precision. **Block-Level Memory Attention** organizes memory into four scope-based blocks (session, project, global, archive) and uses softmax block attention to allocate the result budget optimally across scopes, with per-block score normalization. **Observation reranking** scores results by 70% relevance + 20% recency + 10% access frequency. **Request canonicalization** deduplicates similar queries with a 30-second cache. Search weights (BM25/Trigram/Levenshtein/Vector ratios) are fully configurable in `.context-mem.json`.
-
-**Activity Journal** — Every file edit, bash command, and file read is logged to `.context-mem/journal.md` in human-readable format. Cross-session memory injects journal entries on startup — Claude knows exactly what changed in previous sessions without LLM calls.
-
-**Plugin Commands** — `/context-mem:status` (stats + dashboard link), `/context-mem:search <query>` (search observations), `/context-mem:journal` (show activity log).
-
-**Knowledge Base** — Save and search patterns, decisions, errors, APIs, components. **Knowledge entry decay** with 14-day half-life — explicit entries decay slower, access frequency boosts relevance, automatic archival. **Auto-extraction** — decisions, errors, commits, and frequently-accessed files are automatically saved to the knowledge base without manual intervention. **Semantic contradiction detection** — vector-based similarity (when `@huggingface/transformers` available) in addition to keyword overlap, automatically flags conflicting knowledge when saving new entries. **Depth-Aware Contradiction Resolution** — authority scoring via softmax attention across four signals (source_weight, session_breadth, access_density, recency) determines which entry should win; `ContradictionWarning` includes a `suggested_action` field with a concrete recommendation. **Source tracking** — records where each entry came from (manual, inferred, external).
-
-**Quick Profile** — Generates a concise project profile from accumulated knowledge. Injected on session start so the AI assistant has immediate project context without searching.
-
-**Dreamer Background Agent** — Runs automatically to maintain knowledge quality. Auto-validates knowledge entries, marks them stale after 30 days of no access, and archives after 90 days. Keeps the knowledge base fresh without manual intervention.
-
-**Knowledge Graph** — Entity-relationship model that maps connections between project concepts, files, patterns, and decisions. Graph queries let you traverse relationships — find all entities related to a component, trace decision chains, or discover implicit connections across the codebase.
-
-**Multi-Agent Shared Memory** — Built-in coordination for multi-agent workflows. Agents register with `agent_register`, claim files with `claim_files` to prevent edit conflicts, check who's working on what with `agent_status`, and broadcast messages to all active agents with `agent_broadcast`. Shared memory ensures agents don't duplicate work or create merge conflicts.
-
-**Time-Travel Debugging** — View and compare project state at any point in time using `time_travel`. Inspect how knowledge, observations, and project context evolved across sessions — useful for understanding when a decision was made or tracking down when a regression was introduced.
-
-**Natural Language Query** — Ask questions naturally with `ask` — intent classification routes your question to the right subsystem (search, knowledge, timeline, graph, or stats) without needing to know which tool to call.
-
-**Auto-Promote** — Knowledge accessed in 3+ sessions is automatically promoted to the global cross-project store. No manual intervention needed — patterns that prove useful rise to the top.
-
-**Cross-Project Merge** — Duplicate detection and auto-merge across projects. The `merge_suggestions` tool surfaces candidates for review. Conflict resolution handles contradictions gracefully.
-
-**Project Health Score** — 0–100 composite metric visible in the dashboard. Color-coded gauge reflects knowledge freshness, contradiction rate, and activity.
-
-**Confidence Scoring** — Every knowledge entry carries a confidence score based on source type, freshness, access frequency, and session count. Higher-confidence entries rank higher in search results.
-
-**Auto-Tagger** — Deterministic title and tag generation from content. Reduces manual effort when saving knowledge entries.
-
-**Optional LLM Enhancement** — An opt-in layer that works alongside the deterministic pipeline. Disabled by default — everything works perfectly without it. When enabled, it adds: query expansion (e.g. "auth" → "authentication, JWT, login, session"), LLM-generated titles and tags (with deterministic fallback), contradiction explanation with merge suggestions, and LLM summarization before the 14 deterministic summarizers. Three providers supported: **Ollama** (local, free), **OpenRouter** (free and paid models), and **Claude API** (auto-detected when `ANTHROPIC_API_KEY` is set, uses Haiku 4.5). Auto-detection picks the best available provider at startup. `context-mem init` now includes a setup wizard for choosing Free vs Enhanced mode. All LLM failures fall back gracefully to the deterministic pipeline — invalid responses never reach the database.
-
-**Export/Import** — Transfer knowledge between machines: `context-mem export` dumps knowledge, snapshots, and events as JSON; `context-mem import` restores them in another project. Merge or replace modes.
-
-**Budget Management** — Session token limits with three overflow strategies: aggressive truncation, warn, hard stop.
-
-**Event Tracking** — P1–P4 priority events with automatic error→fix detection.
-
-**Session Snapshots** — Save/restore session state across restarts with progressive trimming.
-
-**Intelligence Dashboard** — Real-time web UI at `http://localhost:51893` — auto-starts on session start via hooks. **Intelligence strip** — 4 hero cards showing health score, SearchFusion pipeline status, knowledge authority metrics, and LLM integration status at a glance. **Smart search** — full SearchFusion pipeline with intent classification (causal/temporal/lookup/general), adaptive reranking, and pipeline visualization showing how results were found. **Knowledge authority** — every knowledge entry scored 0–1 using softmax attention over source weight, session breadth, access density, and recency. **Contradiction detection** — finds conflicting knowledge entries, compares authority scores, and suggests resolution actions (keep/replace/merge). **LLM status** — header chip showing active provider and availability. **Multi-project support** with project switcher bar. **Knowledge graph** — interactive force-directed canvas with pan/zoom/filter, color-coded by entity type. **Timeline explorer** — visual observation timeline with search, date filtering, and replay. SSE + WebSocket streaming for live updates. Dark/light theme. Responsive down to mobile.
-
-<p align="center">
-  <img src="docs/screenshots/dashboard-overview.png" width="600" alt="Dashboard — intelligence strip, smart search, and stats" />
-</p>
-
-**VS Code Extension** — Sidebar dashboard, status bar with live savings, command palette (start/stop/search/stats). Install from marketplace: `context-mem`.
-
-**Auto-Detection** — `context-mem init` detects your editor (Cursor, Windsurf, VS Code, Cline, Roo Code) and creates MCP config, AI rules, and Claude Code hooks automatically.
-
-**OpenClaw Native Plugin** — Full ContextEngine integration with lifecycle hooks (bootstrap, ingest, assemble, compact, afterTurn, dispose). See [openclaw-plugin/](openclaw-plugin/).
-
-**Privacy Engine** — Everything local. `<private>` tag stripping, custom regex redaction, plus 9 built-in secret detectors: AWS keys, GitHub tokens, JWTs, private keys, Slack tokens, emails, IPs, generic API keys, and AWS secrets. Secrets are auto-redacted before storage. No telemetry, no cloud.
-
-**Plugin CLI** — Manage summarizer plugins: `context-mem plugin add <name>`, `plugin remove <name>`, `plugin list`. Supports short names (e.g., `k8s` → `context-mem-summarizer-k8s`).
-
-**Auto-Update Check** — Checks npm for newer versions on session start (gstack-style). Split TTL caching (1hr fresh / 12hr nagging), escalating snooze (24h → 48h → 7 days), configurable via `~/.context-mem/config.yaml`. Never blocks, always graceful.
-
-**Security Hardening** — CORS restricted to localhost only, input validation on all 32 handlers, error sanitization (file paths + SQL keywords stripped). Windows compatibility for cross-platform deployments.
-
-**Smart Truncation** — 60/40 head/tail split for better error preservation at end of output. 4-tier fallback: JSON schema → Pattern → Head/Tail → Binary hash.
-
 ## Architecture
 
 ```
-Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarizer (14 types) → SQLite + FTS5
-                                    ↓                    ↓           ↑ (LLM optional)          ↓
-                              ObserveQueue         SHA256 Dedup   LLM Layer               4-Layer Search + Reranking
-                             (burst protection)          ↓        (Ollama / OpenRouter /    (70% relevance + 20% recency
-                                              60/40 Truncation     Claude API, disabled     + 10% access frequency)
-                                                      ↓            by default, fallback           ↓
-                                    Privacy Engine (9 detectors)   to deterministic)  Request Canonicalization (30s cache)
-                                                      ↓                                        ↓
-                                    Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (32 tools)
-                                                                                               ↓
-                                                                           Intelligence Dashboard ← SSE + WebSocket
-                                                                           (search pipeline, authority, contradictions)
+                        Incoming Content
+                              │
+                    ┌─────────▼──────────┐
+                    │  Privacy Engine     │ (9 secret detectors, tag stripping)
+                    │  SHA256 Dedup       │
+                    └─────────┬──────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              │               │               │
+    ┌─────────▼───────┐ ┌────▼─────┐ ┌───────▼──────┐
+    │ Entity Extractor│ │Importance│ │   Topic      │
+    │ (100+ aliases)  │ │Classifier│ │  Detector    │
+    └─────────┬───────┘ │(6 flags) │ │(13 categories)
+              │         └────┬─────┘ └───────┬──────┘
+              └───────────────┼───────────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              │               │               │
+    ┌─────────▼───────┐ ┌────▼─────┐ ┌───────▼──────┐
+    │   Verbatim      │ │Summarizer│ │  Knowledge   │
+    │   Archive       │ │(14 types)│ │  Graph       │
+    │  (FTS5 indexed) │ │          │ │  (entities)  │
+    └─────────────────┘ └──────────┘ └──────────────┘
+                              │
+                    ┌─────────▼──────────┐
+                    │ Adaptive Compressor │
+                    │  verbatim → light   │
+                    │  → medium → distill │
+                    │ (age-based, pinned  │
+                    │  entries protected) │
+                    └─────────┬──────────┘
+                              │
+                    ┌─────────▼──────────┐
+                    │   MCP Server       │ ← 44 tools
+                    │   + Dashboard      │ ← 6 pages, real-time
+                    │   + CLI            │ ← why, story, import
+                    └────────────────────┘
 ```
 
-## MCP Tools
+## Performance
+
+All Total Recall operations are sub-millisecond, zero LLM dependency:
+
+| Operation | Speed | Latency |
+|-----------|-------|---------|
+| Importance Classification | 556K ops/s | 0.002ms |
+| Entity Extraction | 179K ops/s | 0.006ms |
+| Topic Detection | 162K ops/s | 0.006ms |
+| Compression Tier Calc | 3M ops/s | <0.001ms |
+| Verbatim FTS Search | 50K ops/s | 0.020ms |
+| Wake-Up Primer Assembly | 9K ops/s | 0.111ms |
+| Conversation Parsing | 390K+ ops/s | 0.003ms |
+| Narrative Generation | 6K ops/s | 0.164ms |
+| BM25 Search | 3.3K ops/s | 0.3ms |
+
+Full coding session (50 tool outputs): **365 KB → 3.2 KB** (99% savings). See [benchmarks](docs/benchmarks/).
+
+## Features
+
+### Total Recall (v3.0)
+
+**Importance Classification** — Every observation scored 0.0-1.0 at ingest with 6 significance flags: DECISION, ORIGIN, PIVOT, CORE, MILESTONE, PROBLEM. Decisions and milestones are auto-pinned and never compressed.
+
+**Verbatim Recall** — Surface original content via `recall` tool with importance, type, time, and flag filters. Dedicated FTS5 index on raw content. `search` and `timeline` tools gain `verbatim` mode.
+
+**Adaptive Compression** — 4-tier progressive compression based on observation age: verbatim (0-7d) → light (7-30d) → medium (30-90d) → distilled (90d+). Pinned entries stay verbatim forever. High-importance entries compress one tier slower.
+
+**Entity Intelligence** — Auto-detect technologies, people, file paths, CamelCase components, ALL_CAPS constants, issue refs, version numbers. 100+ technology aliases (React.js → React, Postgres → PostgreSQL). Entities stored in knowledge graph.
+
+**Temporal Facts** — Knowledge entries have `valid_from`/`valid_to` validity windows. When new knowledge contradicts old, the old entry is superseded with a chain link. `temporal_query` tool: "what was true about X at time T?"
+
+**Wake-Up Primer** — Auto-generated, token-budgeted context injected at session start. 4 layers: L0 Project Profile (15%), L1 Critical Knowledge (40%), L2 Recent Decisions (30%), L3 Top Entities (15%).
+
+**Topic Navigation** — 13 auto-detected topic categories (auth, database, api, frontend, etc.). `browse` by topic/person/time, `list_topics` with counts, `find_tunnels` for cross-project concept bridges.
+
+**Conversation Import** — Parse external conversation exports into searchable memory. 5 formats with auto-detection: Claude Code JSONL, Claude AI JSON, ChatGPT JSON, Slack JSON, plain text.
+
+**Decision Trails** — Reconstruct the evidence chain behind any decision. `explain_decision` walks events backward: file reads → errors → searches → decision. CLI: `context-mem why <topic>`.
+
+**Session Narratives** — Generate human-readable narratives. 4 templates: PR description, standup update, ADR (Architecture Decision Record), onboarding guide. CLI: `context-mem story --format pr`.
+
+**Regression Fingerprinting** — Capture "working state" snapshots at success events. When errors appear, auto-diff against last fingerprint to identify what changed.
+
+**Memory Pressure Predictor** — `predict_loss` scores entries by forgetting risk. Low importance + old + never accessed = high risk. Pin critical entries to protect them.
+
+**Memory Usefulness Feedback** — Tracks whether recalled memories lead to action. Search results that lead to file modifications are marked "useful" and get relevance boosts.
+
+### Core Features
+
+**14 Content Summarizers** — Auto-detect content type and apply optimal compression: shell output, JSON, errors, test results, TypeScript errors, build output, git logs, CSV, markdown, HTML, network, code, logs, binary.
+
+**4-Layer Hybrid Search** — BM25 full-text → trigram fuzzy → Levenshtein typo-tolerant → optional vector/semantic. Sub-millisecond with intent classification. Adaptive reranking and block-level memory attention.
+
+**Knowledge Base** — 5 categories (pattern, decision, error, api, component). 14-day half-life decay, semantic contradiction detection, authority scoring via softmax attention, auto-extraction from observations.
+
+**Knowledge Graph** — Entity-relationship model mapping connections between files, modules, patterns, decisions, bugs, people, libraries, services, APIs, and configs.
+
+**Dreamer Background Agent** — Runs automatically: marks stale (30d), archives (90d), detects contradictions, auto-promotes to global store, progressive compression, consolidates related observations, extracts causal chains, boosts corroborated facts.
+
+**Intelligence Dashboard** — Real-time web UI with 6 pages: Home (7 intelligence cards, compression tiers, pressure alerts, wake-up preview), Topics (cloud + tunnels), Graph (force-directed entity visualization), Timeline (importance badges + flags), Trail (decision evidence chain), Narrative (PR/standup/ADR generator).
+
+**Multi-Agent Coordination** — Agents register, claim files, check status, broadcast messages. Shared memory prevents duplicate work and merge conflicts.
+
+**Session Continuity** — Snapshot save/restore across sessions. Chain-based handoff with continuation prompts. Context-triggered memory injection on every user message.
+
+**Privacy Engine** — Everything local. `<private>` tag stripping, custom regex redaction, 9 built-in secret detectors. No telemetry, no cloud.
+
+**Optional LLM Enhancement** — Query expansion, smart titles/tags, contradiction explanations, LLM summarization. Three providers: Ollama (free), OpenRouter, Claude API. All failures fall back to deterministic.
+
+## MCP Tools (44)
 
 <details>
-<summary>32 tools available via MCP protocol</summary>
+<summary>Click to see all 44 tools</summary>
 
 | Tool | Description |
 |---|---|
-| `observe` | Store an observation with auto-summarization |
-| `search` | Hybrid search across all observations |
+| **Core** | |
+| `observe` | Store observation with auto-summarization + importance scoring |
+| `search` | Hybrid search with optional verbatim mode |
 | `get` | Retrieve full observation by ID |
-| `timeline` | Reverse-chronological observation list |
+| `timeline` | Reverse-chronological list with importance badges |
 | `stats` | Token economics for current session |
 | `summarize` | Summarize content without storing |
 | `configure` | Update runtime configuration |
-| `execute` | Run code snippets (JS, TS, Python, Shell, Ruby, Go, Rust, PHP, Perl, R, Elixir) |
-| `index_content` | Index content with code-aware chunking |
-| `search_content` | Search indexed content chunks |
-| `save_knowledge` | Save to knowledge base |
-| `search_knowledge` | Search knowledge base |
-| `budget_status` | Current budget usage |
-| `budget_configure` | Set budget limits |
-| `restore_session` | Restore session from snapshot |
-| `emit_event` | Emit a context event |
-| `query_events` | Query events with filters |
-| `update_profile` | Generate or retrieve project profile |
-| `promote_knowledge` | Promote project knowledge to global cross-project store |
-| `global_search` | Search global cross-project knowledge store |
-| `graph_query` | Query the knowledge graph for entities and relationships |
-| `add_relationship` | Add a relationship between entities in the knowledge graph |
-| `graph_neighbors` | Find neighboring entities connected to a given node |
-| `time_travel` | View/compare project state at any point in time |
-| `ask` | Natural language questions with intent classification |
-| `agent_register` | Register as named agent for multi-agent coordination |
-| `agent_status` | List active agents and their tasks |
-| `claim_files` | Claim files to prevent conflicts between agents |
-| `agent_broadcast` | Broadcast messages to all active agents |
-| `handoff_session` | Hand off session context for continuity across sessions |
-| `resolve_contradiction` | Resolve conflicting knowledge entries (supersede, merge, keep both, archive) |
-| `merge_suggestions` | View cross-project duplicate suggestions for manual review and merge |
+| `execute` | Run code (JS, TS, Python, Shell, Ruby, Go, Rust, PHP, Perl, R, Elixir) |
+| **Content** | |
+| `index_content` | Index with code-aware chunking |
+| `search_content` | Search indexed chunks |
+| **Knowledge** | |
+| `save_knowledge` | Save with contradiction detection + temporal validity |
+| `search_knowledge` | Search (filters superseded by default) |
+| `promote_knowledge` | Promote to global cross-project store |
+| `global_search` | Search across all projects |
+| `resolve_contradiction` | Resolve conflicts (supersede/merge/keep/archive) |
+| `merge_suggestions` | View cross-project duplicate suggestions |
+| **Graph** | |
+| `graph_query` | Traverse entity relationships |
+| `add_relationship` | Link entities |
+| `graph_neighbors` | Find connected entities |
+| **Session** | |
+| `update_profile` | Project profile |
+| `budget_status` / `budget_configure` | Token budget management |
+| `restore_session` | Restore from snapshot |
+| `handoff_session` | Cross-session continuity |
+| **Events** | |
+| `emit_event` / `query_events` | P1-P4 event tracking |
+| **Agents** | |
+| `agent_register` / `agent_status` / `claim_files` / `agent_broadcast` | Multi-agent coordination |
+| **Intelligence** | |
+| `time_travel` | Compare project state at any point in time |
+| `ask` | Natural language question answering |
+| **Total Recall** | |
+| `recall` | Verbatim memory retrieval with importance/flag/time filters |
+| `wake_up` | Generate scored session primer (4-layer context) |
+| `entity_detect` | Extract entities from text |
+| `list_people` | Person entities with relationship counts |
+| `temporal_query` | Knowledge valid at specific timestamp |
+| `browse` | Navigate by topic, person, or time |
+| `list_topics` | Topic list with observation counts |
+| `find_tunnels` | Cross-project topic bridges |
+| `import_conversations` | Import ChatGPT/Claude/Slack/text conversations |
+| `explain_decision` | Decision trail evidence chain |
+| `generate_story` | Narrative (PR/standup/ADR/onboarding) |
+| `predict_loss` | Memory pressure prediction |
 
 </details>
 
@@ -277,12 +251,13 @@ context-mem init                    # Initialize in current project
 context-mem serve                   # Start MCP server (stdio)
 context-mem status                  # Show database stats
 context-mem doctor                  # Run health checks
-context-mem dashboard               # Open web dashboard
-context-mem export                  # Export knowledge, snapshots, events as JSON
-context-mem import                  # Import data from JSON export file
-context-mem plugin add <name>       # Install a summarizer plugin
-context-mem plugin remove <name>    # Uninstall a summarizer plugin
-context-mem plugin list             # Show installed plugins
+context-mem dashboard               # Open web dashboard (6 pages)
+context-mem why <query>             # Decision trail — why was X decided?
+context-mem story --format pr       # Generate narrative (pr/standup/adr/onboarding)
+context-mem import-convos <path>    # Import conversations (auto-detect format)
+context-mem export                  # Export as JSON
+context-mem import                  # Import from JSON
+context-mem plugin add|remove|list  # Manage summarizer plugins
 ```
 
 ## Configuration
@@ -298,71 +273,33 @@ context-mem plugin list             # Show installed plugins
     "search": ["bm25", "trigram", "vector"],
     "runtimes": ["javascript", "python"]
   },
-  "search_weights": {
-    "bm25": 0.5,
-    "trigram": 0.3,
-    "levenshtein": 0.15,
-    "vector": 0.05
-  },
-  "privacy": {
-    "strip_tags": true,
-    "redact_patterns": [],
-    "disabled_detectors": []
-  },
-  "token_economics": true,
-  "lifecycle": {
-    "ttl_days": 30,
-    "max_db_size_mb": 500,
-    "max_observations": 50000,
-    "cleanup_schedule": "on_startup",
-    "preserve_types": ["decision", "commit"]
-  },
-  "port": 51893,
-  "db_path": ".context-mem/store.db",
-  "ai_curation": {
-    "enabled": false,
-    "provider": "auto"
-  }
+  "search_weights": { "bm25": 0.5, "trigram": 0.3, "levenshtein": 0.15, "vector": 0.05 },
+  "privacy": { "strip_tags": true, "redact_patterns": [] },
+  "lifecycle": { "ttl_days": 30, "max_db_size_mb": 500, "max_observations": 50000 },
+  "ai_curation": { "enabled": false, "provider": "auto" }
 }
 ```
 
 </details>
 
+## Platform Support
+
+| Platform | Auto-Setup |
+|---|---|
+| Claude Code, Cursor, Windsurf, VS Code/Copilot, Cline, Roo Code | `context-mem init` |
+| Gemini CLI, Antigravity, Goose, OpenClaw, CrewAI, LangChain | See [configs/](configs/) |
+
 ## Documentation
 
 | Doc | Description |
 |---|---|
-| [Benchmark Results](docs/benchmarks/results.md) | Full benchmark suite — 21 scenarios, 7 parts |
-| [Configuration Guide](.context-mem.json.example) | All config options with defaults |
-
-## Platform Support
-
-| Platform | MCP Config | AI Rules | Auto-Setup |
-|---|---|---|---|
-| **Claude Code** | [CLAUDE.md](configs/claude-code/) | Appends to CLAUDE.md | `init` + `serve` |
-| **Cursor** | [mcp.json](configs/cursor/) | [.cursor/rules/context-mem.mdc](configs/cursor/context-mem.mdc) | `init` + `serve` |
-| **Windsurf** | [mcp_config.json](configs/windsurf/) | [.windsurf/rules/context-mem.md](configs/windsurf/context-mem.md) | `init` + `serve` |
-| **GitHub Copilot** | [mcp.json](configs/copilot/) | [.github/copilot-instructions.md](configs/copilot/copilot-instructions.md) | `init` + `serve` |
-| **Cline** | [cline_mcp_settings.json](configs/cline/) | [.clinerules/context-mem.md](configs/cline/context-mem.md) | `init` + `serve` |
-| **Roo Code** | [mcp_settings.json](configs/roo-code/) | [.roo/rules/context-mem.md](configs/roo-code/context-mem.md) | `init` + `serve` |
-| **Gemini CLI** | [GEMINI.md](configs/gemini-cli/) | Appends to GEMINI.md | `init` + `serve` |
-| **Antigravity** | [GEMINI.md](configs/antigravity/) | Appends to GEMINI.md | `serve` |
-| **Goose** | [recipe.yaml](configs/goose/) | — | Manual |
-| **OpenClaw** | [mcp_config.json](configs/openclaw/) | — | Manual |
-| **CrewAI** | [example.py](configs/crewai/) | — | Manual |
-| **LangChain** | [example.py](configs/langchain/) | — | Manual |
-
-AI Rules teach the AI **when and how** to use context-mem tools automatically — calling `observe` after large outputs, `restore_session` on startup, `search` before re-reading files.
-
-## Available On
-
-- **npm** — `npm install context-mem && npx context-mem init`
-- **VS Code Marketplace** — [Context Mem](https://marketplace.visualstudio.com/items?itemName=JubaKitiashvili.context-mem)
-- **Claude Code Plugin** — `claude --plugin-dir /path/to/context-mem`
+| [Benchmark Results](docs/benchmarks/results.md) | Compression + search benchmarks |
+| [Total Recall Benchmarks](docs/benchmarks/run-total-recall-benchmarks.js) | v3.0 feature performance |
+| [Contributing](CONTRIBUTING.md) | How to contribute |
 
 ## License
 
-MIT — use it however you want.
+MIT
 
 ## Author
 
@@ -371,6 +308,6 @@ MIT — use it however you want.
 ---
 
 <p align="center">
-  <b>context-mem — 99% less noise, 100% more context</b><br/>
-  <a href="https://github.com/JubaKitiashvili/context-mem">Star this repo</a> · <a href="https://github.com/JubaKitiashvili/context-mem/fork">Fork it</a> · <a href="https://github.com/JubaKitiashvili/context-mem/issues">Report an issue</a>
+  <b>context-mem v3.0 "Total Recall" — your AI never forgets</b><br/>
+  <a href="https://github.com/JubaKitiashvili/context-mem">Star</a> · <a href="https://github.com/JubaKitiashvili/context-mem/fork">Fork</a> · <a href="https://github.com/JubaKitiashvili/context-mem/issues">Issues</a>
 </p>
