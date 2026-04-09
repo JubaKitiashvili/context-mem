@@ -1,7 +1,7 @@
 /**
- * Lightweight adapter to use context-mem's storage + search directly.
- * Bypasses MCP for speed. Creates a fresh temp DB per benchmark item.
- * Supports hybrid search: FTS5 BM25 + vector cosine similarity.
+ * Benchmark adapter using context-mem's CORE search modules.
+ * No duplicate logic — directly imports query-builder, fts5-utils from core.
+ * Creates a fresh temp DB per benchmark item.
  */
 'use strict';
 
@@ -13,54 +13,10 @@ const Database = require('better-sqlite3');
 
 const projectRoot = path.resolve(__dirname, '..', '..');
 const { migrations } = require(path.join(projectRoot, 'dist/plugins/storage/migrations.js'));
-const { sanitizeFTS5 } = require(path.join(projectRoot, 'dist/plugins/search/fts5-utils.js'));
+const { sanitizeFTS5Query } = require(path.join(projectRoot, 'dist/plugins/search/fts5-utils.js'));
+const { buildORQuery, buildANDQuery, buildEntityQuery, extractKeywords } = require(path.join(projectRoot, 'dist/plugins/search/query-builder.js'));
 
-// Stop words to filter from search queries
-const STOP_WORDS = new Set([
-  'what', 'when', 'where', 'who', 'how', 'which', 'did', 'do', 'does',
-  'was', 'were', 'have', 'has', 'had', 'is', 'are', 'the', 'a', 'an',
-  'my', 'me', 'i', 'you', 'your', 'their', 'it', 'its', 'in', 'on',
-  'at', 'to', 'for', 'of', 'with', 'by', 'from', 'ago', 'last', 'that',
-  'this', 'there', 'about', 'get', 'got', 'give', 'gave', 'buy', 'bought',
-  'made', 'make', 'can', 'will', 'would', 'could', 'should', 'might',
-]);
-
-// Query expansion: add related terms to improve recall
-const EXPANSIONS = {
-  recommend: ['suggest', 'prefer', 'like', 'enjoy', 'favorite', 'love'],
-  suggest: ['recommend', 'prefer', 'like', 'favorite'],
-  movie: ['film', 'show', 'series', 'watch', 'cinema'],
-  show: ['movie', 'series', 'watch', 'program'],
-  dinner: ['food', 'meal', 'cook', 'recipe', 'eat', 'restaurant'],
-  activity: ['hobby', 'sport', 'exercise', 'game', 'fun'],
-  evening: ['night', 'weekend', 'free time', 'relax'],
-  accessories: ['equipment', 'gear', 'tools', 'supplies'],
-  photography: ['camera', 'photo', 'lens', 'shoot'],
-  violin: ['music', 'instrument', 'practice', 'play'],
-  exercise: ['workout', 'gym', 'fitness', 'run', 'sport'],
-  ingredients: ['food', 'cook', 'garden', 'grow', 'recipe'],
-  serve: ['cook', 'make', 'prepare', 'meal'],
-  schedule: ['time', 'meeting', 'calendar', 'plan'],
-  tool: ['app', 'software', 'platform', 'service'],
-  email: ['message', 'follow-up', 'outreach', 'send'],
-  performance: ['review', 'metrics', 'results', 'goals'],
-  hobby: ['interest', 'activity', 'passion', 'enjoy'],
-};
-
-function buildFTS5Query(query) {
-  const words = query.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w));
-  if (words.length === 0) return null;
-  // Expand with synonyms
-  const expanded = new Set(words);
-  for (const w of words) {
-    if (Object.prototype.hasOwnProperty.call(EXPANSIONS, w)) {
-      EXPANSIONS[w].forEach(s => expanded.add(s));
-    }
-  }
-  return [...expanded].map(w => `"${w}"`).join(' OR ');
-}
-
-// ── Vector search helpers ───────────────────────────────────────────────────
+// ── Vector search helpers (optional) ────────────────────────────────────────
 let _embedder = null;
 let _embedderLoading = null;
 
@@ -71,7 +27,6 @@ async function getEmbedder() {
     try {
       const { Embedder } = require(path.join(projectRoot, 'dist/plugins/search/embedder.js'));
       if (await Embedder.isAvailable()) {
-        // Warm up pipeline
         await Embedder.embed('warmup');
         _embedder = Embedder;
         return Embedder;
@@ -105,8 +60,8 @@ class BenchKernel {
     this._counter = 0;
     this._seenIds = new Set();
     this._idMap = new Map();
-    this._embeddings = new Map(); // id → Float32Array
-    this._useVector = opts.vector !== false; // enabled by default
+    this._embeddings = new Map();
+    this._useVector = opts.vector !== false;
   }
 
   open() {
@@ -116,18 +71,14 @@ class BenchKernel {
     this.db.pragma('cache_size = -8192');
 
     for (const m of migrations) {
-      try { this.db.exec(m.up); } catch { /* already applied */ }
+      try { this.db.exec(m.up); } catch {}
     }
 
     this._insertStmt = this.db.prepare(`
       INSERT INTO observations (id, type, content, summary, metadata, indexed_at, session_id, content_hash)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
-
-    this._updateEmbedStmt = this.db.prepare(
-      'UPDATE observations SET embeddings = ? WHERE id = ?'
-    );
-
+    this._updateEmbedStmt = this.db.prepare('UPDATE observations SET embeddings = ? WHERE id = ?');
     return this;
   }
 
@@ -149,21 +100,13 @@ class BenchKernel {
     return id;
   }
 
-  /**
-   * Embed all ingested documents. Call once after all ingests.
-   * Stores embeddings in SQLite + in-memory cache for fast search.
-   */
   async embedAll() {
     const embedder = await getEmbedder();
     if (!embedder) return 0;
-
     const rows = this.db.prepare('SELECT id, summary, content FROM observations').all();
     let count = 0;
-
     for (const row of rows) {
       try {
-        // Dual embedding: embed both summary (focused) and content (comprehensive)
-        // Store as { summary, content } so search can take best match
         const summaryEmb = await embedder.embed(row.summary || row.content.slice(0, 200));
         const contentEmb = row.content.length > 200 ? await embedder.embed(row.content) : summaryEmb;
         if (summaryEmb) {
@@ -171,176 +114,133 @@ class BenchKernel {
           this._embeddings.set(row.id, { summary: summaryEmb, content: contentEmb || summaryEmb });
           count++;
         }
-      } catch { /* skip */ }
+      } catch {}
     }
-
     return count;
   }
 
   /**
-   * Hybrid search: FTS5 BM25 + vector cosine similarity, merged by score.
+   * Multi-strategy search using CORE query-builder module.
+   * Same 4 strategies as core BM25Search: AND → Entity → Sanitized → OR+synonyms.
    */
   search(query, limit = 10) {
-    const seen = new Map(); // id → best score (lower = better for BM25, we normalize)
+    const seen = new Map(); // id → relevance score (higher = better)
 
-    // ── FTS5 BM25 search ────────────────────────────────────────────────────
-    const orQuery = buildFTS5Query(query);
-    if (orQuery) {
-      try {
-        const rows = this.db.prepare(`
-          SELECT o.id, bm25(obs_fts, 1.0, 0.75) AS score
-          FROM obs_fts
-          JOIN observations o ON o.rowid = obs_fts.rowid
-          WHERE obs_fts MATCH ?
-          ORDER BY score
-          LIMIT ?
-        `).all(orQuery, limit * 3);
-        for (const r of rows) {
-          // BM25 scores are negative (lower = better), normalize to positive relevance
-          const relevance = Math.abs(r.score);
-          if (!seen.has(r.id) || relevance > seen.get(r.id)) seen.set(r.id, relevance);
-        }
-      } catch { /* fallthrough */ }
-    }
-
-    // Individual keyword searches
-    const keywords = query.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/)
-      .filter(w => w.length >= 4 && !STOP_WORDS.has(w));
-    for (const kw of keywords.slice(0, 5)) {
+    const runFTS = (matchExpr, weight) => {
       try {
         const rows = this.db.prepare(`
           SELECT o.id, bm25(obs_fts, 1.0, 0.75) AS score
           FROM obs_fts JOIN observations o ON o.rowid = obs_fts.rowid
-          WHERE obs_fts MATCH ? ORDER BY score LIMIT 5
-        `).all(`"${kw}"`, 5);
+          WHERE obs_fts MATCH ? ORDER BY score LIMIT ?
+        `).all(matchExpr, limit * 3);
         for (const r of rows) {
-          const relevance = Math.abs(r.score) * 0.5; // penalty for single keyword
+          const relevance = Math.abs(r.score) * weight;
           if (!seen.has(r.id) || relevance > seen.get(r.id)) seen.set(r.id, relevance);
+        }
+      } catch {}
+    };
+
+    // Strategy 1: AND-mode (core: buildANDQuery) — high precision
+    const andQ = buildANDQuery(query);
+    if (andQ) runFTS(andQ, 2.0);
+
+    // Strategy 2: Entity-focused (core: buildEntityQuery) — names, dates
+    const entityQ = buildEntityQuery(query);
+    if (entityQ) runFTS(entityQ, 1.8);
+
+    // Strategy 3: Original sanitized (core: sanitizeFTS5Query) — FTS5 default
+    const sanitized = sanitizeFTS5Query(query);
+    if (sanitized && sanitized !== '""') runFTS(sanitized, 1.5);
+
+    // Strategy 4: OR-mode with synonyms (core: buildORQuery) — broad recall
+    const orQ = buildORQuery(query);
+    if (orQ) runFTS(orQ, 1.0);
+
+    // Strategy 5: Individual keywords — catch long-tail
+    const keywords = extractKeywords(query).filter(w => w.length >= 4);
+    for (const kw of keywords.slice(0, 5)) {
+      runFTS(`"${kw}"`, 0.5);
+    }
+
+    // Strategy 6: Trigram fallback
+    if (seen.size < limit) {
+      try {
+        const triRows = this.db.prepare(`
+          SELECT o.id, bm25(obs_trigram) AS score
+          FROM obs_trigram JOIN observations o ON o.rowid = obs_trigram.rowid
+          WHERE obs_trigram MATCH ? ORDER BY score LIMIT ?
+        `).all(sanitized || query, limit);
+        for (const r of triRows) {
+          if (!seen.has(r.id)) seen.set(r.id, Math.abs(r.score) * 0.3);
         }
       } catch {}
     }
 
-    // Trigram fallback
-    if (seen.size < limit) {
-      const trigramResults = this._searchTrigram(query, limit);
-      for (const r of trigramResults) {
-        const relevance = Math.abs(r.score) * 0.3;
-        if (!seen.has(r.id)) seen.set(r.id, relevance);
-      }
-    }
-
-    // ── Vector search (dual embedding: max of summary + content similarity) ──
+    // Strategy 7: Vector search (optional)
     if (this._useVector && this._queryEmbedding) {
       for (const [docId, docEmb] of this._embeddings) {
-        // Take max similarity from summary and content embeddings
-        const simSummary = docEmb.summary ? cosineSimilarity(this._queryEmbedding, docEmb.summary) : 0;
-        const simContent = docEmb.content ? cosineSimilarity(this._queryEmbedding, docEmb.content) : 0;
-        const sim = Math.max(simSummary, simContent);
+        const simS = docEmb.summary ? cosineSimilarity(this._queryEmbedding, docEmb.summary) : 0;
+        const simC = docEmb.content ? cosineSimilarity(this._queryEmbedding, docEmb.content) : 0;
+        const sim = Math.max(simS, simC);
         if (sim >= 0.15) {
           const relevance = sim * 8.0;
-          if (!seen.has(docId)) {
-            seen.set(docId, relevance);
-          } else {
-            // Strong multi-match boost: found by both FTS5 and vector
-            seen.set(docId, seen.get(docId) + relevance);
-          }
+          if (!seen.has(docId)) seen.set(docId, relevance);
+          else seen.set(docId, seen.get(docId) + relevance);
         }
       }
     }
 
-    // ── Reranker: keyword density + exact phrase + bigram matching ────────
+    // ── Content-based reranker (same as core fusion.ts rerank) ───────────
     const queryLower = query.toLowerCase();
-    const queryWords = queryLower.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w));
-    // Build bigrams from query
+    const queryWords = extractKeywords(query);
     const queryBigrams = [];
     for (let i = 0; i < queryWords.length - 1; i++) {
       queryBigrams.push(queryWords[i] + ' ' + queryWords[i + 1]);
     }
 
     if (queryWords.length > 0 && seen.size > 0) {
-      // Fetch content for all candidates
       const ids = [...seen.keys()];
-      const placeholders = ids.map(() => '?').join(',');
-      let contentMap;
       try {
+        const placeholders = ids.map(() => '?').join(',');
         const rows = this.db.prepare(`SELECT id, content FROM observations WHERE id IN (${placeholders})`).all(...ids);
-        contentMap = new Map(rows.map(r => [r.id, r.content.toLowerCase()]));
-      } catch {
-        contentMap = new Map();
-      }
+        const contentMap = new Map(rows.map(r => [r.id, r.content.toLowerCase()]));
 
-      for (const [id, baseScore] of seen) {
-        const content = contentMap.get(id);
-        if (!content) continue;
-
-        // Keyword density: what fraction of query keywords appear in this doc
-        const keywordHits = queryWords.filter(w => content.includes(w)).length;
-        const density = keywordHits / queryWords.length;
-
-        // Bigram matching: consecutive query words appearing together
-        const bigramHits = queryBigrams.filter(bg => content.includes(bg)).length;
-        const bigramScore = queryBigrams.length > 0 ? bigramHits / queryBigrams.length : 0;
-
-        // Exact phrase match (huge boost)
-        const phraseMatch = content.includes(queryLower.replace(/[^\w\s]/g, '').trim().slice(0, 50)) ? 2.0 : 0;
-
-        // Combined rerank score
-        const boost = density * 3.0 + bigramScore * 2.0 + phraseMatch;
-        seen.set(id, baseScore + boost);
-      }
+        for (const [id, baseScore] of seen) {
+          const content = contentMap.get(id);
+          if (!content) continue;
+          const density = queryWords.filter(w => content.includes(w)).length / queryWords.length;
+          const bigramHits = queryBigrams.filter(bg => content.includes(bg)).length;
+          const bigramScore = queryBigrams.length > 0 ? bigramHits / queryBigrams.length : 0;
+          const boost = density * 3.0 + bigramScore * 2.0;
+          seen.set(id, baseScore + boost);
+        }
+      } catch {}
     }
 
-    // Sort by relevance (higher = better) and return top-K
     return [...seen.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, limit)
       .map(([id, score]) => ({ id, score }));
   }
 
-  /**
-   * Async search with vector embedding of query.
-   * Use this instead of search() when vector search is enabled.
-   */
   async searchAsync(query, limit = 10) {
-    // Embed the query
     if (this._useVector && this._embeddings.size > 0) {
       const embedder = await getEmbedder();
       if (embedder) {
-        try {
-          this._queryEmbedding = await embedder.embed(query);
-        } catch {
-          this._queryEmbedding = null;
-        }
+        try { this._queryEmbedding = await embedder.embed(query); } catch { this._queryEmbedding = null; }
       }
     }
     return this.search(query, limit);
   }
 
-  _searchTrigram(query, limit) {
-    const sanitized = sanitizeFTS5(query);
-    if (!sanitized || sanitized.length < 3) return [];
-    try {
-      return this.db.prepare(`
-        SELECT o.id, bm25(obs_trigram) AS score
-        FROM obs_trigram JOIN observations o ON o.rowid = obs_trigram.rowid
-        WHERE obs_trigram MATCH ? ORDER BY score LIMIT ?
-      `).all(sanitized, limit);
-    } catch { return []; }
-  }
-
   close() {
-    if (this.db) {
-      this.db.close();
-      this.db = null;
-    }
+    if (this.db) { this.db.close(); this.db = null; }
     this._embeddings.clear();
     this._queryEmbedding = null;
     try { fs.unlinkSync(this.dbPath); } catch {}
   }
 
-  resolveId(id) {
-    return this._idMap.get(id) || id;
-  }
+  resolveId(id) { return this._idMap.get(id) || id; }
 
   get count() {
     if (!this.db) return 0;
