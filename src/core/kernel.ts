@@ -453,6 +453,11 @@ export class Kernel {
       }
     }
 
+    // Flush feedback engine before shutdown
+    if (this.feedbackEngine) {
+      try { this.feedbackEngine.flushFeedback(); } catch { /* non-critical */ }
+    }
+
     // Save session snapshot before shutdown
     if (this.storage && this.sessionManager) {
       try {

@@ -1,9 +1,10 @@
 import type { SearchPlugin, PluginConfig, SearchResult, SearchOpts } from '../../core/types.js';
 import type { BetterSqlite3Storage } from '../storage/better-sqlite3.js';
 import { Embedder } from './embedder.js';
+import { extractBestSnippet } from './snippet-extractor.js';
 
-const SCAN_LIMIT = 1000;
-const SIMILARITY_THRESHOLD = 0.3;
+const SCAN_LIMIT = 5000;
+const SIMILARITY_THRESHOLD = 0.2;
 
 export class VectorSearch implements SearchPlugin {
   name = 'vector-search';
@@ -67,7 +68,7 @@ export class VectorSearch implements SearchPlugin {
       return scored.slice(0, limit).map(({ row, similarity }) => ({
         id: row.id,
         title: (row.summary || row.content).slice(0, 100),
-        snippet: (row.summary || row.content).slice(0, 100),
+        snippet: extractBestSnippet(row.summary || row.content, query, 300),
         relevance_score: similarity,
         type: row.type as SearchResult['type'],
         timestamp: row.indexed_at,
@@ -78,7 +79,9 @@ export class VectorSearch implements SearchPlugin {
     }
   }
 
-  shouldFallback(_results: SearchResult[]): boolean {
+  shouldFallback(results: SearchResult[]): boolean {
+    // Only stop cascade if we have high-confidence semantic matches
+    if (results.length > 0 && results[0].relevance_score >= 0.7) return false;
     return true;
   }
 }

@@ -11,6 +11,7 @@ import { classifyImportance } from './importance-classifier.js';
 import { extractEntities, resolveAlias } from './entity-extractor.js';
 import type { KnowledgeGraph } from './knowledge-graph.js';
 import { detectTopics, storeTopics } from './topic-detector.js';
+import { computeSignalScore } from './noise-filter.js';
 
 export class Pipeline {
   private budgetManager?: BudgetManager;
@@ -116,6 +117,12 @@ export class Pipeline {
     // 2.6 Importance classification (zero-LLM, deterministic) — with entity boost
     const importance = classifyImportance(cleaned, type, { entities: entityNames });
 
+    // 2.65 Noise filter — downweight noisy content
+    const signalScore = computeSignalScore(cleaned);
+    if (signalScore < 0.3) {
+      importance.score *= 0.5;
+    }
+
     // 2.7 Topic detection (zero-LLM, deterministic)
     const detectedTopics = detectTopics(cleaned, undefined, entityNames);
 
@@ -144,7 +151,8 @@ export class Pipeline {
       }
     }
 
-    for (const s of summarizers) {
+    // Only run deterministic summarizers if LLM didn't already summarize
+    if (!summary) for (const s of summarizers) {
       if (s.detect(cleaned)) {
         try {
           const result = await s.summarize(cleaned, {});
@@ -230,9 +238,19 @@ export class Pipeline {
       }
     }
 
-    // 6d. Async embedding (fire-and-forget)
+    // 6d. Embedding — synchronous for short content, async for large
     if (this.embedder) {
-      this.scheduleEmbedding(obs.id, obs.summary || obs.content);
+      const textToEmbed = obs.summary || obs.content;
+      if (textToEmbed.length < 2000) {
+        try {
+          const embedding = await this.embedder.embed(textToEmbed);
+          if (embedding) {
+            this.storage.exec('UPDATE observations SET embeddings = ? WHERE id = ?', [this.embedder.toBuffer(embedding), obs.id]);
+          }
+        } catch { /* non-critical */ }
+      } else {
+        this.scheduleEmbedding(obs.id, textToEmbed);
+      }
     }
 
     // 7. Track token economics

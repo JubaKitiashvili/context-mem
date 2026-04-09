@@ -252,7 +252,7 @@ export interface SearchPlugin extends Plugin {
 export interface SearchIntent {
   keywords: string[];
   type_boosts: Partial<Record<ObservationType, number>>;
-  intent_type: 'causal' | 'lookup' | 'temporal' | 'general';
+  intent_type: 'causal' | 'lookup' | 'temporal' | 'recommendation' | 'general';
 }
 
 export interface SearchOrchestrator {
@@ -380,10 +380,10 @@ export interface SearchWeights {
 }
 
 export const DEFAULT_SEARCH_WEIGHTS: Required<SearchWeights> = {
-  bm25: 0.5,
-  trigram: 0.3,
-  levenshtein: 0.15,
-  vector: 0.05,
+  bm25: 0.45,
+  trigram: 0.15,
+  levenshtein: 0.05,
+  vector: 0.35,
 };
 
 // Global knowledge store config

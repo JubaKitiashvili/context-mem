@@ -28,7 +28,7 @@ function mockSearchPlugin(
 }
 
 describe('SearchFusion', () => {
-  it('uses BM25 first when enough results', async () => {
+  it('runs all plugins in parallel merge mode', async () => {
     let trigramCalled = false;
     const bm25Results = [
       makeResult('1', 'code', 1.5),
@@ -42,9 +42,11 @@ describe('SearchFusion', () => {
     };
 
     const fusion = new SearchFusion([bm25, trigram]);
-    await fusion.execute('some query', { limit: 5 });
+    const results = await fusion.execute('some query', { limit: 5 });
 
-    assert.equal(trigramCalled, false, 'trigram should not be called when BM25 returns enough results');
+    // In parallel merge mode, all plugins are called regardless of shouldFallback
+    assert.equal(trigramCalled, true, 'trigram should be called in parallel merge mode');
+    assert.ok(results.length > 0, 'should have results from BM25');
   });
 
   it('falls back to trigram when BM25 returns few', async () => {

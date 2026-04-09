@@ -111,31 +111,61 @@ export class SearchFusion implements SearchOrchestrator {
       type_boosts: { ...opts.type_boosts, ...intent.type_boosts },
     };
 
-    let allResults: SearchResult[] = [];
-    const seenIds = new Set<string>();
+    // Intent-adaptive weights: shift emphasis based on query type
+    const dynamicWeights = { ...this.weights };
+    if (intent.intent_type === 'lookup') {
+      dynamicWeights.bm25 = (dynamicWeights.bm25 ?? 0.45) * 1.4;
+      dynamicWeights.vector = (dynamicWeights.vector ?? 0.35) * 0.5;
+    } else if (intent.intent_type === 'causal' || intent.intent_type === 'temporal') {
+      dynamicWeights.vector = (dynamicWeights.vector ?? 0.35) * 1.5;
+      dynamicWeights.bm25 = (dynamicWeights.bm25 ?? 0.45) * 0.7;
+    }
 
-    for (const plugin of this.plugins) {
-      try {
-        const strategyWeight = this.weights[plugin.strategy] ?? 1;
-        const results = await plugin.search(query, enrichedOpts);
-        for (const r of results) {
-          if (!seenIds.has(r.id)) {
-            seenIds.add(r.id);
-            const boost = enrichedOpts.type_boosts?.[r.type] || 0;
-            allResults.push({ ...r, relevance_score: (r.relevance_score + boost) * strategyWeight });
-          }
+    // Parallel merge: run ALL plugins, merge weighted results
+    const pluginResults = await Promise.all(
+      this.plugins.map(async (plugin) => {
+        try {
+          return { strategy: plugin.strategy, results: await plugin.search(query, enrichedOpts) };
+        } catch {
+          return { strategy: plugin.strategy, results: [] as SearchResult[] };
         }
-        if (!plugin.shouldFallback(results)) break;
-      } catch {
-        continue;
+      })
+    );
+
+    const allResults: SearchResult[] = [];
+    const seenIds = new Map<string, number>(); // id → index in allResults
+    const strategyHits = new Map<string, number>(); // id → number of strategies that found it
+
+    for (const { strategy, results } of pluginResults) {
+      const weight = dynamicWeights[strategy as keyof SearchWeights] ?? 0.1;
+      for (const r of results) {
+        const boost = enrichedOpts.type_boosts?.[r.type] || 0;
+        const weightedScore = (r.relevance_score + boost) * weight;
+
+        if (seenIds.has(r.id)) {
+          // Boost existing entry: found by multiple strategies
+          const idx = seenIds.get(r.id)!;
+          allResults[idx].relevance_score += weightedScore;
+          strategyHits.set(r.id, (strategyHits.get(r.id) || 1) + 1);
+        } else {
+          seenIds.set(r.id, allResults.length);
+          strategyHits.set(r.id, 1);
+          allResults.push({ ...r, relevance_score: weightedScore });
+        }
       }
     }
 
-    allResults = rerank(allResults, intent.intent_type);
-    allResults = allResults.slice(0, opts.limit || 5);
+    // Multi-match confidence boost: results found by 2+ strategies get a bonus
+    for (const r of allResults) {
+      const count = strategyHits.get(r.id) || 1;
+      if (count >= 2) r.relevance_score *= (1 + 0.15 * (count - 1));
+    }
 
-    if (this.searchCallCount > SEARCH_MAX_FULL && allResults.length > 0) {
-      const limited = allResults.slice(0, 1);
+    const reranked = rerank(allResults, intent.intent_type);
+    const finalResults = reranked.slice(0, opts.limit || 5);
+
+    if (this.searchCallCount > SEARCH_MAX_FULL && finalResults.length > 0) {
+      const limited = finalResults.slice(0, 1);
       limited.push({
         id: '__throttle_warning__',
         title: 'Search throttled',
@@ -150,17 +180,18 @@ export class SearchFusion implements SearchOrchestrator {
     }
 
     // --- Store in cache ---
-    this.searchCache.set(canonicalKey, { results: allResults, timestamp: now });
+    this.searchCache.set(canonicalKey, { results: finalResults, timestamp: now });
 
-    return allResults;
+    return finalResults;
   }
 }
 
 const INTENT_WEIGHTS: Record<string, { relevance: number; recency: number; access: number }> = {
-  causal:   { relevance: 0.20, recency: 0.70, access: 0.10 },
-  temporal: { relevance: 0.10, recency: 0.75, access: 0.15 },
-  lookup:   { relevance: 0.80, recency: 0.10, access: 0.10 },
-  general:  { relevance: 0.55, recency: 0.30, access: 0.15 },
+  causal:         { relevance: 0.20, recency: 0.70, access: 0.10 },
+  temporal:       { relevance: 0.10, recency: 0.75, access: 0.15 },
+  lookup:         { relevance: 0.80, recency: 0.10, access: 0.10 },
+  recommendation: { relevance: 0.35, recency: 0.35, access: 0.30 },
+  general:        { relevance: 0.55, recency: 0.30, access: 0.15 },
 };
 
 /**

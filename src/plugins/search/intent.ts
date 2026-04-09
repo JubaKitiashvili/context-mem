@@ -17,6 +17,7 @@ const STOP_WORDS = new Set([
 const CAUSAL_SIGNALS = ['why', 'cause', 'reason', 'because', 'broke', 'failed', 'crash'];
 const TEMPORAL_SIGNALS = ['when', 'last', 'recent', 'today', 'yesterday', 'ago', 'since', 'latest'];
 const LOOKUP_SIGNALS = ['how', 'where', 'find', 'show', 'explain', 'work', 'does'];
+const RECOMMENDATION_SIGNALS = ['recommend', 'suggest', 'best', 'prefer', 'should', 'which', 'good', 'better', 'favorite', 'ideal', 'suitable'];
 
 export class IntentClassifier {
   classify(query: string): SearchIntent {
@@ -32,6 +33,9 @@ export class IntentClassifier {
     } else if (words.some(w => TEMPORAL_SIGNALS.includes(w))) {
       intent_type = 'temporal';
       type_boosts = { commit: 2, log: 1.5, context: 1 };
+    } else if (words.some(w => RECOMMENDATION_SIGNALS.includes(w)) || /\bshould\s+i\b/i.test(query)) {
+      intent_type = 'recommendation';
+      type_boosts = { decision: 2, context: 1.5, code: 1 };
     } else if (words.some(w => LOOKUP_SIGNALS.includes(w))) {
       intent_type = 'lookup';
       type_boosts = { code: 2, context: 1.5, decision: 1 };

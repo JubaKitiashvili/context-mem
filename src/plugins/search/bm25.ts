@@ -1,6 +1,7 @@
 import type { SearchPlugin, PluginConfig, SearchResult, SearchOpts } from '../../core/types.js';
 import type { BetterSqlite3Storage } from '../storage/better-sqlite3.js';
 import { sanitizeFTS5Query } from './fts5-utils.js';
+import { extractBestSnippet } from './snippet-extractor.js';
 
 export class BM25Search implements SearchPlugin {
   name = 'bm25-search';
@@ -50,7 +51,7 @@ export class BM25Search implements SearchPlugin {
       return rows.map(row => ({
         id: row.id,
         title: (row.summary || row.content).slice(0, 100),
-        snippet: (row.summary || row.content).slice(0, 100),
+        snippet: extractBestSnippet(row.summary || row.content, query, 300),
         relevance_score: Math.abs(row.relevance),
         type: row.type as SearchResult['type'],
         timestamp: row.indexed_at,
