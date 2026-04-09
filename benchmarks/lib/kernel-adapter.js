@@ -220,23 +220,45 @@ class BenchKernel {
           synonymMap.set(w, syns);
         }
 
+        // Compute IDF for each query word across all candidate documents
+        const docFreq = new Map();
+        for (const w of queryWords) {
+          let count = 0;
+          for (const content of contentMap.values()) {
+            if (content.includes(w)) count++;
+          }
+          docFreq.set(w, count);
+        }
+        const N = contentMap.size || 1;
+
         for (const [id, baseScore] of seen) {
           const content = contentMap.get(id);
           if (!content) continue;
-          // Exact keyword density
-          const exactHits = queryWords.filter(w => content.includes(w)).length;
-          // Synonym-aware: check if any synonym matches
-          let synHits = 0;
-          for (const [w, syns] of synonymMap) {
-            if (!content.includes(w) && syns.some(s => content.includes(s))) {
-              synHits++;
+          // IDF-weighted keyword matching: rare words count more
+          let weightedHits = 0;
+          for (const w of queryWords) {
+            const df = docFreq.get(w) || 0;
+            const idf = Math.log((N + 1) / (df + 1));
+            if (content.includes(w)) {
+              weightedHits += idf;
+            } else {
+              // Check synonyms
+              const syns = synonymMap.get(w) || [];
+              if (syns.some(s => content.includes(s))) {
+                weightedHits += idf * 0.7;
+              }
             }
           }
-          const totalHits = exactHits + synHits * 0.7; // synonyms worth 70% of exact
-          const density = totalHits / queryWords.length;
+          // Normalize by max possible IDF score
+          const maxIdf = queryWords.reduce((sum, w) => {
+            const df = docFreq.get(w) || 0;
+            return sum + Math.log((N + 1) / (df + 1));
+          }, 0);
+          const idfDensity = maxIdf > 0 ? weightedHits / maxIdf : 0;
+
           const bigramHits = queryBigrams.filter(bg => content.includes(bg)).length;
           const bigramScore = queryBigrams.length > 0 ? bigramHits / queryBigrams.length : 0;
-          const boost = density * 3.0 + bigramScore * 2.0;
+          const boost = idfDensity * 4.0 + bigramScore * 2.0;
           seen.set(id, baseScore + boost);
         }
       } catch {}
