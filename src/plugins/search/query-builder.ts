@@ -78,19 +78,6 @@ export function buildANDQuery(query: string): string | null {
   return words.slice(0, 8).map(w => `"${w}"`).join(' AND ');
 }
 
-/** Build phrase query from multi-word segments. Finds exact phrase matches in FTS5. */
-export function buildPhraseQuery(query: string): string | null {
-  const words = extractKeywords(query);
-  if (words.length < 2) return null;
-  // Build consecutive keyword pairs as phrases
-  const phrases: string[] = [];
-  for (let i = 0; i < words.length - 1; i++) {
-    phrases.push(`"${words[i]} ${words[i + 1]}"`);
-  }
-  // OR-join phrases — any phrase match is good
-  return phrases.join(' OR ');
-}
-
 /** Build entity-focused FTS5 query. Searches for proper nouns and specific terms. */
 export function buildEntityQuery(query: string): string | null {
   const entities = extractEntities(query);

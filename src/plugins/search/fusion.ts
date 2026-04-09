@@ -162,7 +162,7 @@ export class SearchFusion implements SearchOrchestrator {
     }
 
     const reranked = rerank(allResults, intent.intent_type, query);
-    const finalResults = diversify(reranked, opts.limit || 5);
+    const finalResults = reranked.slice(0, opts.limit || 5);
 
     if (this.searchCallCount > SEARCH_MAX_FULL && finalResults.length > 0) {
       const limited = finalResults.slice(0, 1);
@@ -257,57 +257,6 @@ export function rerank(results: SearchResult[], intentType: SearchIntent['intent
       relevance_score: r.relevance_score * (weights.relevance + weights.recency * recencyBoost + weights.access * accessBoost + contentBoost),
     };
   }).sort((a, b) => b.relevance_score - a.relevance_score);
-}
-
-/**
- * Diversity-aware result selection using snippet similarity.
- * Prevents top-K from being dominated by near-duplicate results.
- * Uses greedy selection: pick highest-scored, then penalize similar candidates.
- */
-function diversify(results: SearchResult[], limit: number, lambda = 0.7): SearchResult[] {
-  if (results.length <= limit) return results;
-
-  const selected: SearchResult[] = [];
-  const remaining = [...results];
-
-  // Always pick the highest-scored result first
-  selected.push(remaining.shift()!);
-
-  while (selected.length < limit && remaining.length > 0) {
-    let bestIdx = 0;
-    let bestScore = -Infinity;
-
-    for (let i = 0; i < remaining.length; i++) {
-      const candidate = remaining[i];
-      // Compute max similarity to already-selected results
-      let maxSim = 0;
-      for (const sel of selected) {
-        const sim = snippetOverlap(candidate.snippet || '', sel.snippet || '');
-        if (sim > maxSim) maxSim = sim;
-      }
-      // MMR: balance relevance vs diversity
-      const mmrScore = lambda * candidate.relevance_score - (1 - lambda) * maxSim * candidate.relevance_score;
-      if (mmrScore > bestScore) {
-        bestScore = mmrScore;
-        bestIdx = i;
-      }
-    }
-
-    selected.push(remaining.splice(bestIdx, 1)[0]);
-  }
-
-  return selected;
-}
-
-/** Word-overlap similarity between two snippets (Jaccard-like). */
-function snippetOverlap(a: string, b: string): number {
-  if (!a || !b) return 0;
-  const wordsA = new Set(a.toLowerCase().split(/\s+/).filter(w => w.length > 3));
-  const wordsB = new Set(b.toLowerCase().split(/\s+/).filter(w => w.length > 3));
-  if (wordsA.size === 0 || wordsB.size === 0) return 0;
-  let intersection = 0;
-  for (const w of wordsA) if (wordsB.has(w)) intersection++;
-  return intersection / Math.max(wordsA.size, wordsB.size);
 }
 
 interface BlockPlugins {
