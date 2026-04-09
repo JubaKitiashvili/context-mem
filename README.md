@@ -1,13 +1,39 @@
 # context-mem
 
-> Context optimization for AI coding assistants — 99% token savings, deterministic by default, optional LLM enhancement.
+> Your AI forgets everything. Every decision, every debug session, every architecture choice — gone when the session ends. **context-mem remembers.**
 
 [![npm version](https://img.shields.io/npm/v/context-mem)](https://www.npmjs.com/package/context-mem)
-[![tests](https://img.shields.io/badge/tests-658%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-1116%20passing-brightgreen)]()
+[![tools](https://img.shields.io/badge/MCP%20tools-44-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-green)]()
 
-AI coding assistants waste 60–80% of their context window on raw tool outputs — full npm logs, verbose test results, uncompressed JSON. This means shorter sessions, lost context, and repeated work.
+**context-mem v3.0 "Total Recall"** — dual-mode AI memory that optimizes real-time context (99% token savings, 14 summarizers) AND provides long-term institutional memory. Exact quotes from 6 months ago. Who decided what and why. The full story of your project.
+
+### Real-World Examples
+
+- **"Why did we choose Postgres?"** → `recall` returns the exact verbatim decision with date, importance score, and evidence chain
+- **"What did Sarah work on last sprint?"** → `browse` by person shows entity-aware observations with relationship context
+- **"This used to work last week"** → regression fingerprinting diffs current state against last known-good snapshot
+- **"Generate PR description"** → `generate_story --format pr` assembles changes, decisions, and test plan from session data
+- **"What's at risk of being forgotten?"** → `predict_loss` scores entries by loss risk so you can pin critical knowledge
+
+### What's New in v3.0
+
+| Feature | What it does |
+|---------|-------------|
+| **Importance Classification** | Every observation scored 0.0–1.0 with 6 significance flags (DECISION, ORIGIN, PIVOT, CORE, MILESTONE, PROBLEM) |
+| **Verbatim Recall** | Surface original content, not just summaries — FTS5 index on raw content |
+| **Adaptive Compression** | 4-tier progressive compression (verbatim → light → medium → distilled) based on age |
+| **Entity Intelligence** | Auto-detect technologies, people, files, components with 100+ alias resolution |
+| **Temporal Facts** | Knowledge entries have validity windows; supersession chains track "what was true when" |
+| **Wake-Up Primer** | Auto-generated, scored context injected at session start (4 layers, token-budgeted) |
+| **Topic Navigation** | Browse by topic, person, or time; cross-project tunnels find shared concepts |
+| **Conversation Import** | Parse ChatGPT, Claude, Slack, and plain text exports into searchable memory |
+| **Decision Trails** | Reconstruct the evidence chain behind any code change with `explain_decision` |
+| **Session Narratives** | Generate PR descriptions, standup updates, ADRs, or onboarding guides from session data |
+| **Regression Fingerprinting** | Capture working state snapshots; auto-diff when errors appear |
+| **Memory Pressure** | Predict which entries are at risk of loss; pin critical memories to protect them |
 
 **context-mem** captures tool outputs via hooks, compresses them using 14 content-aware summarizers, stores everything in local SQLite with full-text search, and serves compressed context back through the [MCP protocol](https://modelcontextprotocol.io). Fully deterministic and free by default — no cloud, no cost. Optional LLM enhancement (Ollama, OpenRouter, or Claude API) adds query expansion, smarter titles/tags, and contradiction explanations when you want it.
 
@@ -55,7 +81,7 @@ One command. `init` auto-detects your editor and creates everything:
 | **Roo Code** | `.roo-code/mcp_settings.json` + `.roo/rules/context-mem.md` | No |
 
 **What init sets up:**
-- MCP server config (so your editor can use context-mem's 32 tools)
+- MCP server config (so your editor can use context-mem's 44 tools)
 - AI rules (so the AI knows when to call `observe`, `search`, `restore_session`)
 - Claude Code hooks (activity journal, observation capture, proactive injection, session restore, dashboard)
 - `.context-mem.json` config + `.context-mem/` data directory
@@ -207,7 +233,7 @@ This loads hooks directly from the plugin directory. Useful for development and 
 
 **Auto-Update Check** — Checks npm for newer versions on session start (gstack-style). Split TTL caching (1hr fresh / 12hr nagging), escalating snooze (24h → 48h → 7 days), configurable via `~/.context-mem/config.yaml`. Never blocks, always graceful.
 
-**Security Hardening** — CORS restricted to localhost only, input validation on all 32 handlers, error sanitization (file paths + SQL keywords stripped). Windows compatibility for cross-platform deployments.
+**Security Hardening** — CORS restricted to localhost only, input validation on all 44 handlers, error sanitization (file paths + SQL keywords stripped). Windows compatibility for cross-platform deployments.
 
 **Smart Truncation** — 60/40 head/tail split for better error preservation at end of output. 4-tier fallback: JSON schema → Pattern → Head/Tail → Binary hash.
 
@@ -222,7 +248,11 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
                                                       ↓            by default, fallback           ↓
                                     Privacy Engine (9 detectors)   to deterministic)  Request Canonicalization (30s cache)
                                                       ↓                                        ↓
-                                    Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (32 tools)
+                                    Auto-Extract KB + Dreamer Agent         AI Assistant ← MCP Server (44 tools)
+                                    + Importance Classifier                        + Verbatim Recall
+                                    + Entity Extractor                             + Wake-Up Primer
+                                    + Topic Detector                               + Decision Trails
+                                    + Adaptive Compressor                          + Session Narratives
                                                                                                ↓
                                                                            Intelligence Dashboard ← SSE + WebSocket
                                                                            (search pipeline, authority, contradictions)
@@ -231,7 +261,7 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
 ## MCP Tools
 
 <details>
-<summary>32 tools available via MCP protocol</summary>
+<summary>44 tools available via MCP protocol</summary>
 
 | Tool | Description |
 |---|---|
@@ -267,6 +297,18 @@ Tool Output → Hook Capture → HTTP Bridge (:51894) → Pipeline → Summarize
 | `handoff_session` | Hand off session context for continuity across sessions |
 | `resolve_contradiction` | Resolve conflicting knowledge entries (supersede, merge, keep both, archive) |
 | `merge_suggestions` | View cross-project duplicate suggestions for manual review and merge |
+| `recall` | Verbatim memory retrieval with importance filtering |
+| `wake_up` | Generate scored session primer (4-layer context) |
+| `entity_detect` | Extract entities from text (technologies, people, files) |
+| `list_people` | List detected person entities with relationship counts |
+| `temporal_query` | Query knowledge valid at a specific point in time |
+| `browse` | Browse observations by topic, person, or time |
+| `list_topics` | List detected topics with observation counts |
+| `find_tunnels` | Find cross-project topic bridges |
+| `import_conversations` | Import ChatGPT, Claude, Slack, or plaintext conversations |
+| `explain_decision` | Reconstruct evidence chain behind a decision |
+| `generate_story` | Generate narrative (PR, standup, ADR, onboarding) |
+| `predict_loss` | Predict entries at highest risk of being forgotten |
 
 </details>
 

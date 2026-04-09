@@ -20,9 +20,9 @@
 | Phase 2: Core Intelligence | COMPLETE | 67/67 | [phase2-core-intelligence.md](2026-04-09-total-recall-phase2.md) |
 | Phase 3: Navigation & Import | COMPLETE | 48/48 | [phase3-navigation-import.md](2026-04-09-total-recall-phase3.md) |
 | Phase 4: Killer Features | COMPLETE | 38/38 | [phase4-killer-features.md](2026-04-09-total-recall-phase4.md) |
-| Phase 5: Marketing & Launch | NOT STARTED | 0/25 | [phase5-marketing-launch.md](2026-04-09-total-recall-phase5.md) |
+| Phase 5: Marketing & Launch | COMPLETE | 25/25 | [phase5-marketing-launch.md](2026-04-09-total-recall-phase5.md) |
 
-**Overall Progress: 206/231 tasks**
+**Overall Progress: 231/231 tasks**
 
 ---
 
@@ -140,3 +140,5 @@ Before marking a phase complete:
 - 2026-04-08: Phase 2 complete. Migration v14, entity extractor with 100+ aliases, temporal facts, wake-up primer, feedback engine. 47 new tests (1019→1066). 7 commits.
 - 2026-04-08: Phase 3 complete. Migration v15, topic detector, browse/list_topics/find_tunnels tools, 5 conversation parsers, dreamer consolidation (3 tasks), UserPromptSubmit hook. 33 new tests (1066→1099). 7 commits.
 - 2026-04-08: Phase 4 complete. Migration v16, decision trail builder, narrative generator (4 formats), regression fingerprinting, memory pressure predictor. 17 new tests (1099→1116). 2 commits.
+- 2026-04-09: Phase 5 complete. README rewrite with Total Recall showcase, CHANGELOG v3.0.0, version bump 2.6.0→3.0.0, tool count 32→44, test badge 658→1116.
+- **FOLLOW-UP NEEDED:** Dashboard UI update to surface Total Recall features (importance scores, topics, entity graph, compression tiers, temporal facts, decision trails, etc.)
