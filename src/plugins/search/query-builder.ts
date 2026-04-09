@@ -31,7 +31,8 @@ export const EXPANSIONS: Record<string, string[]> = {
   // Activities
   activity: ['hobby', 'sport', 'exercise', 'game'],
   exercise: ['workout', 'gym', 'fitness', 'sport'],
-  hobby: ['interest', 'activity', 'passion', 'enjoy'],
+  hobby: ['interest', 'activity', 'passion', 'enjoy', 'loves', 'likes', 'free'],
+  hobbies: ['interest', 'activity', 'passion', 'enjoy', 'loves', 'likes'],
   // Work
   tool: ['app', 'software', 'platform', 'service'],
   email: ['message', 'outreach', 'send', 'follow'],
@@ -75,6 +76,17 @@ export const EXPANSIONS: Record<string, string[]> = {
   cousin: ['relative', 'family'],
   mother: ['mom', 'parent', 'mama'],
   father: ['dad', 'parent', 'papa'],
+  brother: ['sibling', 'family'],
+  sister: ['sibling', 'family'],
+  nephew: ['relative', 'family'],
+  niece: ['relative', 'family'],
+  aunt: ['relative', 'family'],
+  uncle: ['relative', 'family'],
+  boss: ['manager', 'supervisor', 'lead'],
+  living: ['job', 'work', 'career', 'profession'],
+  company: ['firm', 'business', 'organization', 'employer'],
+  background: ['degree', 'studied', 'education', 'school'],
+  level: ['degree', 'completed', 'graduated'],
 };
 
 /** Extract meaningful keywords from a query, filtering stop words. */
