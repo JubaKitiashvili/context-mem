@@ -1,0 +1,367 @@
+{
+  "benchmark": "ConvoMem",
+  "system": "context-mem",
+  "top_k": 20,
+  "items": 50,
+  "avg_recall": 0.8633333333333333,
+  "elapsed_seconds": 6.422,
+  "per_category": {
+    "implicit_connection_evidence": {
+      "avg_recall": 0.8633333333333333,
+      "perfect": 42,
+      "total": 50
+    }
+  },
+  "details": [
+    {
+      "question": "I need to get the new team-wide kick-off call on the calendar for next Tuesday. What would be a good time to schedule it for everyone?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "What should I focus on in my performance summary this month?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "What's a good tool to help streamline my email follow-ups?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "When is the best time to make my follow-up calls on Fridays?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "How can I ensure my data stays up-to-date without hitting any limits?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "What would be a good tool for brainstorming sales strategies?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1
+    },
+    {
+      "question": "Okay, I need to make sure my calls for tomorrow are as effective as possible. Can you review my plan and suggest some high-impact improvements?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "What's the best way to get a quick update from this prospect?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "Can you help me script an opening for my call with Jane?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "Can you suggest some strategies to improve my sales performance?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1
+    },
+    {
+      "question": "Alright, I'm about to wrap up for the day. What are the last three things I should do before logging off?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "How can I make my sales pitch sound more engaging?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "My manager just pinged me for a pipeline status update. What's the fastest way for me to pull together a comprehensive overview of my sales pipeline for this month?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "What strategies should I focus on to maximize my productivity this month?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "Okay, I have my call list for this morning and it's a mix of different company sizes: 'Innovate Corp', 'Global Logistics Partners', 'Smith's Local Garage', and 'Main Street Bakery'. To be most effective with my time, which of these leads should I call first?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "How should I handle this new lead from Montreal?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "I've just qualified a lead that's a dead end for my quota, but it's a perfect fit for my colleague Sarah's product line. What's the best move here?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "Okay, so that company bowling night is tonight. What's the best strategy to make a good impression but still get out of there early?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "What are some good hobbies I can do in the evening to unwind?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "I'm looking for something interesting to do this weekend. Any ideas?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "Morning. I'm dragging today. What should I drink to get me going?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "My friend from college now lives out in Seattle, and we want to catch up on the phone sometime this week. What time would be good for us to schedule a call?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 2,
+      "evidence_count": 2
+    },
+    {
+      "question": "What are some effective ways to reduce my electricity usage at home?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "My coffee maker just broke. I need to buy a new one today, what should I get?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1
+    },
+    {
+      "question": "What advice should I give my cousin about starting a career?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "What should I do tonight to unwind after a hectic week?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "What kind of class should I consider joining at the community center on Saturdays?",
+      "category": "implicit_connection_evidence",
+      "recall": 0.5,
+      "found": 1,
+      "evidence_count": 2
+    },
+    {
+      "question": "What are some tips for getting my weekend chores done more quickly?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "What hobby could I start that would be both creative and affordable?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 2,
+      "evidence_count": 2
+    },
+    {
+      "question": "What's a simple yet impressive dish I can prepare for a special dinner at home?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "Where should I start my vegetable garden in my yard?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "Finally finished restoring that oak desk. It came out great, but now my garage feels a bit empty. Any ideas for what I should do next?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "Hey, I just realized I have a three-day weekend coming up. Got any suggestions for what I should do?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "What's a small task I can do today to improve my living space?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 2,
+      "evidence_count": 2
+    },
+    {
+      "question": "A friend of mine is about to move into my old downtown neighborhood. I want to give him some useful, real-world advice. What are some important tips I should pass along about living there?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "What are some engaging topics to discuss at a dinner with new acquaintances?",
+      "category": "implicit_connection_evidence",
+      "recall": 0.6666666666666666,
+      "found": 2,
+      "evidence_count": 3
+    },
+    {
+      "question": "I've got a free weekend coming up and was thinking of trying to pick up a new hobby. Any suggestions for something interesting to get into?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1
+    },
+    {
+      "question": "The internal job board just listed an opening for a Tier 2 support engineer. The pay jump is pretty significant. Do you think I should throw my hat in the ring?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "What are some fun things to do in the Bay Area this weekend?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1
+    },
+    {
+      "question": "What are some good team-building event ideas for a group of about 15 people?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "So I've decided it's time to start looking for a different car. Any suggestions for reliable used models that are good for commuting and get great gas mileage?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "How do the career prospects and benefits compare between working at a major tech firm and a young startup?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "My manager tasked me with researching potential replacements for our current CRM. Can you suggest a few good options for a small-to-mid-sized tech support team?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "How can I ensure my performance review is constructive and helps me improve?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "My family is bugging me about planning a vacation soon. What are some cool US vacation spots we could reasonably drive to from California?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "Can you suggest some resources to improve my communication skills in technical support?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "What are some ways to improve my performance in my current role?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1
+    },
+    {
+      "question": "How can I optimize my workday to be more productive while handling support tickets?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "I'm looking for some new lunch ideas. Something healthy I can meal prep on Sunday that isn't a sandwich. Got any suggestions?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    },
+    {
+      "question": "I'm looking for suggestions on some relaxing evening routines that don't involve screens. Any ideas?",
+      "category": "implicit_connection_evidence",
+      "recall": 1,
+      "found": 1,
+      "evidence_count": 1
+    }
+  ]
+}

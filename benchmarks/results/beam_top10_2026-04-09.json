@@ -1,0 +1,6484 @@
+{
+  "benchmark": "BEAM",
+  "system": "context-mem",
+  "top_k": 10,
+  "questions": 355,
+  "avg_recall": 0.6450704225352113,
+  "elapsed_seconds": 3.104,
+  "per_ability": {
+    "contradiction_resolution": {
+      "hits": 39,
+      "total": 40,
+      "r5_sum": 37
+    },
+    "event_ordering": {
+      "hits": 15,
+      "total": 40,
+      "r5_sum": 11
+    },
+    "information_extraction": {
+      "hits": 25,
+      "total": 40,
+      "r5_sum": 22
+    },
+    "instruction_following": {
+      "hits": 7,
+      "total": 40,
+      "r5_sum": 5
+    },
+    "knowledge_update": {
+      "hits": 37,
+      "total": 40,
+      "r5_sum": 31
+    },
+    "multi_session_reasoning": {
+      "hits": 32,
+      "total": 40,
+      "r5_sum": 25
+    },
+    "preference_following": {
+      "hits": 20,
+      "total": 39,
+      "r5_sum": 17
+    },
+    "summarization": {
+      "hits": 15,
+      "total": 36,
+      "r5_sum": 6
+    },
+    "temporal_reasoning": {
+      "hits": 39,
+      "total": 40,
+      "r5_sum": 35
+    }
+  },
+  "details": [
+    {
+      "conversation": "1",
+      "ability": "contradiction_resolution",
+      "question": "Have I worked with Flask routes and handled HTTP requests in this project?",
+      "correct": [
+        58,
+        24
+      ],
+      "retrieved": [
+        176,
+        176,
+        58,
+        58,
+        2
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "contradiction_resolution",
+      "question": "Have I integrated Flask-Login for session management in my project?",
+      "correct": [
+        66,
+        66
+      ],
+      "retrieved": [
+        28,
+        114,
+        8,
+        9,
+        66
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different aspects of developing my personal budget tracker throughout our c",
+      "correct": [
+        4,
+        60,
+        116
+      ],
+      "retrieved": [
+        109,
+        18,
+        4,
+        87,
+        19
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different aspects of my app development and deployment across ou",
+      "correct": [
+        6,
+        62,
+        118,
+        118,
+        120
+      ],
+      "retrieved": [
+        117,
+        116,
+        181,
+        180,
+        17
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "1",
+      "ability": "information_extraction",
+      "question": "When does my first sprint end?",
+      "correct": [
+        28
+      ],
+      "retrieved": [
+        28,
+        28,
+        29,
+        86,
+        52
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "information_extraction",
+      "question": "How did I organize the tasks over the course of the sprint to ensure both backend and frontend aspects of the features w",
+      "correct": [
+        28,
+        29
+      ],
+      "retrieved": [
+        29,
+        28,
+        177,
+        176,
+        38
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "instruction_following",
+      "question": "Could you show me how to implement a login feature?",
+      "correct": [
+        54,
+        56
+      ],
+      "retrieved": [
+        87,
+        86,
+        167,
+        168,
+        39
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "1",
+      "ability": "instruction_following",
+      "question": "Which libraries are used in this project?",
+      "correct": [
+        110
+      ],
+      "retrieved": [
+        108,
+        108,
+        110,
+        25,
+        109
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "knowledge_update",
+      "question": "What is the average response time of the dashboard API?",
+      "correct": [
+        86,
+        114
+      ],
+      "retrieved": [
+        104,
+        104,
+        105,
+        114,
+        114
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "knowledge_update",
+      "question": "How many commits have been merged into the main branch of my Git repository?",
+      "correct": [
+        148,
+        182
+      ],
+      "retrieved": [
+        148,
+        148,
+        149,
+        182,
+        182
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "multi_session_reasoning",
+      "question": "How many new columns did I want to add to the transactions table across my requests?",
+      "correct": [
+        14,
+        106,
+        162
+      ],
+      "retrieved": [
+        101,
+        100,
+        76,
+        76,
+        41
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "multi_session_reasoning",
+      "question": "How many different user roles and security features am I trying to implement across my sessions?",
+      "correct": [
+        16,
+        84,
+        150
+      ],
+      "retrieved": [
+        184,
+        85,
+        117,
+        185,
+        84
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "preference_following",
+      "question": "I'm planning to add user login, income and expense tracking, and some basic analytics to my Flask app. What libraries or",
+      "correct": [
+        34
+      ],
+      "retrieved": [
+        8,
+        8,
+        34,
+        9,
+        2
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "preference_following",
+      "question": "I'm looking to improve the security features of my app. What steps would you suggest I take?",
+      "correct": [
+        178
+      ],
+      "retrieved": [
+        141,
+        182,
+        140,
+        186,
+        182
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "summarization",
+      "question": "Can you provide a comprehensive summary of how my budget tracker project has progressed, including the key features impl",
+      "correct": [
+        4,
+        5,
+        8,
+        9,
+        116,
+        117,
+        150,
+        151,
+        176,
+        177
+      ],
+      "retrieved": [
+        2,
+        3,
+        52,
+        1,
+        8
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "summarization",
+      "question": "Can you give me a comprehensive summary of how I handled the security and database challenges in my budget tracker app a",
+      "correct": [
+        16,
+        17,
+        64,
+        65,
+        88,
+        89,
+        138,
+        139,
+        141,
+        150,
+        151
+      ],
+      "retrieved": [
+        181,
+        148,
+        180,
+        2,
+        3
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "1",
+      "ability": "temporal_reasoning",
+      "question": "How many weeks do I have between finishing the transaction management features and the final deployment deadline?",
+      "correct": [
+        2,
+        0
+      ],
+      "retrieved": [
+        28,
+        29,
+        53,
+        2,
+        8
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "1",
+      "ability": "temporal_reasoning",
+      "question": "How many days were there between the end of my first sprint and the deadline for completing the analytics features in sp",
+      "correct": [
+        28,
+        86
+      ],
+      "retrieved": [
+        28,
+        29,
+        52,
+        86,
+        86
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "2",
+      "ability": "contradiction_resolution",
+      "question": "Have I obtained an API key for this project?",
+      "correct": [
+        32,
+        34,
+        36,
+        70
+      ],
+      "retrieved": [
+        70,
+        70,
+        71,
+        32,
+        186
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "2",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever fixed any bugs related to the autocomplete feature in my project?",
+      "correct": [
+        88,
+        132
+      ],
+      "retrieved": [
+        132,
+        132,
+        124,
+        196,
+        126
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "2",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different aspects of implementing the city autocomplete feature across our ",
+      "correct": [
+        20,
+        22,
+        24,
+        74,
+        160
+      ],
+      "retrieved": [
+        27,
+        26,
+        94,
+        9,
+        141
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "2",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different aspects of handling errors and promise rejections in my weather a",
+      "correct": [
+        28,
+        162
+      ],
+      "retrieved": [
+        26,
+        27,
+        112,
+        112,
+        125
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "2",
+      "ability": "information_extraction",
+      "question": "What technologies did I say I was using to start my project targeting that API endpoint?",
+      "correct": [
+        10
+      ],
+      "retrieved": [
+        10,
+        10,
+        14,
+        57,
+        56
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "2",
+      "ability": "information_extraction",
+      "question": "How did you recommend managing the flow of requests when my app risks overwhelming the service due to frequent retries a",
+      "correct": [
+        33,
+        35,
+        37
+      ],
+      "retrieved": [
+        197,
+        172,
+        122,
+        173,
+        156
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "2",
+      "ability": "instruction_following",
+      "question": "What are some common responses when something goes wrong with an API?",
+      "correct": [
+        130
+      ],
+      "retrieved": [
+        134,
+        77,
+        134,
+        76,
+        136
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "2",
+      "ability": "instruction_following",
+      "question": "When building an application that communicates with a REST API, what typical errors should I be prepared to handle?",
+      "correct": [
+        130
+      ],
+      "retrieved": [
+        51,
+        50,
+        4,
+        5,
+        31
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "2",
+      "ability": "knowledge_update",
+      "question": "What is the daily call quota for the API key used in my application?",
+      "correct": [
+        32,
+        66
+      ],
+      "retrieved": [
+        67,
+        66,
+        66,
+        69,
+        68
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "2",
+      "ability": "knowledge_update",
+      "question": "What is the test coverage percentage for my API integration module?",
+      "correct": [
+        114,
+        128
+      ],
+      "retrieved": [
+        114,
+        114,
+        148,
+        186,
+        187
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "2",
+      "ability": "multi_session_reasoning",
+      "question": "How many different features or concerns did I mention wanting to handle across my weather app conversations?",
+      "correct": [
+        32,
+        34,
+        36,
+        122,
+        190
+      ],
+      "retrieved": [
+        94,
+        125,
+        41,
+        127,
+        126
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "2",
+      "ability": "multi_session_reasoning",
+      "question": "Between my fetch call latency and my autocomplete API response time, which one is currently faster based on my tests?",
+      "correct": [
+        38,
+        80
+      ],
+      "retrieved": [
+        150,
+        151,
+        124,
+        44,
+        150
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "2",
+      "ability": "preference_following",
+      "question": "Can you help me set up a caching system for my app's API responses? I'd like to keep it simple and straightforward.",
+      "correct": [
+        54
+      ],
+      "retrieved": [
+        54,
+        64,
+        188,
+        54,
+        64
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "2",
+      "ability": "preference_following",
+      "question": "How can I track the status and results of each step in my deployment workflow?",
+      "correct": [
+        182,
+        184
+      ],
+      "retrieved": [
+        185,
+        184,
+        199,
+        198,
+        145
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "2",
+      "ability": "summarization",
+      "question": "Can you give me a comprehensive summary of how my weather app project has progressed, including the key features, improv",
+      "correct": [
+        6,
+        7,
+        8,
+        9,
+        54,
+        55,
+        122,
+        123
+      ],
+      "retrieved": [
+        51,
+        50,
+        184,
+        123,
+        122
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "2",
+      "ability": "summarization",
+      "question": "Can you summarize what I learned about implementing and improving city autocomplete features in my weather app?",
+      "correct": [
+        20,
+        21,
+        23,
+        25,
+        52,
+        53,
+        94,
+        95,
+        96,
+        97
+      ],
+      "retrieved": [
+        57,
+        56,
+        189,
+        100,
+        80
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "2",
+      "ability": "temporal_reasoning",
+      "question": "How many days passed between when I obtained my OpenWeather API key and when I completed the UI wireframe for my weather",
+      "correct": [
+        32,
+        42
+      ],
+      "retrieved": [
+        42,
+        42,
+        71,
+        70,
+        32
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "2",
+      "ability": "temporal_reasoning",
+      "question": "How many days do I have between scheduling the meeting and the start of the testing period for my project?",
+      "correct": [
+        0,
+        50
+      ],
+      "retrieved": [
+        1,
+        50,
+        51,
+        4,
+        57
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "3",
+      "ability": "contradiction_resolution",
+      "question": "Have I used Bootstrap components in my project before?",
+      "correct": [
+        36,
+        56
+      ],
+      "retrieved": [
+        56,
+        122,
+        56,
+        28,
+        122
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "3",
+      "ability": "contradiction_resolution",
+      "question": "Have I tested the contact form submission with any API integration before?",
+      "correct": [
+        72,
+        120
+      ],
+      "retrieved": [
+        120,
+        120,
+        110,
+        109,
+        106
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "3",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different aspects of integrating and customizing the framework in my projec",
+      "correct": [
+        10,
+        72,
+        148
+      ],
+      "retrieved": [
+        34,
+        34,
+        35,
+        1,
+        146
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "3",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different aspects of my project development throughout our conversations in",
+      "correct": [
+        12,
+        82,
+        82,
+        164,
+        164
+      ],
+      "retrieved": [
+        34,
+        34,
+        35,
+        56,
+        57
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "3",
+      "ability": "information_extraction",
+      "question": "How long did I say the entire project is expected to take?",
+      "correct": [
+        12
+      ],
+      "retrieved": [
+        111,
+        116,
+        175,
+        110,
+        35
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "3",
+      "ability": "information_extraction",
+      "question": "How did you recommend structuring the work to ensure the initial phase focusing on layout and navigation was completed o",
+      "correct": [
+        12,
+        13
+      ],
+      "retrieved": [
+        12,
+        13,
+        53,
+        38,
+        52
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "3",
+      "ability": "instruction_following",
+      "question": "How should I organize the different parts of a webpage in HTML?",
+      "correct": [
+        54
+      ],
+      "retrieved": [
+        14,
+        15,
+        193,
+        192,
+        14
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "3",
+      "ability": "instruction_following",
+      "question": "If I’m creating a blog layout, which HTML elements should I use to clearly define sections like the header, navigation, ",
+      "correct": [
+        54
+      ],
+      "retrieved": [
+        55,
+        54,
+        34,
+        35,
+        57
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "3",
+      "ability": "knowledge_update",
+      "question": "What is the deadline for completing the first sprint focused on the basic layout and navigation?",
+      "correct": [
+        12,
+        52
+      ],
+      "retrieved": [
+        38,
+        39,
+        12,
+        12,
+        38
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "3",
+      "ability": "knowledge_update",
+      "question": "How many project cards are included in my gallery using Bootstrap 5.3.0?",
+      "correct": [
+        60,
+        116
+      ],
+      "retrieved": [
+        116,
+        116,
+        58,
+        58,
+        117
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "3",
+      "ability": "multi_session_reasoning",
+      "question": "How many project cards do I have in total after adding the new ones to my gallery?",
+      "correct": [
+        16,
+        116
+      ],
+      "retrieved": [
+        116,
+        116,
+        16,
+        59,
+        58
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "3",
+      "ability": "multi_session_reasoning",
+      "question": "Considering my form validation code, lazy loading setup, GA4 anonymized tracking, and bounce rate monitoring, how can I ",
+      "correct": [
+        50,
+        51,
+        98,
+        99,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141
+      ],
+      "retrieved": [
+        140,
+        139,
+        137,
+        136,
+        141
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "3",
+      "ability": "preference_following",
+      "question": "I'm planning to build a responsive portfolio website with sections like About, Skills, Projects, and Contact. Can you he",
+      "correct": [
+        36
+      ],
+      "retrieved": [
+        12,
+        48,
+        48,
+        13,
+        10
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "3",
+      "ability": "preference_following",
+      "question": "I'm working on adding lazy loading to my image gallery that uses Bootstrap 5.3.0. How would you suggest I set this up to",
+      "correct": [
+        100
+      ],
+      "retrieved": [
+        192,
+        42,
+        99,
+        98,
+        122
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "3",
+      "ability": "summarization",
+      "question": "Can you give me a comprehensive summary of how my portfolio website project has developed, including the key features an",
+      "correct": [
+        4,
+        5,
+        6,
+        7,
+        16,
+        17,
+        58,
+        59,
+        60,
+        61,
+        66,
+        67,
+        82,
+        83,
+        116,
+        117
+      ],
+      "retrieved": [
+        89,
+        88,
+        41,
+        44,
+        47
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "3",
+      "ability": "summarization",
+      "question": "Can you summarize how I approached and resolved the various issues with my web project over time?",
+      "correct": [
+        14,
+        15,
+        30,
+        31,
+        62,
+        63,
+        64,
+        65,
+        68,
+        69,
+        70,
+        71,
+        166,
+        167
+      ],
+      "retrieved": [
+        41,
+        42,
+        193,
+        169,
+        127
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "3",
+      "ability": "temporal_reasoning",
+      "question": "How many days are there between the deadline for my first sprint and the updated deadline for the accessibility improvem",
+      "correct": [
+        12,
+        52
+      ],
+      "retrieved": [
+        52,
+        53,
+        52,
+        38,
+        39
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "3",
+      "ability": "temporal_reasoning",
+      "question": "How many days passed between when I planned the peer review and when I completed the final code review for my project?",
+      "correct": [
+        34,
+        164
+      ],
+      "retrieved": [
+        12,
+        13,
+        53,
+        52,
+        164
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "4",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever worked on triangle classification problems before?",
+      "correct": [
+        58,
+        58
+      ],
+      "retrieved": [
+        58,
+        134,
+        58,
+        149,
+        24
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "4",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever worked on problems involving medians or altitudes in triangles?",
+      "correct": [
+        134,
+        134
+      ],
+      "retrieved": [
+        134,
+        72,
+        111,
+        138,
+        110
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "4",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different aspects of classifying triangles throughout our conversations, in",
+      "correct": [
+        8,
+        12,
+        16,
+        20,
+        24,
+        26,
+        28,
+        30,
+        58
+      ],
+      "retrieved": [
+        69,
+        135,
+        32,
+        154,
+        156
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "4",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different concepts related to triangle geometry throughout our conversation",
+      "correct": [
+        116,
+        118,
+        120,
+        122,
+        128,
+        130,
+        132,
+        134,
+        null
+      ],
+      "retrieved": [
+        190,
+        128,
+        128,
+        192,
+        155
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "4",
+      "ability": "information_extraction",
+      "question": "What approach did I outline to demonstrate that two triangles with matching angle pairs and a connecting segment are ide",
+      "correct": [
+        151
+      ],
+      "retrieved": [
+        185,
+        186,
+        129,
+        140,
+        128
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "4",
+      "ability": "information_extraction",
+      "question": "How did I confirm that the proportional relationship between the two sets of measurements was consistent across all comp",
+      "correct": [
+        166,
+        167
+      ],
+      "retrieved": [
+        176,
+        177,
+        176,
+        200,
+        160
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "4",
+      "ability": "instruction_following",
+      "question": "How can I find the area of a triangle using medians and altitudes?",
+      "correct": [
+        132,
+        134,
+        136,
+        138
+      ],
+      "retrieved": [
+        73,
+        72,
+        74,
+        121,
+        120
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "4",
+      "ability": "instruction_following",
+      "question": "What are the different ways to calculate the area of a triangle if I know various parameters like side lengths, angles, ",
+      "correct": [
+        132,
+        134,
+        136,
+        138
+      ],
+      "retrieved": [
+        110,
+        72,
+        110,
+        134,
+        74
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "4",
+      "ability": "knowledge_update",
+      "question": "What is my accuracy percentage in solving area calculation problems after completing 15 problems?",
+      "correct": [
+        82,
+        130
+      ],
+      "retrieved": [
+        82,
+        82,
+        134,
+        154,
+        154
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "4",
+      "ability": "knowledge_update",
+      "question": "How many classification problems have I completed, and what accuracy rate have I maintained in identifying triangle type",
+      "correct": [
+        30,
+        58
+      ],
+      "retrieved": [
+        58,
+        58,
+        59,
+        30,
+        82
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "4",
+      "ability": "multi_session_reasoning",
+      "question": "How many triangle classification problems have I completed in total across all sessions where I mentioned my progress?",
+      "correct": [
+        30,
+        58
+      ],
+      "retrieved": [
+        33,
+        99,
+        98,
+        32,
+        30
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "4",
+      "ability": "multi_session_reasoning",
+      "question": "How much did my accuracy improve between the two times I mentioned my scores on area calculation problems and special li",
+      "correct": [
+        82,
+        110
+      ],
+      "retrieved": [
+        110,
+        110,
+        111,
+        82,
+        83
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "4",
+      "ability": "preference_following",
+      "question": "Can you show me how to calculate the area of this triangle using different methods and also help me find the length of t",
+      "correct": [
+        116
+      ],
+      "retrieved": [
+        138,
+        116,
+        138,
+        116,
+        117
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "4",
+      "ability": "preference_following",
+      "question": "Can you walk me through how to prove two triangles are congruent using the ASA criterion?",
+      "correct": [
+        198
+      ],
+      "retrieved": [
+        151,
+        150,
+        207,
+        198,
+        206
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "4",
+      "ability": "summarization",
+      "question": "Can you give me a clear summary of everything we've covered about triangles, including how to verify right angles, calcu",
+      "correct": [
+        76,
+        79,
+        81,
+        85,
+        89
+      ],
+      "retrieved": [
+        141,
+        191,
+        170,
+        105,
+        83
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "4",
+      "ability": "summarization",
+      "question": "Can you give me a clear summary of how my understanding and application of triangle similarity and congruence developed ",
+      "correct": [
+        144,
+        145,
+        147,
+        150,
+        151,
+        152,
+        153,
+        158,
+        159,
+        162,
+        163
+      ],
+      "retrieved": [
+        190,
+        128,
+        194,
+        192,
+        191
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "4",
+      "ability": "temporal_reasoning",
+      "question": "Which improvement happened first: my quiz score increasing from 65% to 82% after focusing on triangle side classificatio",
+      "correct": [
+        32,
+        156
+      ],
+      "retrieved": [
+        156,
+        156,
+        172,
+        32,
+        32
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "4",
+      "ability": "temporal_reasoning",
+      "question": "How many more problems did I complete between when I scored 8 out of 10 on triangle classification and when my accuracy ",
+      "correct": [
+        30,
+        82
+      ],
+      "retrieved": [
+        154,
+        30,
+        82,
+        82,
+        134
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "5",
+      "ability": "contradiction_resolution",
+      "question": "Have I completed any coin toss problems before?",
+      "correct": [
+        36,
+        66
+      ],
+      "retrieved": [
+        66,
+        66,
+        236,
+        44,
+        10
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "5",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever practiced conditional probability problems before?",
+      "correct": [
+        84,
+        86,
+        88,
+        134,
+        136
+      ],
+      "retrieved": [
+        134,
+        128,
+        68,
+        136,
+        236
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "5",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different foundational concepts related to probability throughout our conve",
+      "correct": [
+        6,
+        10,
+        14,
+        34,
+        16,
+        18,
+        30,
+        20,
+        24,
+        50,
+        56,
+        58
+      ],
+      "retrieved": [
+        171,
+        194,
+        228,
+        229,
+        237
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "5",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different aspects of combinatorial calculations and probability concepts th",
+      "correct": [
+        28,
+        76
+      ],
+      "retrieved": [
+        111,
+        110,
+        171,
+        77,
+        76
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "5",
+      "ability": "information_extraction",
+      "question": "What profession did I mention I work in?",
+      "correct": [
+        16
+      ],
+      "retrieved": [
+        220,
+        204,
+        218,
+        76,
+        77
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "5",
+      "ability": "information_extraction",
+      "question": "What probability did I mention for drawing a certain card from the deck before we started discussing drawing two cards?",
+      "correct": [
+        32
+      ],
+      "retrieved": [
+        77,
+        76,
+        204,
+        70,
+        103
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "5",
+      "ability": "instruction_following",
+      "question": "How do I calculate the chance of drawing a red card from a standard deck?",
+      "correct": [
+        64
+      ],
+      "retrieved": [
+        55,
+        223,
+        54,
+        222,
+        222
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "5",
+      "ability": "instruction_following",
+      "question": "If I draw a card from a deck and then draw another without putting the first back, how do I figure out the chance of bot",
+      "correct": [
+        132
+      ],
+      "retrieved": [
+        71,
+        70,
+        79,
+        78,
+        206
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "5",
+      "ability": "knowledge_update",
+      "question": "How many total hours have I spent studying probability basics, including time dedicated to dice roll problems?",
+      "correct": [
+        44,
+        62
+      ],
+      "retrieved": [
+        44,
+        44,
+        62,
+        62,
+        108
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "5",
+      "ability": "knowledge_update",
+      "question": "How many conditional probability problems have I been practicing to improve my accuracy and confidence?",
+      "correct": [
+        84,
+        86,
+        88,
+        130
+      ],
+      "retrieved": [
+        130,
+        172,
+        85,
+        88,
+        169
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "5",
+      "ability": "multi_session_reasoning",
+      "question": "How many total ways did I mention for arranging or choosing balls and cards across my questions?",
+      "correct": [
+        28,
+        29,
+        76
+      ],
+      "retrieved": [
+        29,
+        28,
+        28,
+        191,
+        204
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "5",
+      "ability": "multi_session_reasoning",
+      "question": "In my questions about tossing coins and rolling dice, how many different probability calculations did I try to confirm?",
+      "correct": [
+        30,
+        96,
+        226
+      ],
+      "retrieved": [
+        17,
+        41,
+        40,
+        200,
+        199
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "5",
+      "ability": "preference_following",
+      "question": "Can you walk me through how to find the probability of drawing a red card from a standard deck of cards?",
+      "correct": [
+        60
+      ],
+      "retrieved": [
+        55,
+        54,
+        73,
+        223,
+        222
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "5",
+      "ability": "preference_following",
+      "question": "Can you explain step by step how to calculate the probability of getting two heads when tossing a coin twice?",
+      "correct": [
+        60
+      ],
+      "retrieved": [
+        20,
+        19,
+        20,
+        21,
+        90
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "5",
+      "ability": "summarization",
+      "question": "Can you give me a clear summary of how my understanding of probability has developed through our conversations?",
+      "correct": [
+        6,
+        7,
+        11,
+        13,
+        15,
+        31,
+        43,
+        57,
+        59
+      ],
+      "retrieved": [
+        164,
+        166,
+        165,
+        93,
+        125
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "5",
+      "ability": "summarization",
+      "question": "Can you give me a clear summary of how my understanding and approach to probability concepts developed throughout our co",
+      "correct": [
+        140,
+        141,
+        146,
+        149,
+        151,
+        153,
+        155,
+        156,
+        180,
+        181
+      ],
+      "retrieved": [
+        158,
+        159,
+        164,
+        166,
+        165
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "5",
+      "ability": "temporal_reasoning",
+      "question": "How long did it take me to improve my accuracy from 60% to 85% after I started working on those problems?",
+      "correct": [
+        84,
+        84
+      ],
+      "retrieved": [
+        169,
+        172,
+        84,
+        88,
+        190
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "5",
+      "ability": "temporal_reasoning",
+      "question": "How many days passed between when I focused on permutations and combinations starting on April 5, 2024, and when I impro",
+      "correct": [
+        138,
+        186
+      ],
+      "retrieved": [
+        187,
+        190,
+        186,
+        138,
+        68
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "6",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever enrolled in any courses or training programs on ATS optimization?",
+      "correct": [
+        22,
+        48
+      ],
+      "retrieved": [
+        48,
+        48,
+        224,
+        224,
+        148
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "6",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever attended any workshops or training sessions related to resume standards or ATS optimization?",
+      "correct": [
+        82,
+        96
+      ],
+      "retrieved": [
+        96,
+        146,
+        148,
+        98,
+        205
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "6",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different aspects of improving my professional profile and resume throughou",
+      "correct": [
+        4,
+        60,
+        110,
+        156,
+        206,
+        6
+      ],
+      "retrieved": [
+        223,
+        222,
+        253,
+        118,
+        173
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "6",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different aspects of my career development and relocation plans ",
+      "correct": [
+        18,
+        56,
+        108,
+        176,
+        244
+      ],
+      "retrieved": [
+        88,
+        89,
+        254,
+        230,
+        214
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "6",
+      "ability": "information_extraction",
+      "question": "How much does my subscription to the service I’m using for my resume cost each month?",
+      "correct": [
+        18
+      ],
+      "retrieved": [
+        220,
+        233,
+        232,
+        219,
+        18
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "6",
+      "ability": "information_extraction",
+      "question": "What approach did you recommend for weaving certain important terms into different sections of my resume to make it more",
+      "correct": [
+        24,
+        25
+      ],
+      "retrieved": [
+        187,
+        186,
+        203,
+        231,
+        122
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "6",
+      "ability": "instruction_following",
+      "question": "How should I organize the information about my past jobs?",
+      "correct": [
+        46
+      ],
+      "retrieved": [
+        255,
+        254,
+        152,
+        152,
+        257
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "6",
+      "ability": "instruction_following",
+      "question": "How should I desing my resume?",
+      "correct": [
+        194
+      ],
+      "retrieved": [
+        211,
+        45,
+        46,
+        47,
+        210
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "6",
+      "ability": "knowledge_update",
+      "question": "How many interviews have I secured for executive producer roles during the recent period?",
+      "correct": [
+        62,
+        92
+      ],
+      "retrieved": [
+        93,
+        188,
+        189,
+        92,
+        191
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "6",
+      "ability": "knowledge_update",
+      "question": "How many women have I highlighted as mentees in my portfolio to showcase my mentoring efforts in Caribbean media?",
+      "correct": [
+        182,
+        192
+      ],
+      "retrieved": [
+        182,
+        183,
+        182,
+        192,
+        193
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "6",
+      "ability": "multi_session_reasoning",
+      "question": "How many different areas have I focused on updating or improving based on my messages about my resume, portfolio, and sa",
+      "correct": [
+        28,
+        72,
+        122,
+        158
+      ],
+      "retrieved": [
+        248,
+        249,
+        28,
+        28,
+        29
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "6",
+      "ability": "multi_session_reasoning",
+      "question": "Considering my progress, achievements, and interview successes, how can I best sequence my resume updates to maximize AT",
+      "correct": [
+        22,
+        92,
+        136,
+        23,
+        93,
+        137
+      ],
+      "retrieved": [
+        52,
+        53,
+        20,
+        21,
+        52
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "6",
+      "ability": "preference_following",
+      "question": "I'm updating my portfolio and want to include some samples. What types of content would you suggest I add?",
+      "correct": [
+        74
+      ],
+      "retrieved": [
+        74,
+        75,
+        74,
+        90,
+        184
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "6",
+      "ability": "preference_following",
+      "question": "I'm applying for a job in the UK. How should I format it?",
+      "correct": [
+        222
+      ],
+      "retrieved": [
+        0,
+        224,
+        225,
+        256,
+        44
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "6",
+      "ability": "summarization",
+      "question": "Can you give me a summary of how I worked on improving my resume and job application strategy over time?",
+      "correct": [
+        1,
+        5,
+        7,
+        57,
+        111
+      ],
+      "retrieved": [
+        247,
+        246,
+        56,
+        253,
+        237
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "6",
+      "ability": "summarization",
+      "question": "Can you summarize how my resume development and job application strategy progressed over the past few months?",
+      "correct": [
+        15,
+        19,
+        71,
+        93,
+        139,
+        191
+      ],
+      "retrieved": [
+        229,
+        228,
+        52,
+        53,
+        179
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "6",
+      "ability": "temporal_reasoning",
+      "question": "How many days do I have between the deadline to tailor my resume for film, television, and digital media and the date I ",
+      "correct": [
+        14,
+        16
+      ],
+      "retrieved": [
+        16,
+        51,
+        50,
+        14,
+        15
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "6",
+      "ability": "temporal_reasoning",
+      "question": "How many days were there between when I postponed my family reunion and when I planned to celebrate my promotion with Li",
+      "correct": [
+        120,
+        186
+      ],
+      "retrieved": [
+        120,
+        120,
+        121,
+        186,
+        187
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "7",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever downloaded or used Zotero or any other citation management software before?",
+      "correct": [
+        38,
+        52
+      ],
+      "retrieved": [
+        52,
+        53,
+        242,
+        243,
+        38
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "7",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever missed any of my scheduled writing sessions or meetings related to my essay?",
+      "correct": [
+        80,
+        114
+      ],
+      "retrieved": [
+        114,
+        162,
+        114,
+        136,
+        162
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "7",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different aspects of my academic work and mentorship throughout our convers",
+      "correct": [
+        14,
+        64,
+        124,
+        170,
+        214
+      ],
+      "retrieved": [
+        241,
+        240,
+        225,
+        224,
+        218
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "7",
+      "ability": "event_ordering",
+      "question": "Can you list in order how I brought up different aspects of my research and writing projects throughout our conversation",
+      "correct": [
+        16,
+        54,
+        122,
+        168,
+        216
+      ],
+      "retrieved": [
+        241,
+        240,
+        218,
+        17,
+        16
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "7",
+      "ability": "information_extraction",
+      "question": "When did I say I was planning to meet my mentor at the library?",
+      "correct": [
+        14
+      ],
+      "retrieved": [
+        14,
+        15,
+        14,
+        25,
+        95
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "7",
+      "ability": "information_extraction",
+      "question": "What steps did I plan to take to prepare for and follow up on my meeting with the person who agreed to guide my essay wr",
+      "correct": [
+        14,
+        15
+      ],
+      "retrieved": [
+        36,
+        134,
+        206,
+        198,
+        205
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "7",
+      "ability": "instruction_following",
+      "question": "How should I list the sources I used in my paper?",
+      "correct": [
+        112
+      ],
+      "retrieved": [
+        210,
+        211,
+        221,
+        220,
+        177
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "7",
+      "ability": "instruction_following",
+      "question": "How should I approach editting my draft?",
+      "correct": [
+        160
+      ],
+      "retrieved": [
+        25,
+        127,
+        170,
+        171,
+        129
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "7",
+      "ability": "knowledge_update",
+      "question": "How many sources are in my Zotero library?",
+      "correct": [
+        82,
+        110
+      ],
+      "retrieved": [
+        83,
+        82,
+        110,
+        110,
+        111
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "7",
+      "ability": "knowledge_update",
+      "question": "How many words does my final essay draft contain?",
+      "correct": [
+        116,
+        158
+      ],
+      "retrieved": [
+        109,
+        133,
+        108,
+        132,
+        223
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "7",
+      "ability": "multi_session_reasoning",
+      "question": "How have my essay performance goals and feedback evolved from my initial grade concerns to aiming for publication, and w",
+      "correct": [
+        24,
+        66,
+        126,
+        172,
+        220
+      ],
+      "retrieved": [
+        172,
+        172,
+        131,
+        130,
+        173
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "7",
+      "ability": "multi_session_reasoning",
+      "question": "How many total days did I take off or breaks to manage stress and prevent burnout across my sessions?",
+      "correct": [
+        154,
+        252
+      ],
+      "retrieved": [
+        252,
+        253,
+        119,
+        252,
+        183
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "7",
+      "ability": "preference_following",
+      "question": "Where do you think I should work on my essay?",
+      "correct": [
+        94
+      ],
+      "retrieved": [
+        118,
+        42,
+        20,
+        62,
+        76
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "7",
+      "ability": "preference_following",
+      "question": "I'm about to start drafting my essay. What tools or software would you suggest I use?",
+      "correct": [
+        40
+      ],
+      "retrieved": [
+        242,
+        52,
+        242,
+        53,
+        256
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "7",
+      "ability": "summarization",
+      "question": "Can you give me a summary of how my work and interactions with Robert have developed over time, including the key steps ",
+      "correct": [
+        14,
+        64,
+        124,
+        170,
+        214
+      ],
+      "retrieved": [
+        79,
+        78,
+        181,
+        180,
+        65
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "7",
+      "ability": "summarization",
+      "question": "Can you give me a summary of how my collaboration with Greg and my work on the related research and writing projects hav",
+      "correct": [
+        16,
+        54,
+        56,
+        152,
+        168,
+        216
+      ],
+      "retrieved": [
+        17,
+        16,
+        217,
+        216,
+        78
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "7",
+      "ability": "temporal_reasoning",
+      "question": "How many days do I have between finishing my first draft and my goal to improve my essay grades?",
+      "correct": [
+        116,
+        24
+      ],
+      "retrieved": [
+        47,
+        46,
+        24,
+        25,
+        118
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "7",
+      "ability": "temporal_reasoning",
+      "question": "How many days are there between the writing session I missed and the submission deadline for my conference abstract?",
+      "correct": [
+        80,
+        174
+      ],
+      "retrieved": [
+        174,
+        174,
+        175,
+        137,
+        136
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever collaborated remotely with Michael on any projects?",
+      "correct": [
+        16,
+        18,
+        50
+      ],
+      "retrieved": [
+        18,
+        50,
+        17,
+        19,
+        50
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "contradiction_resolution",
+      "question": "Have I submitted my cover letter to Greg for review?",
+      "correct": [
+        86,
+        104
+      ],
+      "retrieved": [
+        104,
+        86,
+        104,
+        86,
+        27
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different aspects of my personal and professional progress throu",
+      "correct": [
+        8,
+        58,
+        116,
+        174,
+        228
+      ],
+      "retrieved": [
+        77,
+        261,
+        260,
+        123,
+        76
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different aspects of my professional connections and preparation",
+      "correct": [
+        6,
+        56,
+        114,
+        172,
+        226
+      ],
+      "retrieved": [
+        77,
+        76,
+        123,
+        14,
+        122
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "8",
+      "ability": "information_extraction",
+      "question": "Where did I say I met Laura?",
+      "correct": [
+        10
+      ],
+      "retrieved": [
+        10,
+        10,
+        11,
+        18,
+        130
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "information_extraction",
+      "question": "How did I come to consider attending that networking event, and what prior connection influenced my decision?",
+      "correct": [
+        10,
+        11
+      ],
+      "retrieved": [
+        118,
+        119,
+        121,
+        25,
+        122
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "instruction_following",
+      "question": "How can I organize multiple points in my CV?",
+      "correct": [
+        48
+      ],
+      "retrieved": [
+        48,
+        71,
+        49,
+        231,
+        43
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "instruction_following",
+      "question": "What is the amount offered for the position we discussed?",
+      "correct": [
+        216
+      ],
+      "retrieved": [
+        167,
+        199,
+        198,
+        217,
+        216
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "knowledge_update",
+      "question": "When is my Zoom call with the creative director scheduled?",
+      "correct": [
+        92,
+        94,
+        96
+      ],
+      "retrieved": [
+        94,
+        96,
+        97,
+        102,
+        99
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "knowledge_update",
+      "question": "How many days a week am I scheduled to work remotely?",
+      "correct": [
+        214,
+        214
+      ],
+      "retrieved": [
+        214,
+        215,
+        198,
+        199,
+        214
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "multi_session_reasoning",
+      "question": "How many times did I mention submitting or revising my cover letter before my interview preparation?",
+      "correct": [
+        20,
+        86,
+        106
+      ],
+      "retrieved": [
+        27,
+        108,
+        86,
+        46,
+        29
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "multi_session_reasoning",
+      "question": "Considering my cover letter deadlines, the Zoom call with the creative director, and my interview clarity improvements, ",
+      "correct": [
+        28,
+        92,
+        150,
+        152
+      ],
+      "retrieved": [
+        148,
+        92,
+        93,
+        149,
+        148
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "preference_following",
+      "question": "How should I structure my cover letter to best showcase my achievements from previous projects?",
+      "correct": [
+        34
+      ],
+      "retrieved": [
+        53,
+        72,
+        52,
+        73,
+        71
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "8",
+      "ability": "preference_following",
+      "question": "How should I include links to my portfolio in my cover letter to make them easy to access?",
+      "correct": [
+        68,
+        70
+      ],
+      "retrieved": [
+        69,
+        70,
+        183,
+        71,
+        182
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "summarization",
+      "question": "Can you give me a comprehensive summary of how I’ve been managing my professional development and project responsibiliti",
+      "correct": [
+        8,
+        84,
+        202,
+        204,
+        252
+      ],
+      "retrieved": [
+        177,
+        176,
+        188,
+        85,
+        84
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "summarization",
+      "question": "Can you give me a complete summary of how my preparations and plans have developed around the upcoming opportunities and",
+      "correct": [
+        6,
+        7,
+        78,
+        79,
+        114,
+        115,
+        172,
+        173,
+        226,
+        227
+      ],
+      "retrieved": [
+        146,
+        83,
+        82,
+        200,
+        209
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "8",
+      "ability": "temporal_reasoning",
+      "question": "How many days are there between when I planned to finish revising my cover letter and my Zoom call with the creative dir",
+      "correct": [
+        28,
+        92
+      ],
+      "retrieved": [
+        94,
+        96,
+        102,
+        99,
+        92
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "8",
+      "ability": "temporal_reasoning",
+      "question": "How many days after I submitted my cover letter did I have my follow-up with Greg to improve it?",
+      "correct": [
+        106,
+        106
+      ],
+      "retrieved": [
+        27,
+        26,
+        86,
+        110,
+        112
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "9",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever met Bryan and received storytelling advice from him?",
+      "correct": [
+        4,
+        50
+      ],
+      "retrieved": [
+        50,
+        51,
+        50,
+        165,
+        164
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "9",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever enrolled in an academic writing course or taken online classes through Coursera?",
+      "correct": [
+        92,
+        102
+      ],
+      "retrieved": [
+        102,
+        102,
+        92,
+        92,
+        103
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "9",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different aspects of refining my personal statement throughout our conversa",
+      "correct": [
+        4,
+        60,
+        108,
+        164,
+        166,
+        168
+      ],
+      "retrieved": [
+        44,
+        252,
+        146,
+        45,
+        147
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "9",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different ways my family has supported me in my personal stateme",
+      "correct": [
+        24,
+        76,
+        118,
+        208,
+        260
+      ],
+      "retrieved": [
+        86,
+        252,
+        87,
+        209,
+        208
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "9",
+      "ability": "information_extraction",
+      "question": "What dates did I mention for the scholarship deadline, visa application, and university application?",
+      "correct": [
+        12
+      ],
+      "retrieved": [
+        217,
+        216,
+        12,
+        12,
+        13
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "9",
+      "ability": "information_extraction",
+      "question": "How did you recommend organizing my writing and submission process to ensure everything was ready well before the final ",
+      "correct": [
+        12,
+        13
+      ],
+      "retrieved": [
+        217,
+        194,
+        216,
+        126,
+        127
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "9",
+      "ability": "instruction_following",
+      "question": "What are some good options I can use to help me with writing?",
+      "correct": [
+        100
+      ],
+      "retrieved": [
+        84,
+        84,
+        85,
+        231,
+        230
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "9",
+      "ability": "instruction_following",
+      "question": "When is the final submission due?",
+      "correct": [
+        48
+      ],
+      "retrieved": [
+        12,
+        126,
+        74,
+        117,
+        116
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "9",
+      "ability": "knowledge_update",
+      "question": "What time should I plan to join the Zoom meeting with Professor Danielle to review my draft?",
+      "correct": [
+        44,
+        46
+      ],
+      "retrieved": [
+        49,
+        46,
+        48,
+        47,
+        44
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "9",
+      "ability": "knowledge_update",
+      "question": "When is my session with the immigration consultant scheduled?",
+      "correct": [
+        138,
+        138
+      ],
+      "retrieved": [
+        156,
+        155,
+        157,
+        153,
+        156
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "9",
+      "ability": "multi_session_reasoning",
+      "question": "How many different application types am I planning to use my personal statement for, and which roles or plans did I ment",
+      "correct": [
+        10,
+        82,
+        130
+      ],
+      "retrieved": [
+        246,
+        245,
+        161,
+        144,
+        165
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "9",
+      "ability": "multi_session_reasoning",
+      "question": "How did my interactions with Kimberly and the feedback I received influence the evolution and final quality of my person",
+      "correct": [
+        6,
+        7,
+        110,
+        111
+      ],
+      "retrieved": [
+        110,
+        111,
+        261,
+        260,
+        6
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "9",
+      "ability": "preference_following",
+      "question": "Can you help me plan my writing sessions for the upcoming week?",
+      "correct": [
+        32
+      ],
+      "retrieved": [
+        43,
+        42,
+        153,
+        156,
+        99
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "9",
+      "ability": "summarization",
+      "question": "Can you give me a comprehensive summary of how my plans and preparations for studying abroad have developed over time?",
+      "correct": [
+        8,
+        77,
+        131,
+        133,
+        205
+      ],
+      "retrieved": [
+        39,
+        40,
+        41,
+        23,
+        22
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "9",
+      "ability": "summarization",
+      "question": "Can you summarize how my personal statement has developed through the advice and feedback I've received from different m",
+      "correct": [
+        5,
+        61,
+        147,
+        165,
+        251
+      ],
+      "retrieved": [
+        165,
+        73,
+        96,
+        111,
+        168
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "9",
+      "ability": "temporal_reasoning",
+      "question": "How many days do I have between finishing my personal statement and the scholarship deadline?",
+      "correct": [
+        10,
+        12
+      ],
+      "retrieved": [
+        78,
+        79,
+        56,
+        57,
+        109
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "9",
+      "ability": "temporal_reasoning",
+      "question": "How many days are there between my meeting with Professor Danielle to review my draft and my mock interview with her?",
+      "correct": [
+        44,
+        80
+      ],
+      "retrieved": [
+        44,
+        44,
+        49,
+        48,
+        156
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "10",
+      "ability": "contradiction_resolution",
+      "question": "Do I usually feel anxious about my grammar accuracy after receiving feedback?",
+      "correct": [
+        56,
+        58,
+        68
+      ],
+      "retrieved": [
+        68,
+        69,
+        68,
+        56,
+        57
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "10",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever completed a first draft of a screenplay?",
+      "correct": [
+        82,
+        174
+      ],
+      "retrieved": [
+        226,
+        174,
+        226,
+        227,
+        174
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "10",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different aspects of my writing journey throughout our conversat",
+      "correct": [
+        6,
+        82,
+        182,
+        238,
+        84
+      ],
+      "retrieved": [
+        320,
+        321,
+        195,
+        323,
+        84
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "10",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different aspects of my collaboration with Carla throughout our ",
+      "correct": [
+        52,
+        78,
+        176,
+        228,
+        230,
+        232
+      ],
+      "retrieved": [
+        48,
+        112,
+        195,
+        194,
+        320
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "10",
+      "ability": "information_extraction",
+      "question": "When did I say I met Michael at the festival?",
+      "correct": [
+        6
+      ],
+      "retrieved": [
+        6,
+        10,
+        216,
+        216,
+        9
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "10",
+      "ability": "information_extraction",
+      "question": "How did you recommend structuring my writing process to maintain steady progress and stay motivated throughout the weeks",
+      "correct": [
+        21
+      ],
+      "retrieved": [
+        159,
+        188,
+        161,
+        160,
+        153
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "10",
+      "ability": "instruction_following",
+      "question": "When was the Montserrat Writers’ Festival?",
+      "correct": [
+        66
+      ],
+      "retrieved": [
+        332,
+        6,
+        216,
+        332,
+        280
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "10",
+      "ability": "instruction_following",
+      "question": "How much progress have we made on the edits so far?",
+      "correct": [
+        172
+      ],
+      "retrieved": [
+        76,
+        83,
+        73,
+        173,
+        279
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "10",
+      "ability": "knowledge_update",
+      "question": "What is my weekly word count target for my writing goals?",
+      "correct": [
+        22,
+        64
+      ],
+      "retrieved": [
+        54,
+        55,
+        64,
+        65,
+        64
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "10",
+      "ability": "knowledge_update",
+      "question": "What deadline should I aim for to submit my peer-reviewed draft to the local writing group?",
+      "correct": [
+        86,
+        168,
+        170
+      ],
+      "retrieved": [
+        86,
+        86,
+        297,
+        296,
+        302
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "10",
+      "ability": "multi_session_reasoning",
+      "question": "How much did I increase my weekly word count goal from the start until April 9?",
+      "correct": [
+        22,
+        126
+      ],
+      "retrieved": [
+        126,
+        130,
+        173,
+        64,
+        20
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "10",
+      "ability": "multi_session_reasoning",
+      "question": "Considering the improvements I reported from Joseph's peer reviews, Amy's Zoom sessions, and the detailed critiques from",
+      "correct": [
+        12,
+        14,
+        15,
+        70,
+        71,
+        72,
+        73,
+        178,
+        179,
+        180,
+        181
+      ],
+      "retrieved": [
+        179,
+        180,
+        178,
+        213,
+        212
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "10",
+      "ability": "preference_following",
+      "question": "I'm planning my editing schedule for the week. How would you suggest breaking up my work sessions?",
+      "correct": [
+        50
+      ],
+      "retrieved": [
+        32,
+        197,
+        31,
+        102,
+        89
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "10",
+      "ability": "preference_following",
+      "question": "I'm about to start editing a draft and want to make the process efficient. How would you suggest I approach the editing ",
+      "correct": [
+        114,
+        116,
+        118
+      ],
+      "retrieved": [
+        101,
+        102,
+        99,
+        118,
+        75
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "10",
+      "ability": "summarization",
+      "question": "Can you summarize how my writing skills and confidence have developed through my learning and interactions over time?",
+      "correct": [
+        1,
+        3,
+        7,
+        9,
+        183,
+        241
+      ],
+      "retrieved": [
+        202,
+        203,
+        239,
+        238,
+        240
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "10",
+      "ability": "summarization",
+      "question": "Can you summarize how my writing has progressed and the strategies I've used to improve it over time?",
+      "correct": [
+        70,
+        71,
+        72,
+        73,
+        78,
+        79,
+        80,
+        81,
+        90,
+        91,
+        186,
+        187,
+        220,
+        221
+      ],
+      "retrieved": [
+        213,
+        212,
+        263,
+        193,
+        262
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "10",
+      "ability": "temporal_reasoning",
+      "question": "How many days are there between when I logged 3,600 words and my deadline to complete the full screenplay draft?",
+      "correct": [
+        54,
+        20
+      ],
+      "retrieved": [
+        54,
+        55,
+        54,
+        209,
+        20
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "10",
+      "ability": "temporal_reasoning",
+      "question": "How many days passed between when I started my 30-day editing challenge and when I completed the 15-day clarity editing ",
+      "correct": [
+        88,
+        218
+      ],
+      "retrieved": [
+        218,
+        88,
+        341,
+        89,
+        340
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "11",
+      "ability": "contradiction_resolution",
+      "question": "Have I worked with Michael on editing timelines before?",
+      "correct": [
+        24,
+        92
+      ],
+      "retrieved": [
+        24,
+        178,
+        161,
+        164,
+        160
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "11",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever implemented two-factor authentication for platform access?",
+      "correct": [
+        142,
+        180,
+        182
+      ],
+      "retrieved": [
+        170,
+        137,
+        136,
+        171,
+        335
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "11",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different aspects of using AI in our hiring process across our c",
+      "correct": [
+        24,
+        26,
+        28,
+        192,
+        106,
+        108
+      ],
+      "retrieved": [
+        244,
+        135,
+        134,
+        237,
+        245
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "11",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different cost-saving and involvement topics related to hiring a",
+      "correct": [
+        44,
+        104,
+        198,
+        46,
+        200
+      ],
+      "retrieved": [
+        244,
+        200,
+        29,
+        199,
+        265
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "11",
+      "ability": "information_extraction",
+      "question": "When and where did I say I met my partner?",
+      "correct": [
+        30
+      ],
+      "retrieved": [
+        30,
+        162,
+        362,
+        31,
+        34
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "11",
+      "ability": "information_extraction",
+      "question": "What approach did you recommend to balance speeding up the hiring process with ensuring fairness throughout the candidat",
+      "correct": [
+        39
+      ],
+      "retrieved": [
+        68,
+        360,
+        68,
+        135,
+        134
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "11",
+      "ability": "instruction_following",
+      "question": "What should I know about keeping my information safe when using online services?",
+      "correct": [
+        176
+      ],
+      "retrieved": [
+        305,
+        304,
+        212,
+        212,
+        213
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "11",
+      "ability": "instruction_following",
+      "question": "When I’m signing up for a new online account, what security measures should I look for to ensure my data stays private?",
+      "correct": [
+        176
+      ],
+      "retrieved": [
+        137,
+        174,
+        180,
+        155,
+        102
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "11",
+      "ability": "knowledge_update",
+      "question": "When is the webinar on AI ethics in hiring scheduled to take place?",
+      "correct": [
+        70,
+        82
+      ],
+      "retrieved": [
+        72,
+        73,
+        71,
+        86,
+        85
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "11",
+      "ability": "knowledge_update",
+      "question": "What accuracy rate does the AI screening tool achieve in its evaluations?",
+      "correct": [
+        126,
+        128,
+        130,
+        170,
+        172,
+        174
+      ],
+      "retrieved": [
+        309,
+        308,
+        364,
+        127,
+        102
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "11",
+      "ability": "multi_session_reasoning",
+      "question": "How many different AI vendors or tools have I mentioned using or customizing for hiring automation?",
+      "correct": [
+        40,
+        41,
+        184
+      ],
+      "retrieved": [
+        184,
+        325,
+        324,
+        184,
+        270
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "11",
+      "ability": "multi_session_reasoning",
+      "question": "Given my current diversity stats, recent improvements, involvement plans for Wyatt, and Natalie's interest in AI hiring,",
+      "correct": [
+        48,
+        50,
+        100,
+        102,
+        194
+      ],
+      "retrieved": [
+        50,
+        311,
+        149,
+        343,
+        342
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "11",
+      "ability": "preference_following",
+      "question": "I'm thinking about how to handle the hiring process with some help from technology. How would you suggest setting that u",
+      "correct": [
+        68
+      ],
+      "retrieved": [
+        102,
+        101,
+        68,
+        260,
+        217
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "11",
+      "ability": "preference_following",
+      "question": "How should I structure the final stages of the interview process to ensure a smooth experience for both candidates and m",
+      "correct": [
+        214
+      ],
+      "retrieved": [
+        33,
+        215,
+        27,
+        34,
+        50
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "11",
+      "ability": "summarization",
+      "question": "Can you give me a comprehensive summary of how we've approached integrating AI into our hiring process, including the ke",
+      "correct": [
+        25,
+        27,
+        29,
+        63,
+        107,
+        160,
+        192,
+        224
+      ],
+      "retrieved": [
+        345,
+        344,
+        243,
+        244,
+        333
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "11",
+      "ability": "summarization",
+      "question": "Can you give me a complete summary of how I can ensure my AI hiring process complies with all relevant legal and policy ",
+      "correct": [
+        43,
+        99,
+        233,
+        235,
+        237
+      ],
+      "retrieved": [
+        236,
+        94,
+        1,
+        233,
+        235
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "11",
+      "ability": "temporal_reasoning",
+      "question": "How many days are there between when my friend Carla suggested using AI for hiring over lunch and my upcoming webinar on",
+      "correct": [
+        20,
+        70
+      ],
+      "retrieved": [
+        20,
+        22,
+        21,
+        274,
+        275
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "11",
+      "ability": "temporal_reasoning",
+      "question": "How many days passed between my meeting with Wyatt expressing skepticism and the positive feedback I received from the m",
+      "correct": [
+        56,
+        110
+      ],
+      "retrieved": [
+        56,
+        60,
+        325,
+        324,
+        149
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "12",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever read any books by Daniel Dennett?",
+      "correct": [
+        32,
+        68
+      ],
+      "retrieved": [
+        68,
+        68,
+        32,
+        33,
+        69
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "12",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever celebrated anniversaries with Stephen?",
+      "correct": [
+        74,
+        140
+      ],
+      "retrieved": [
+        143,
+        144,
+        145,
+        141,
+        60
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "12",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different aspects of balancing my personal relationship and beli",
+      "correct": [
+        58,
+        60,
+        74,
+        110,
+        112,
+        164,
+        166,
+        168,
+        232,
+        234,
+        236,
+        258,
+        260,
+        262
+      ],
+      "retrieved": [
+        162,
+        301,
+        300,
+        163,
+        161
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "12",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different ideas related to free will and personal reflection thr",
+      "correct": [
+        32,
+        50,
+        78,
+        98,
+        176,
+        218
+      ],
+      "retrieved": [
+        321,
+        320,
+        162,
+        189,
+        163
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "12",
+      "ability": "information_extraction",
+      "question": "How long had I been with the person I mentioned meeting at that festival before we started dating?",
+      "correct": [
+        1
+      ],
+      "retrieved": [
+        343,
+        342,
+        47,
+        265,
+        268
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "12",
+      "ability": "information_extraction",
+      "question": "What steps did you recommend I take to prepare for the challenges and uncertainties that come with changing my work envi",
+      "correct": [
+        39,
+        41
+      ],
+      "retrieved": [
+        16,
+        40,
+        141,
+        144,
+        102
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "12",
+      "ability": "instruction_following",
+      "question": "What are some common expectations people have when meeting someone for the first time?",
+      "correct": [
+        134,
+        136,
+        138
+      ],
+      "retrieved": [
+        59,
+        89,
+        84,
+        85,
+        58
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "12",
+      "ability": "instruction_following",
+      "question": "What can you tell me about existentialism?",
+      "correct": [
+        66
+      ],
+      "retrieved": [
+        68,
+        29,
+        68,
+        33,
+        32
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "12",
+      "ability": "knowledge_update",
+      "question": "By what date am I aiming to complete all my onboarding modules?",
+      "correct": [
+        108
+      ],
+      "retrieved": [
+        268,
+        267,
+        269,
+        265,
+        108
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "12",
+      "ability": "knowledge_update",
+      "question": "When is my final decision meeting scheduled to take place?",
+      "correct": [
+        38,
+        40,
+        64
+      ],
+      "retrieved": [
+        386,
+        387,
+        269,
+        205,
+        389
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "12",
+      "ability": "multi_session_reasoning",
+      "question": "Considering the financial opportunities I declined—a raise, a freelance project, and a bonus—how do the total amounts I ",
+      "correct": [
+        56,
+        57,
+        82,
+        83,
+        170,
+        171,
+        172,
+        173,
+        174,
+        175
+      ],
+      "retrieved": [
+        83,
+        82,
+        280,
+        281,
+        282
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "12",
+      "ability": "multi_session_reasoning",
+      "question": "How have my anniversary celebrations and discussions about free will with Stephen evolved in terms of location and topic",
+      "correct": [
+        74,
+        164,
+        166,
+        168
+      ],
+      "retrieved": [
+        144,
+        141,
+        140,
+        145,
+        60
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "12",
+      "ability": "preference_following",
+      "question": "I'm trying to decide how to approach a complex problem that has both practical and emotional aspects. How would you sugg",
+      "correct": [
+        54
+      ],
+      "retrieved": [
+        308,
+        309,
+        54,
+        33,
+        32
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "12",
+      "ability": "preference_following",
+      "question": "How would you suggest I organize my day to stay on track with my responsibilities?",
+      "correct": [
+        106
+      ],
+      "retrieved": [
+        349,
+        348,
+        242,
+        241,
+        106
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "12",
+      "ability": "summarization",
+      "question": "Can you summarize how I've managed my relationship and work commitments with Stephen over time?",
+      "correct": [
+        58,
+        59,
+        60,
+        61,
+        74,
+        75,
+        110,
+        111,
+        112,
+        113,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263
+      ],
+      "retrieved": [
+        236,
+        233,
+        237,
+        90,
+        89
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "12",
+      "ability": "summarization",
+      "question": "Can you summarize how I navigated my career decisions and philosophical reflections throughout our conversations?",
+      "correct": [
+        1,
+        3,
+        5,
+        39,
+        40,
+        41,
+        70,
+        71,
+        82,
+        83,
+        170,
+        171,
+        172,
+        173,
+        174,
+        175
+      ],
+      "retrieved": [
+        301,
+        89,
+        129,
+        331,
+        300
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "12",
+      "ability": "temporal_reasoning",
+      "question": "How many days passed between when I decided to reject the raise and when I rescheduled my final meeting to give myself m",
+      "correct": [
+        56,
+        64
+      ],
+      "retrieved": [
+        56,
+        57,
+        56,
+        204,
+        205
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "12",
+      "ability": "temporal_reasoning",
+      "question": "How many days had I been journaling when I noted my 40% improvement in decision clarity?",
+      "correct": [
+        80,
+        146
+      ],
+      "retrieved": [
+        147,
+        146,
+        150,
+        114,
+        117
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "13",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever met Kelly at any book club or library event?",
+      "correct": [
+        16,
+        64
+      ],
+      "retrieved": [
+        64,
+        16,
+        68,
+        65,
+        18
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "13",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever listened to any audiobooks narrated by the person recommended for \"The Poppy War\"?",
+      "correct": [
+        122,
+        140
+      ],
+      "retrieved": [
+        109,
+        110,
+        140,
+        122,
+        122
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "13",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different aspects of my book club activities throughout our conversations i",
+      "correct": [
+        16,
+        86,
+        164,
+        222,
+        272
+      ],
+      "retrieved": [
+        50,
+        272,
+        51,
+        211,
+        225
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "13",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different shared entertainment interests with Douglas throughout",
+      "correct": [
+        20,
+        22,
+        null,
+        null,
+        232,
+        282
+      ],
+      "retrieved": [
+        272,
+        50,
+        70,
+        74,
+        51
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "13",
+      "ability": "information_extraction",
+      "question": "How many series did I say were on my reading list, and what was the total page count?",
+      "correct": [
+        26
+      ],
+      "retrieved": [
+        61,
+        60,
+        26,
+        216,
+        26
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "13",
+      "ability": "information_extraction",
+      "question": "How did you help me balance my spending to get a variety of print books while staying within my set limits?",
+      "correct": [
+        34,
+        35
+      ],
+      "retrieved": [
+        189,
+        188,
+        169,
+        83,
+        187
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "13",
+      "ability": "instruction_following",
+      "question": "Can you suggest some good audiobooks for me to listen to?",
+      "correct": [
+        138
+      ],
+      "retrieved": [
+        74,
+        68,
+        71,
+        65,
+        70
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "13",
+      "ability": "instruction_following",
+      "question": "What are some good books I should check out?",
+      "correct": [
+        62
+      ],
+      "retrieved": [
+        108,
+        74,
+        50,
+        87,
+        88
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "13",
+      "ability": "knowledge_update",
+      "question": "How many books am I aiming to read in my winter reading challenge?",
+      "correct": [
+        126,
+        136
+      ],
+      "retrieved": [
+        126,
+        126,
+        127,
+        266,
+        125
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "13",
+      "ability": "knowledge_update",
+      "question": "What is my monthly budget for books and subscriptions?",
+      "correct": [
+        168,
+        204
+      ],
+      "retrieved": [
+        168,
+        278,
+        279,
+        186,
+        168
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "13",
+      "ability": "multi_session_reasoning",
+      "question": "How many different book series or genres have I mentioned wanting to explore across my conversations?",
+      "correct": [
+        34,
+        130,
+        190
+      ],
+      "retrieved": [
+        55,
+        54,
+        219,
+        218,
+        217
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "13",
+      "ability": "multi_session_reasoning",
+      "question": "Considering my choices and preferences across all sessions, how does my reading plan balance shorter series and longer c",
+      "correct": [
+        44,
+        116,
+        117,
+        118,
+        119,
+        158,
+        159,
+        160,
+        161
+      ],
+      "retrieved": [
+        146,
+        219,
+        143,
+        44,
+        118
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "13",
+      "ability": "preference_following",
+      "question": "I'm looking to add some new books to my collection and also want something easy to carry around. What would you suggest?",
+      "correct": [
+        58
+      ],
+      "retrieved": [
+        145,
+        146,
+        172,
+        183,
+        259
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "13",
+      "ability": "preference_following",
+      "question": "I'm planning my reading list for the next few weeks. Can you suggest some books for me?",
+      "correct": [
+        246
+      ],
+      "retrieved": [
+        27,
+        26,
+        5,
+        65,
+        215
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "13",
+      "ability": "summarization",
+      "question": "Can you summarize how my reading goals and strategies have developed over time based on our conversations?",
+      "correct": [
+        28,
+        79,
+        81,
+        195,
+        217
+      ],
+      "retrieved": [
+        66,
+        274,
+        68,
+        67,
+        225
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "13",
+      "ability": "summarization",
+      "question": "Can you give me a summary of how my plans and decisions around choosing and budgeting for fiction books evolved over our",
+      "correct": [
+        35,
+        125,
+        201,
+        239,
+        271
+      ],
+      "retrieved": [
+        97,
+        225,
+        224,
+        56,
+        57
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "13",
+      "ability": "temporal_reasoning",
+      "question": "How many days did it take me to finish reading the trilogy after I downloaded it?",
+      "correct": [
+        120,
+        154
+      ],
+      "retrieved": [
+        120,
+        121,
+        46,
+        47,
+        230
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "13",
+      "ability": "temporal_reasoning",
+      "question": "How many days do I have to finish reading the first four Outlander books after my freelance editing job starts?",
+      "correct": [
+        296,
+        296
+      ],
+      "retrieved": [
+        296,
+        298,
+        299,
+        296,
+        297
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "14",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever made a watchlist for family movie marathons before?",
+      "correct": [
+        50,
+        72
+      ],
+      "retrieved": [
+        27,
+        50,
+        26,
+        84,
+        50
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "14",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever invited Mason or Michael to join any family movie events?",
+      "correct": [
+        108,
+        148
+      ],
+      "retrieved": [
+        90,
+        108,
+        185,
+        184,
+        131
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "14",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different planning details for my movie marathons across our con",
+      "correct": [
+        20,
+        122,
+        168,
+        170,
+        172,
+        224
+      ],
+      "retrieved": [
+        131,
+        130,
+        13,
+        223,
+        147
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "14",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different ideas and contributions related to my movie nights acr",
+      "correct": [
+        14,
+        16,
+        72,
+        182,
+        246,
+        130
+      ],
+      "retrieved": [
+        131,
+        130,
+        147,
+        183,
+        146
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "14",
+      "ability": "information_extraction",
+      "question": "How far away did I say my parents live from me, and in which town?",
+      "correct": [
+        6
+      ],
+      "retrieved": [
+        6,
+        218,
+        8,
+        259,
+        218
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "14",
+      "ability": "information_extraction",
+      "question": "How did the shared interests between me and my partner influence the movie options you recommended for our evening?",
+      "correct": [
+        12,
+        13
+      ],
+      "retrieved": [
+        12,
+        232,
+        27,
+        40,
+        97
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "14",
+      "ability": "instruction_following",
+      "question": "What movies would you recommend for me to watch?",
+      "correct": [
+        52
+      ],
+      "retrieved": [
+        42,
+        114,
+        111,
+        31,
+        42
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "14",
+      "ability": "instruction_following",
+      "question": "What snacks do you recommend for me to try?",
+      "correct": [
+        104,
+        106
+      ],
+      "retrieved": [
+        42,
+        30,
+        111,
+        114,
+        258
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "14",
+      "ability": "knowledge_update",
+      "question": "What is my snack budget for ordering themed treats for the movie marathon?",
+      "correct": [
+        66,
+        102
+      ],
+      "retrieved": [
+        84,
+        27,
+        176,
+        26,
+        84
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "14",
+      "ability": "knowledge_update",
+      "question": "How many cupcakes did I order for the event?",
+      "correct": [
+        132,
+        156
+      ],
+      "retrieved": [
+        260,
+        260,
+        261,
+        262,
+        66
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "14",
+      "ability": "multi_session_reasoning",
+      "question": "How many unique movies have I planned to watch across all my family movie marathons, considering the titles I mentioned ",
+      "correct": [
+        18,
+        56,
+        57,
+        58,
+        59,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115
+      ],
+      "retrieved": [
+        57,
+        84,
+        27,
+        26,
+        41
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "14",
+      "ability": "multi_session_reasoning",
+      "question": "Considering my current streaming subscriptions, snack budget for a family movie weekend, and past rental savings, how ca",
+      "correct": [
+        26,
+        27,
+        66,
+        142
+      ],
+      "retrieved": [
+        84,
+        27,
+        26,
+        85,
+        143
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "14",
+      "ability": "preference_following",
+      "question": "I'm planning a movie night for my family. Can you suggest some good options we might all enjoy?",
+      "correct": [
+        92
+      ],
+      "retrieved": [
+        27,
+        84,
+        26,
+        40,
+        84
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "14",
+      "ability": "preference_following",
+      "question": "Can you suggest some movies that would be good for Michelle to watch?",
+      "correct": [
+        200
+      ],
+      "retrieved": [
+        111,
+        114,
+        163,
+        58,
+        42
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "14",
+      "ability": "summarization",
+      "question": "Can you give me a summary of how I planned and organized my family movie events and related activities over the past few",
+      "correct": [
+        0,
+        1,
+        2,
+        62,
+        63,
+        168,
+        169,
+        170,
+        171,
+        172,
+        173
+      ],
+      "retrieved": [
+        27,
+        26,
+        84,
+        41,
+        131
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "14",
+      "ability": "summarization",
+      "question": "Can you give me a summary of what happened with the project?",
+      "correct": [
+        4,
+        9,
+        13
+      ],
+      "retrieved": [
+        10,
+        10,
+        11,
+        127,
+        59
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "14",
+      "ability": "temporal_reasoning",
+      "question": "How many days passed between my meeting at the Montserrat Film Office and when I finished watching all the movies despit",
+      "correct": [
+        46,
+        154
+      ],
+      "retrieved": [
+        154,
+        46,
+        46,
+        154,
+        155
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "14",
+      "ability": "temporal_reasoning",
+      "question": "How many days are there between when I need to finalize my movie list for the family weekend and when Mason suggested ad",
+      "correct": [
+        208,
+        208
+      ],
+      "retrieved": [
+        208,
+        209,
+        210,
+        208,
+        210
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "15",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever met Kyle or been to any sneaker expos?",
+      "correct": [
+        14,
+        60
+      ],
+      "retrieved": [
+        60,
+        14,
+        14,
+        60,
+        102
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "15",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever placed an online order for sneakers before?",
+      "correct": [
+        70,
+        114
+      ],
+      "retrieved": [
+        114,
+        115,
+        114,
+        162,
+        162
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "15",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different sneaker shopping experiences and related details throughout our c",
+      "correct": [
+        34,
+        70,
+        118,
+        200
+      ],
+      "retrieved": [
+        134,
+        135,
+        17,
+        16,
+        134
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "15",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different safety and comfort features of my sneakers during our ",
+      "correct": [
+        54,
+        94,
+        138,
+        184,
+        262
+      ],
+      "retrieved": [
+        114,
+        115,
+        134,
+        185,
+        184
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "15",
+      "ability": "information_extraction",
+      "question": "When am I planning to visit the store on Main Street in East Janethaven?",
+      "correct": [
+        34
+      ],
+      "retrieved": [
+        34,
+        34,
+        35,
+        134,
+        134
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "15",
+      "ability": "information_extraction",
+      "question": "Which option did I say I chose after trying both at the store?",
+      "correct": [
+        1
+      ],
+      "retrieved": [
+        62,
+        66,
+        64,
+        68,
+        96
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "15",
+      "ability": "instruction_following",
+      "question": "What features I should pay attnetion to in sneakers?",
+      "correct": [
+        160
+      ],
+      "retrieved": [
+        33,
+        139,
+        151,
+        138,
+        150
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "15",
+      "ability": "instruction_following",
+      "question": "What materials are commonly used in making modern sneakers, and what should I know about their overall quality?",
+      "correct": [
+        214
+      ],
+      "retrieved": [
+        14,
+        15,
+        85,
+        259,
+        84
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "15",
+      "ability": "knowledge_update",
+      "question": "What time should I plan to visit Foot Locker next Saturday?",
+      "correct": [
+        34,
+        56
+      ],
+      "retrieved": [
+        34,
+        56,
+        57,
+        56,
+        34
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "15",
+      "ability": "knowledge_update",
+      "question": "What is my annual budget for buying sneakers?",
+      "correct": [
+        186,
+        212
+      ],
+      "retrieved": [
+        186,
+        186,
+        187,
+        4,
+        5
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "15",
+      "ability": "multi_session_reasoning",
+      "question": "How many different shoe sizes have I mentioned across my messages?",
+      "correct": [
+        32,
+        116
+      ],
+      "retrieved": [
+        3,
+        191,
+        2,
+        194,
+        201
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "15",
+      "ability": "multi_session_reasoning",
+      "question": "How does the price I paid for the Ultraboost compare to my original budget limit for sneakers?",
+      "correct": [
+        38,
+        72
+      ],
+      "retrieved": [
+        72,
+        73,
+        72,
+        71,
+        70
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "15",
+      "ability": "preference_following",
+      "question": "I'm looking to buy a new pair of sneakers soon. Can you suggest some options I might like?",
+      "correct": [
+        28,
+        30
+      ],
+      "retrieved": [
+        259,
+        258,
+        231,
+        230,
+        131
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "15",
+      "ability": "preference_following",
+      "question": "I'm looking to get a new pair of shoes soon. What options would you suggest for different occasions?",
+      "correct": [
+        148
+      ],
+      "retrieved": [
+        259,
+        258,
+        16,
+        17,
+        148
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "15",
+      "ability": "summarization",
+      "question": "Can you give me a summary of how my sneaker preferences and choices have developed over our conversations?",
+      "correct": [
+        1,
+        3,
+        81,
+        141,
+        203
+      ],
+      "retrieved": [
+        134,
+        235,
+        234,
+        226,
+        226
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "15",
+      "ability": "summarization",
+      "question": "Can you give me a quick summary of the sneaker options and advice we've talked about for my daily wear and activities?",
+      "correct": [
+        1,
+        3,
+        81,
+        83,
+        141,
+        143,
+        203,
+        205
+      ],
+      "retrieved": [
+        150,
+        239,
+        151,
+        150,
+        242
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "15",
+      "ability": "temporal_reasoning",
+      "question": "How many days passed between when I got the size 11 Ultraboost and when I reordered the size 11.5?",
+      "correct": [
+        116,
+        116
+      ],
+      "retrieved": [
+        116,
+        216,
+        116,
+        216,
+        117
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "15",
+      "ability": "temporal_reasoning",
+      "question": "How many months are there between when I planned to reach my daily walking goal and the festival I’m preparing my sneake",
+      "correct": [
+        36,
+        270
+      ],
+      "retrieved": [
+        231,
+        230,
+        38,
+        226,
+        227
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "16",
+      "ability": "contradiction_resolution",
+      "question": "Have U been using Excel to track my daily expenses?",
+      "correct": [
+        32,
+        62
+      ],
+      "retrieved": [
+        32,
+        32,
+        16,
+        72,
+        16
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "16",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever attended any financial workshops before?",
+      "correct": [
+        66,
+        118
+      ],
+      "retrieved": [
+        118,
+        118,
+        119,
+        265,
+        264
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "16",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different financial planning topics during our chats, in order? ",
+      "correct": [
+        22,
+        66,
+        132,
+        256
+      ],
+      "retrieved": [
+        95,
+        224,
+        97,
+        96,
+        135
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "16",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different ways I’ve been managing stress and financial concerns ",
+      "correct": [
+        24,
+        26,
+        94,
+        96,
+        160,
+        162,
+        164,
+        244
+      ],
+      "retrieved": [
+        95,
+        96,
+        297,
+        296,
+        224
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "16",
+      "ability": "information_extraction",
+      "question": "What monthly amount did I say I’m currently paying for my place on Bay Street?",
+      "correct": [
+        30
+      ],
+      "retrieved": [
+        30,
+        30,
+        117,
+        116,
+        115
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "16",
+      "ability": "information_extraction",
+      "question": "What approach did you recommend to balance my current finances and timeline so I could steadily build up my savings desp",
+      "correct": [
+        34,
+        35
+      ],
+      "retrieved": [
+        55,
+        199,
+        56,
+        202,
+        118
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "16",
+      "ability": "instruction_following",
+      "question": "How much am I allowed to spend on my holiday plans?",
+      "correct": [
+        268
+      ],
+      "retrieved": [
+        256,
+        256,
+        246,
+        247,
+        270
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "16",
+      "ability": "instruction_following",
+      "question": "What are my current financial goals for this year?",
+      "correct": [
+        208
+      ],
+      "retrieved": [
+        42,
+        42,
+        43,
+        91,
+        92
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "16",
+      "ability": "knowledge_update",
+      "question": "What is the monthly grocery budget Alexis and I have agreed on?",
+      "correct": [
+        126,
+        204,
+        206
+      ],
+      "retrieved": [
+        126,
+        126,
+        127,
+        252,
+        304
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "16",
+      "ability": "knowledge_update",
+      "question": "What is my total budget for holiday gifts this year?",
+      "correct": [
+        250,
+        266
+      ],
+      "retrieved": [
+        314,
+        315,
+        270,
+        271,
+        314
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "16",
+      "ability": "multi_session_reasoning",
+      "question": "How much money had I saved in total by the time I reached 60% of my emergency fund goal?",
+      "correct": [
+        34,
+        76
+      ],
+      "retrieved": [
+        55,
+        56,
+        1,
+        203,
+        84
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "16",
+      "ability": "multi_session_reasoning",
+      "question": "How will increasing our grocery budget while taking on the freelance contract affect my ability to support Ashlee's medi",
+      "correct": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        108,
+        109,
+        126,
+        127
+      ],
+      "retrieved": [
+        126,
+        127,
+        46,
+        216,
+        47
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "16",
+      "ability": "preference_following",
+      "question": "I want to set up a system to track my monthly expenses and stick to a dining out budget of $200 starting next month. How",
+      "correct": [
+        50
+      ],
+      "retrieved": [
+        50,
+        261,
+        262,
+        50,
+        259
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "16",
+      "ability": "preference_following",
+      "question": "I'm looking to reduce my monthly expenses. What are some ways you suggest I could do that?",
+      "correct": [
+        102
+      ],
+      "retrieved": [
+        23,
+        22,
+        118,
+        102,
+        257
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "16",
+      "ability": "summarization",
+      "question": "Can you summarize how my approach to managing finances with Alexis has developed over time?",
+      "correct": [
+        13,
+        15,
+        53,
+        65,
+        127,
+        253
+      ],
+      "retrieved": [
+        29,
+        225,
+        252,
+        291,
+        104
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "16",
+      "ability": "summarization",
+      "question": "Can you give me a summary of how my financial planning and budgeting efforts have developed over our conversations?",
+      "correct": [
+        31,
+        83,
+        87,
+        193,
+        231
+      ],
+      "retrieved": [
+        308,
+        309,
+        225,
+        224,
+        252
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "16",
+      "ability": "temporal_reasoning",
+      "question": "How many days had I been tracking my daily expenses before I felt frustrated enough to consider stopping?",
+      "correct": [
+        32,
+        72
+      ],
+      "retrieved": [
+        72,
+        70,
+        70,
+        72,
+        165
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "16",
+      "ability": "temporal_reasoning",
+      "question": "How long did it take me to reach my full emergency fund goal after I had saved $1,200 by early June?",
+      "correct": [
+        76,
+        146
+      ],
+      "retrieved": [
+        76,
+        74,
+        76,
+        34,
+        35
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "17",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever declined meetings to protect my writing time?",
+      "correct": [
+        66,
+        86
+      ],
+      "retrieved": [
+        86,
+        87,
+        86,
+        66,
+        67
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "17",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever attended any location scouts with Jeremy?",
+      "correct": [
+        102,
+        138
+      ],
+      "retrieved": [
+        138,
+        142,
+        139,
+        141,
+        102
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "17",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different strategies and support options for managing my workload throughou",
+      "correct": [
+        26,
+        88,
+        154,
+        202,
+        248
+      ],
+      "retrieved": [
+        167,
+        166,
+        275,
+        274,
+        261
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "17",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different aspects of my creative collaborations and related plans throughou",
+      "correct": [
+        22,
+        110,
+        160,
+        210,
+        256,
+        258
+      ],
+      "retrieved": [
+        133,
+        65,
+        132,
+        167,
+        218
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "17",
+      "ability": "information_extraction",
+      "question": "Which days did I say my kids have their afterschool activities at their school?",
+      "correct": [
+        18
+      ],
+      "retrieved": [
+        18,
+        20,
+        20,
+        163,
+        74
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "17",
+      "ability": "information_extraction",
+      "question": "How did I plan to make the most of my regular video calls with that experienced industry professional to improve how I h",
+      "correct": [
+        26,
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "retrieved": [
+        179,
+        178,
+        64,
+        142,
+        233
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "17",
+      "ability": "instruction_following",
+      "question": "When is my meetings at Montserrat Studios?",
+      "correct": [
+        84
+      ],
+      "retrieved": [
+        170,
+        266,
+        170,
+        266,
+        171
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "17",
+      "ability": "instruction_following",
+      "question": "When was my meetings at East Janethaven Library?",
+      "correct": [
+        84
+      ],
+      "retrieved": [
+        187,
+        180,
+        276,
+        186,
+        180
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "17",
+      "ability": "knowledge_update",
+      "question": "What is the total budget allocated for post-production software licenses including any additional plugins?",
+      "correct": [
+        122,
+        134
+      ],
+      "retrieved": [
+        134,
+        135,
+        134,
+        122,
+        122
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "17",
+      "ability": "knowledge_update",
+      "question": "How many days are scheduled for the sound mixing sessions with Jeremy?",
+      "correct": [
+        170,
+        184
+      ],
+      "retrieved": [
+        184,
+        185,
+        218,
+        219,
+        251
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "17",
+      "ability": "multi_session_reasoning",
+      "question": "How many scenes had I filmed in total by July 5 and how many were left to film after that?",
+      "correct": [
+        156,
+        157
+      ],
+      "retrieved": [
+        156,
+        157,
+        156,
+        176,
+        176
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "17",
+      "ability": "multi_session_reasoning",
+      "question": "How many different types of reminders or plans have I mentioned using to manage my tasks and family events?",
+      "correct": [
+        112,
+        164,
+        212
+      ],
+      "retrieved": [
+        165,
+        164,
+        53,
+        56,
+        197
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "17",
+      "ability": "preference_following",
+      "question": "How can I organize my workday to make the most of my productivity?",
+      "correct": [
+        74
+      ],
+      "retrieved": [
+        185,
+        184,
+        264,
+        4,
+        36
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "17",
+      "ability": "preference_following",
+      "question": "Can you help me organize my tasks so I can easily update and share them with others?",
+      "correct": [
+        124
+      ],
+      "retrieved": [
+        203,
+        202,
+        141,
+        142,
+        121
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "17",
+      "ability": "summarization",
+      "question": "Can you give me a summary of how I've been managing my time, stress, and creative collaborations throughout our recent c",
+      "correct": [
+        22,
+        45,
+        113,
+        257
+      ],
+      "retrieved": [
+        218,
+        219,
+        128,
+        64,
+        182
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "17",
+      "ability": "summarization",
+      "question": "Can you give me a summary of how my pilot episode project timeline and tasks have developed and changed throughout our c",
+      "correct": [
+        33,
+        39,
+        127,
+        157,
+        205,
+        251
+      ],
+      "retrieved": [
+        34,
+        114,
+        115,
+        142,
+        73
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "17",
+      "ability": "temporal_reasoning",
+      "question": "How many days passed between when I had the 3 PM meeting I wanted to protect my writing block from and when I reschedule",
+      "correct": [
+        66,
+        130
+      ],
+      "retrieved": [
+        130,
+        131,
+        87,
+        86,
+        130
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "17",
+      "ability": "temporal_reasoning",
+      "question": "How many days passed between when I finished casting and when my pilot episode was 75% complete?",
+      "correct": [
+        108,
+        156
+      ],
+      "retrieved": [
+        108,
+        108,
+        91,
+        115,
+        114
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "18",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever attended any workshops or professional development events?",
+      "correct": [
+        126,
+        128,
+        102,
+        104,
+        106
+      ],
+      "retrieved": [
+        127,
+        126,
+        130,
+        129,
+        303
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "18",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever delegated any of my tasks to Greg or other colleagues?",
+      "correct": [
+        188,
+        150
+      ],
+      "retrieved": [
+        188,
+        188,
+        248,
+        248,
+        249
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "18",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different aspects of my interactions with Patrick throughout our",
+      "correct": [
+        30,
+        138,
+        196,
+        254,
+        198,
+        258
+      ],
+      "retrieved": [
+        139,
+        142,
+        204,
+        308,
+        205
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "18",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different personal and work-related challenges during our chats,",
+      "correct": [
+        null,
+        146,
+        null,
+        262
+      ],
+      "retrieved": [
+        204,
+        205,
+        203,
+        308,
+        142
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "18",
+      "ability": "information_extraction",
+      "question": "What was the age and role of the mentor who suggested I attend the workshop?",
+      "correct": [
+        30
+      ],
+      "retrieved": [
+        30,
+        34,
+        31,
+        35,
+        33
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "18",
+      "ability": "information_extraction",
+      "question": "How did I come to consider attending that event, and what role did my mentor play in influencing my decision and prepara",
+      "correct": [
+        30,
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "retrieved": [
+        207,
+        206,
+        34,
+        127,
+        130
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "18",
+      "ability": "instruction_following",
+      "question": "How is my progress coming along so far?",
+      "correct": [
+        184,
+        186
+      ],
+      "retrieved": [
+        100,
+        98,
+        204,
+        205,
+        138
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "18",
+      "ability": "instruction_following",
+      "question": "Could you remind me of the date of the Workflow Optimization workshop I registered for at the East Janethaven Media Cent",
+      "correct": [
+        120
+      ],
+      "retrieved": [
+        30,
+        34,
+        102,
+        35,
+        33
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "18",
+      "ability": "knowledge_update",
+      "question": "How many hours of overtime have I tracked most recently?",
+      "correct": [
+        90,
+        114
+      ],
+      "retrieved": [
+        159,
+        90,
+        91,
+        157,
+        156
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "18",
+      "ability": "knowledge_update",
+      "question": "When is the deadline for submitting my application for the senior producer role at Montserrat Media Corp?",
+      "correct": [
+        170,
+        182
+      ],
+      "retrieved": [
+        170,
+        182,
+        183,
+        170,
+        171
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "18",
+      "ability": "multi_session_reasoning",
+      "question": "Between setting email boundaries after 7 PM and establishing work-free Sundays, which boundary did I decide to start fir",
+      "correct": [
+        48,
+        216
+      ],
+      "retrieved": [
+        52,
+        278,
+        279,
+        53,
+        216
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "18",
+      "ability": "multi_session_reasoning",
+      "question": "What two special events am I planning with David, and where will they take place?",
+      "correct": [
+        146,
+        202
+      ],
+      "retrieved": [
+        263,
+        262,
+        204,
+        203,
+        205
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "18",
+      "ability": "preference_following",
+      "question": "I'm trying to organize my tasks and appointments more effectively. What tools or methods would you suggest I use to keep",
+      "correct": [
+        84,
+        86,
+        88
+      ],
+      "retrieved": [
+        88,
+        10,
+        84,
+        71,
+        204
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "18",
+      "ability": "preference_following",
+      "question": "What are some ways I can structure my daily self-care routine to feel more energized throughout the day?",
+      "correct": [
+        164
+      ],
+      "retrieved": [
+        63,
+        62,
+        61,
+        307,
+        281
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "18",
+      "ability": "temporal_reasoning",
+      "question": "How many days after I started limiting work emails after 7 PM did I begin blocking time for self-care on Tuesday and Thu",
+      "correct": [
+        48,
+        60
+      ],
+      "retrieved": [
+        60,
+        62,
+        63,
+        61,
+        22
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "18",
+      "ability": "temporal_reasoning",
+      "question": "How many days after my weekend getaway with David did I start setting clear work-free Sundays?",
+      "correct": [
+        146,
+        216
+      ],
+      "retrieved": [
+        40,
+        146,
+        147,
+        37,
+        41
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "19",
+      "ability": "contradiction_resolution",
+      "question": "Have I met attorney Stephanie to discuss my will?",
+      "correct": [
+        34,
+        64
+      ],
+      "retrieved": [
+        84,
+        64,
+        84,
+        85,
+        22
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "19",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever used WillMaker Pro or any digital software to draft my will?",
+      "correct": [
+        80,
+        122
+      ],
+      "retrieved": [
+        204,
+        204,
+        205,
+        128,
+        126
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "19",
+      "ability": "event_ordering",
+      "question": "Can you list the order in which I brought up different aspects of my plans involving Douglas throughout our conversation",
+      "correct": [
+        22,
+        108,
+        178,
+        178,
+        180
+      ],
+      "retrieved": [
+        16,
+        17,
+        7,
+        131,
+        257
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "19",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different concerns and plans related to my family’s care and fin",
+      "correct": [
+        8,
+        10,
+        12,
+        138,
+        210,
+        212,
+        214
+      ],
+      "retrieved": [
+        7,
+        17,
+        150,
+        16,
+        180
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "19",
+      "ability": "information_extraction",
+      "question": "How far away did I say my parents live from me?",
+      "correct": [
+        8
+      ],
+      "retrieved": [
+        8,
+        277,
+        12,
+        276,
+        82
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "19",
+      "ability": "information_extraction",
+      "question": "How long have I been with Douglas?",
+      "correct": [
+        22
+      ],
+      "retrieved": [
+        22,
+        68,
+        134,
+        86,
+        24
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "19",
+      "ability": "instruction_following",
+      "question": "What do I need to include to make sure my wishes are legally valid?",
+      "correct": [
+        62
+      ],
+      "retrieved": [
+        54,
+        14,
+        74,
+        96,
+        241
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "19",
+      "ability": "instruction_following",
+      "question": "What are some popular tools I can use to organize and manage my digital files?",
+      "correct": [
+        128
+      ],
+      "retrieved": [
+        123,
+        117,
+        116,
+        43,
+        42
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "19",
+      "ability": "knowledge_update",
+      "question": "How long does the probate process usually take in Montserrat?",
+      "correct": [
+        112,
+        122
+      ],
+      "retrieved": [
+        110,
+        308,
+        110,
+        111,
+        309
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "19",
+      "ability": "knowledge_update",
+      "question": "What is the estimated estate tax rate applied to assets above $200,000?",
+      "correct": [
+        36,
+        56
+      ],
+      "retrieved": [
+        57,
+        130,
+        56,
+        130,
+        60
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "19",
+      "ability": "multi_session_reasoning",
+      "question": "How many children did I mention receiving annual gifts from me?",
+      "correct": [
+        37,
+        86
+      ],
+      "retrieved": [
+        59,
+        87,
+        60,
+        88,
+        287
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "19",
+      "ability": "multi_session_reasoning",
+      "question": "How many specific assets or items have I mentioned across my conversations that are part of my estate planning?",
+      "correct": [
+        30,
+        116,
+        156
+      ],
+      "retrieved": [
+        257,
+        77,
+        292,
+        7,
+        6
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "19",
+      "ability": "preference_following",
+      "question": "I'm planning to make some updates to my will in the future. How would you suggest I keep my documents so that making cha",
+      "correct": [
+        110
+      ],
+      "retrieved": [
+        102,
+        101,
+        103,
+        207,
+        105
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "19",
+      "ability": "preference_following",
+      "question": "If I want to appoint someone to manage the responsibilities after I’m gone, what should I consider when choosing between",
+      "correct": [
+        46,
+        48
+      ],
+      "retrieved": [
+        47,
+        32,
+        33,
+        48,
+        19
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "19",
+      "ability": "summarization",
+      "question": "Can you give me a complete summary of how my estate planning process has developed, including the key decisions and disc",
+      "correct": [
+        23,
+        33,
+        69,
+        179,
+        189
+      ],
+      "retrieved": [
+        285,
+        284,
+        297,
+        166,
+        296
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "19",
+      "ability": "summarization",
+      "question": "Can you summarize what I need to know about preparing and finalizing my will and related documents?",
+      "correct": [
+        34,
+        85,
+        183,
+        221
+      ],
+      "retrieved": [
+        229,
+        233,
+        232,
+        230,
+        7
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "19",
+      "ability": "temporal_reasoning",
+      "question": "How many days passed between the family meeting at my home and when Douglas accepted the executor role?",
+      "correct": [
+        68,
+        68
+      ],
+      "retrieved": [
+        68,
+        48,
+        32,
+        72,
+        33
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "19",
+      "ability": "temporal_reasoning",
+      "question": "How many days passed between my meeting with attorney Stephanie to finalize my will and her review confirming the two-wi",
+      "correct": [
+        34,
+        84
+      ],
+      "retrieved": [
+        34,
+        35,
+        84,
+        84,
+        85
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "20",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever attended production meetings related to my invention?",
+      "correct": [
+        26,
+        68
+      ],
+      "retrieved": [
+        68,
+        68,
+        151,
+        150,
+        61
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "20",
+      "ability": "contradiction_resolution",
+      "question": "Have I ever attended any patent-related webinars or workshops?",
+      "correct": [
+        92,
+        120
+      ],
+      "retrieved": [
+        120,
+        120,
+        23,
+        308,
+        309
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "20",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up different aspects of my patent filing plans and related funding ",
+      "correct": [
+        30,
+        164,
+        200,
+        202,
+        204,
+        206
+      ],
+      "retrieved": [
+        178,
+        253,
+        194,
+        177,
+        193
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "20",
+      "ability": "event_ordering",
+      "question": "Can you walk me through the order in which I brought up the different stages of my patent process throughout our convers",
+      "correct": [
+        32,
+        70,
+        122,
+        188,
+        190
+      ],
+      "retrieved": [
+        195,
+        191,
+        69,
+        68,
+        253
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "20",
+      "ability": "information_extraction",
+      "question": "How old did I say my son is and where is he studying engineering?",
+      "correct": [
+        10
+      ],
+      "retrieved": [
+        10,
+        11,
+        14,
+        58,
+        12
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "20",
+      "ability": "information_extraction",
+      "question": "How did I plan to support my son's progress in his studies by connecting with local and external resources, and what ste",
+      "correct": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "retrieved": [
+        14,
+        23,
+        150,
+        151,
+        24
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "20",
+      "ability": "instruction_following",
+      "question": "What steps do I need to go through to get a patent approved?",
+      "correct": [
+        66
+      ],
+      "retrieved": [
+        312,
+        311,
+        196,
+        34,
+        310
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "20",
+      "ability": "instruction_following",
+      "question": "When is the non-provisional patent filing scheduled?",
+      "correct": [
+        180,
+        182
+      ],
+      "retrieved": [
+        370,
+        125,
+        371,
+        124,
+        118
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "20",
+      "ability": "knowledge_update",
+      "question": "What budget have I set for the initial patent filing fees and attorney fees?",
+      "correct": [
+        36,
+        64
+      ],
+      "retrieved": [
+        36,
+        37,
+        64,
+        65,
+        100
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "20",
+      "ability": "knowledge_update",
+      "question": "What is the budget allocated for prototype refinement and patent attorney fees through August?",
+      "correct": [
+        130,
+        176
+      ],
+      "retrieved": [
+        130,
+        130,
+        131,
+        176,
+        178
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "20",
+      "ability": "multi_session_reasoning",
+      "question": "What are the two different patent filing deadlines I need to meet?",
+      "correct": [
+        30,
+        164
+      ],
+      "retrieved": [
+        78,
+        171,
+        77,
+        205,
+        79
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "20",
+      "ability": "multi_session_reasoning",
+      "question": "Given my timeline and actions from starting the prior art search to filing the provisional patent, how well did I align ",
+      "correct": [
+        32,
+        70,
+        71,
+        122,
+        123
+      ],
+      "retrieved": [
+        77,
+        78,
+        1,
+        39,
+        38
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "20",
+      "ability": "preference_following",
+      "question": "Can you help me find a patent attorney to assist with my new invention?",
+      "correct": [
+        62
+      ],
+      "retrieved": [
+        14,
+        62,
+        62,
+        19,
+        20
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "20",
+      "ability": "preference_following",
+      "question": "I'm preparing materials to support my patent application. What types of content should I include to make it clear and co",
+      "correct": [
+        106
+      ],
+      "retrieved": [
+        243,
+        121,
+        120,
+        78,
+        79
+      ],
+      "recall_10": 0
+    },
+    {
+      "conversation": "20",
+      "ability": "temporal_reasoning",
+      "question": "How many days were there between when I planned to complete my prior art search and when I aimed to file my provisional ",
+      "correct": [
+        32,
+        70
+      ],
+      "retrieved": [
+        209,
+        193,
+        119,
+        118,
+        121
+      ],
+      "recall_10": 1
+    },
+    {
+      "conversation": "20",
+      "ability": "temporal_reasoning",
+      "question": "How many days do I have between my meeting with Ashlee and the patent response deadline?",
+      "correct": [
+        102,
+        152
+      ],
+      "retrieved": [
+        155,
+        154,
+        209,
+        212,
+        173
+      ],
+      "recall_10": 1
+    }
+  ]
+}

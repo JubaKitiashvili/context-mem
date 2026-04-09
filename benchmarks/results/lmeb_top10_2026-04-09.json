@@ -1,0 +1,747 @@
+{
+  "benchmark": "LMEB",
+  "system": "context-mem",
+  "top_k": 10,
+  "subtasks": 90,
+  "overall_ndcg": 0.6735231561020963,
+  "by_memory_type": {
+    "Dialogue": {
+      "avg_ndcg": 0.3125650626328008,
+      "avg_rcap": 0.2586566001462125,
+      "subtasks": 25
+    },
+    "Semantic": {
+      "avg_ndcg": 0.5908609483147692,
+      "avg_rcap": 0.6735449922734754,
+      "subtasks": 7
+    },
+    "Procedural": {
+      "avg_ndcg": 0.839085014571815,
+      "avg_rcap": 0.8784529310401885,
+      "subtasks": 58
+    }
+  },
+  "details": [
+    {
+      "memType": "Dialogue",
+      "task": "ConvoMem",
+      "subset": "preference_evidence",
+      "ndcg_at_k": 0.33933965972672403,
+      "rcap_at_k": 0.4396067415730337,
+      "queries": 356
+    },
+    {
+      "memType": "Dialogue",
+      "task": "LoCoMo",
+      "subset": "adversarial",
+      "ndcg_at_k": 0.5176249215378902,
+      "rcap_at_k": 0.6614349775784754,
+      "queries": 446
+    },
+    {
+      "memType": "Dialogue",
+      "task": "LoCoMo",
+      "subset": "multi_hop",
+      "ndcg_at_k": 0.4253815357506239,
+      "rcap_at_k": 0.38476332199546487,
+      "queries": 280
+    },
+    {
+      "memType": "Dialogue",
+      "task": "LoCoMo",
+      "subset": "open_domain",
+      "ndcg_at_k": 0.3290193748598096,
+      "rcap_at_k": 0.3441947565543071,
+      "queries": 89
+    },
+    {
+      "memType": "Dialogue",
+      "task": "LoCoMo",
+      "subset": "single_hop",
+      "ndcg_at_k": 0.5618401935269357,
+      "rcap_at_k": 0.7015873015873016,
+      "queries": 840
+    },
+    {
+      "memType": "Dialogue",
+      "task": "LoCoMo",
+      "subset": "temporal_reasoning",
+      "ndcg_at_k": 0.594535158661753,
+      "rcap_at_k": 0.696521287642783,
+      "queries": 321
+    },
+    {
+      "memType": "Dialogue",
+      "task": "MemBench",
+      "subset": "emotion",
+      "ndcg_at_k": 0.01852371901428583,
+      "rcap_at_k": 0.006666666666666667,
+      "queries": 500
+    },
+    {
+      "memType": "Dialogue",
+      "task": "MemBench",
+      "subset": "multi_session_assistant",
+      "ndcg_at_k": 0.09326185950714291,
+      "rcap_at_k": 0.023133333333333332,
+      "queries": 500
+    },
+    {
+      "memType": "Dialogue",
+      "task": "MemBench",
+      "subset": "preference",
+      "ndcg_at_k": 0.02033333333333333,
+      "rcap_at_k": 0.005577777777777778,
+      "queries": 1500
+    },
+    {
+      "memType": "Dialogue",
+      "task": "MemBench",
+      "subset": "single_session_assistant",
+      "ndcg_at_k": 0.04708728650238097,
+      "rcap_at_k": 0.025000000000000005,
+      "queries": 1500
+    },
+    {
+      "memType": "Dialogue",
+      "task": "REALTALK",
+      "subset": "commonsense",
+      "ndcg_at_k": 0.3428978091263178,
+      "rcap_at_k": 0.31407766990291264,
+      "queries": 103
+    },
+    {
+      "memType": "Dialogue",
+      "task": "REALTALK",
+      "subset": "multi_hop",
+      "ndcg_at_k": 0.39231309396908215,
+      "rcap_at_k": 0.3299191374663073,
+      "queries": 265
+    },
+    {
+      "memType": "Dialogue",
+      "task": "REALTALK",
+      "subset": "temporal_reasoning",
+      "ndcg_at_k": 0.6783088942965839,
+      "rcap_at_k": 0.7871918542336548,
+      "queries": 311
+    },
+    {
+      "memType": "Dialogue",
+      "task": "TMD",
+      "subset": "content_time_qs",
+      "ndcg_at_k": 0.4807051175246751,
+      "rcap_at_k": 0.6826741996233522,
+      "queries": 177
+    },
+    {
+      "memType": "Dialogue",
+      "task": "TMD",
+      "subset": "date_span_time_qs",
+      "ndcg_at_k": 0.6345236212817547,
+      "rcap_at_k": 0.11999999999999998,
+      "queries": 180
+    },
+    {
+      "memType": "Dialogue",
+      "task": "TMD",
+      "subset": "dates_time_qs",
+      "ndcg_at_k": 0.23024993896442336,
+      "rcap_at_k": 0.032424242424242376,
+      "queries": 330
+    },
+    {
+      "memType": "Dialogue",
+      "task": "TMD",
+      "subset": "day_span_time_qs",
+      "ndcg_at_k": 0.7084265868476564,
+      "rcap_at_k": 0.31250000000000006,
+      "queries": 24
+    },
+    {
+      "memType": "Dialogue",
+      "task": "TMD",
+      "subset": "earlier_today_time_qs",
+      "ndcg_at_k": 0.20601027723289622,
+      "rcap_at_k": 0.06666666666666667,
+      "queries": 12
+    },
+    {
+      "memType": "Dialogue",
+      "task": "TMD",
+      "subset": "last_named_day_time_qs",
+      "ndcg_at_k": 0.4265391362382957,
+      "rcap_at_k": 0.21666666666666667,
+      "queries": 12
+    },
+    {
+      "memType": "Dialogue",
+      "task": "TMD",
+      "subset": "month_time_qs",
+      "ndcg_at_k": 0.28047303455596423,
+      "rcap_at_k": 0.15899999999999997,
+      "queries": 100
+    },
+    {
+      "memType": "Dialogue",
+      "task": "TMD",
+      "subset": "rel_day_time_qs",
+      "ndcg_at_k": 0.08560905736693492,
+      "rcap_at_k": 0.022712933753943208,
+      "queries": 317
+    },
+    {
+      "memType": "Dialogue",
+      "task": "TMD",
+      "subset": "rel_month_time_qs",
+      "ndcg_at_k": 0.17849865720207284,
+      "rcap_at_k": 0.072,
+      "queries": 100
+    },
+    {
+      "memType": "Dialogue",
+      "task": "TMD",
+      "subset": "rel_session_time_qs",
+      "ndcg_at_k": 0.07040463441417111,
+      "rcap_at_k": 0.02363636363636363,
+      "queries": 330
+    },
+    {
+      "memType": "Dialogue",
+      "task": "TMD",
+      "subset": "session_span_time_qs",
+      "ndcg_at_k": 0.10551909245774506,
+      "rcap_at_k": 0.025193798449612392,
+      "queries": 258
+    },
+    {
+      "memType": "Dialogue",
+      "task": "TMD",
+      "subset": "session_time_qs",
+      "ndcg_at_k": 0.046700571920569076,
+      "rcap_at_k": 0.01326530612244898,
+      "queries": 294
+    },
+    {
+      "memType": "Semantic",
+      "task": "Covid-QA",
+      "subset": "default",
+      "ndcg_at_k": 0.6248994975436228,
+      "rcap_at_k": 0.7893789378937894,
+      "queries": 1111
+    },
+    {
+      "memType": "Semantic",
+      "task": "ESG-Reports",
+      "subset": "default",
+      "ndcg_at_k": 0.3100016926684374,
+      "rcap_at_k": 0.3796296296296296,
+      "queries": 36
+    },
+    {
+      "memType": "Semantic",
+      "task": "LooGLE",
+      "subset": "LongDepQA",
+      "ndcg_at_k": 0.5416420325553313,
+      "rcap_at_k": 0.5111457116906707,
+      "queries": 1101
+    },
+    {
+      "memType": "Semantic",
+      "task": "LooGLE",
+      "subset": "ShortDepQA",
+      "ndcg_at_k": 0.8159395910482609,
+      "rcap_at_k": 0.9236289082521784,
+      "queries": 1951
+    },
+    {
+      "memType": "Semantic",
+      "task": "MLDR",
+      "subset": "default",
+      "ndcg_at_k": 0.780376978413281,
+      "rcap_at_k": 0.92,
+      "queries": 100
+    },
+    {
+      "memType": "Semantic",
+      "task": "PeerQA",
+      "subset": "default",
+      "ndcg_at_k": 0.3460983389074922,
+      "rcap_at_k": 0.32900035014005613,
+      "queries": 136
+    },
+    {
+      "memType": "Semantic",
+      "task": "SciFact",
+      "subset": "default",
+      "ndcg_at_k": 0.7170685070669586,
+      "rcap_at_k": 0.8620314083080041,
+      "queries": 188
+    },
+    {
+      "memType": "Procedural",
+      "task": "DeepPlanning",
+      "subset": "shopping_level1",
+      "ndcg_at_k": 0.8283482245061667,
+      "rcap_at_k": 0.43766666666666665,
+      "queries": 50
+    },
+    {
+      "memType": "Procedural",
+      "task": "DeepPlanning",
+      "subset": "shopping_level2",
+      "ndcg_at_k": 0.7922210107416379,
+      "rcap_at_k": 0.343,
+      "queries": 50
+    },
+    {
+      "memType": "Procedural",
+      "task": "DeepPlanning",
+      "subset": "shopping_level3",
+      "ndcg_at_k": 0.8014542125293005,
+      "rcap_at_k": 0.5541666666666666,
+      "queries": 20
+    },
+    {
+      "memType": "Procedural",
+      "task": "Gorilla",
+      "subset": "gorilla_huggingface",
+      "ndcg_at_k": 0.2832642370094489,
+      "rcap_at_k": 0.412,
+      "queries": 500
+    },
+    {
+      "memType": "Procedural",
+      "task": "Gorilla",
+      "subset": "gorilla_pytorch",
+      "ndcg_at_k": 0.48935603053964233,
+      "rcap_at_k": 0.6511627906976745,
+      "queries": 43
+    },
+    {
+      "memType": "Procedural",
+      "task": "Gorilla",
+      "subset": "gorilla_tensor",
+      "ndcg_at_k": 0.31340421061220075,
+      "rcap_at_k": 0.5818181818181818,
+      "queries": 55
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "Azure_azure-sdk-for-python",
+      "ndcg_at_k": 0.8883368661929139,
+      "rcap_at_k": 0.9661885245901639,
+      "queries": 1952
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "ClusterHQ_flocker",
+      "ndcg_at_k": 0.879325691867247,
+      "rcap_at_k": 0.9665676077265973,
+      "queries": 1346
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "DataDog_integrations-core",
+      "ndcg_at_k": 0.799520695975815,
+      "rcap_at_k": 0.9099514563106796,
+      "queries": 4120
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "Microsoft_TypeScript",
+      "ndcg_at_k": 0.9601500081722665,
+      "rcap_at_k": 0.9974326059050064,
+      "queries": 779
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "PokemonGoF_PokemonGo-Bot",
+      "ndcg_at_k": 0.9022458990537752,
+      "rcap_at_k": 0.9828326180257511,
+      "queries": 1165
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "Qiskit_qiskit-terra",
+      "ndcg_at_k": 0.90232434485925,
+      "rcap_at_k": 0.9763421292083713,
+      "queries": 2198
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "StackStorm_st2",
+      "ndcg_at_k": 0.9037730677308548,
+      "rcap_at_k": 0.9721518987341772,
+      "queries": 1580
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "apache_airflow",
+      "ndcg_at_k": 0.8950324059035897,
+      "rcap_at_k": 0.9643373493975904,
+      "queries": 2075
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "apache_incubator-airflow",
+      "ndcg_at_k": 0.8522755742017998,
+      "rcap_at_k": 0.9492290334712298,
+      "queries": 2659
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "certbot_certbot",
+      "ndcg_at_k": 0.8673619768349892,
+      "rcap_at_k": 0.9641873278236914,
+      "queries": 1452
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "dask_dask",
+      "ndcg_at_k": 0.8857315906827992,
+      "rcap_at_k": 0.9596429957314707,
+      "queries": 2577
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "datalad_datalad",
+      "ndcg_at_k": 0.8977071428043591,
+      "rcap_at_k": 0.9708498023715415,
+      "queries": 2024
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "django_django",
+      "ndcg_at_k": 0.9544802763602309,
+      "rcap_at_k": 0.9905040175310446,
+      "queries": 1369
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "dmwm_WMCore",
+      "ndcg_at_k": 0.8848322773730954,
+      "rcap_at_k": 0.974496644295302,
+      "queries": 2235
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "encode_django-rest-framework",
+      "ndcg_at_k": 0.8895767057741852,
+      "rcap_at_k": 0.9721448467966574,
+      "queries": 1077
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "facebook_react",
+      "ndcg_at_k": 0.9308402636459152,
+      "rcap_at_k": 0.9850374064837906,
+      "queries": 1604
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "great-expectations_great_expectations",
+      "ndcg_at_k": 0.8703364811757545,
+      "rcap_at_k": 0.9633165829145729,
+      "queries": 1990
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "home-assistant_core",
+      "ndcg_at_k": 0.8127902169954769,
+      "rcap_at_k": 0.9133640552995391,
+      "queries": 3255
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "home-assistant_home-assistant",
+      "ndcg_at_k": 0.7570119296985197,
+      "rcap_at_k": 0.8628147191736604,
+      "queries": 6196
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "huggingface_transformers",
+      "ndcg_at_k": 0.9184159911674594,
+      "rcap_at_k": 0.9757033248081841,
+      "queries": 782
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "kubernetes_kubernetes",
+      "ndcg_at_k": 0.8334282559293179,
+      "rcap_at_k": 0.9287415115971426,
+      "queries": 11339
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "mesonbuild_meson",
+      "ndcg_at_k": 0.8698965334413955,
+      "rcap_at_k": 0.9601941747572815,
+      "queries": 3090
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "microsoft_vscode",
+      "ndcg_at_k": 0.9696105528387091,
+      "rcap_at_k": 0.9969418960244648,
+      "queries": 654
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "mne-tools_mne-python",
+      "ndcg_at_k": 0.8905861286080027,
+      "rcap_at_k": 0.9660931174089069,
+      "queries": 3952
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "moby_moby",
+      "ndcg_at_k": 0.9308496531706129,
+      "rcap_at_k": 0.9831838565022422,
+      "queries": 892
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "napari_napari",
+      "ndcg_at_k": 0.9092809768198551,
+      "rcap_at_k": 0.9747311827956989,
+      "queries": 1860
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "numpy_numpy",
+      "ndcg_at_k": 0.9318214285165749,
+      "rcap_at_k": 0.9812734082397003,
+      "queries": 1335
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "optuna_optuna",
+      "ndcg_at_k": 0.8379283906623091,
+      "rcap_at_k": 0.9387308533916849,
+      "queries": 1371
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "pandas-dev_pandas",
+      "ndcg_at_k": 0.8836068408430228,
+      "rcap_at_k": 0.9632860777898946,
+      "queries": 2751
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "pydata_xarray",
+      "ndcg_at_k": 0.8978379225499308,
+      "rcap_at_k": 0.9682165979988229,
+      "queries": 1699
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "pypa_pip",
+      "ndcg_at_k": 0.8513774430304394,
+      "rcap_at_k": 0.9495798319327731,
+      "queries": 2618
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "pytest-dev_pytest",
+      "ndcg_at_k": 0.8660442379244366,
+      "rcap_at_k": 0.9585695595290014,
+      "queries": 2293
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "pytorch_pytorch",
+      "ndcg_at_k": 0.8959284702255546,
+      "rcap_at_k": 0.966728280961183,
+      "queries": 6492
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "raiden-network_raiden",
+      "ndcg_at_k": 0.904064501386322,
+      "rcap_at_k": 0.9723294723294723,
+      "queries": 1554
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "rust-lang_rust",
+      "ndcg_at_k": 0.8564084545125699,
+      "rcap_at_k": 0.9394172622319956,
+      "queries": 9095
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "saltstack_salt",
+      "ndcg_at_k": 0.9131951243049719,
+      "rcap_at_k": 0.9788404570461278,
+      "queries": 2363
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "scikit-learn_scikit-learn",
+      "ndcg_at_k": 0.8807784227769915,
+      "rcap_at_k": 0.9544206479956068,
+      "queries": 1821
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "scipy_scipy",
+      "ndcg_at_k": 0.9271838981383552,
+      "rcap_at_k": 0.9771371769383698,
+      "queries": 1006
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "scrapy_scrapy",
+      "ndcg_at_k": 0.9507314779743384,
+      "rcap_at_k": 0.9967845659163987,
+      "queries": 311
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "spack_spack",
+      "ndcg_at_k": 0.7056529206156519,
+      "rcap_at_k": 0.8159236716565225,
+      "queries": 6079
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "sphinx-doc_sphinx",
+      "ndcg_at_k": 0.9066654220633928,
+      "rcap_at_k": 0.9760081674323634,
+      "queries": 1959
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "spotify_luigi",
+      "ndcg_at_k": 0.8924290045295744,
+      "rcap_at_k": 0.9736,
+      "queries": 1250
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "spring-projects_spring-framework",
+      "ndcg_at_k": 0.9525831515973469,
+      "rcap_at_k": 0.9927536231884058,
+      "queries": 414
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "spyder-ide_spyder",
+      "ndcg_at_k": 0.9095400880340809,
+      "rcap_at_k": 0.9788471708090957,
+      "queries": 1891
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "sympy_sympy",
+      "ndcg_at_k": 0.8495306420439334,
+      "rcap_at_k": 0.9462809917355371,
+      "queries": 6776
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "tensorflow_tensorflow",
+      "ndcg_at_k": 0.91990013294553,
+      "rcap_at_k": 0.9813664596273292,
+      "queries": 2093
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "webpack_webpack",
+      "ndcg_at_k": 0.9167203405171979,
+      "rcap_at_k": 0.974169741697417,
+      "queries": 813
+    },
+    {
+      "memType": "Procedural",
+      "task": "MemGovern",
+      "subset": "xonsh_xonsh",
+      "ndcg_at_k": 0.9293544398565707,
+      "rcap_at_k": 0.9818754925137904,
+      "queries": 1269
+    },
+    {
+      "memType": "Procedural",
+      "task": "Proced_mem_bench",
+      "subset": "easy",
+      "ndcg_at_k": 0.7201431664161301,
+      "rcap_at_k": 0.4,
+      "queries": 15
+    },
+    {
+      "memType": "Procedural",
+      "task": "Proced_mem_bench",
+      "subset": "hard",
+      "ndcg_at_k": 0.6998252851613831,
+      "rcap_at_k": 0.4275974025974026,
+      "queries": 11
+    },
+    {
+      "memType": "Procedural",
+      "task": "Proced_mem_bench",
+      "subset": "medium",
+      "ndcg_at_k": 0.4944986923311961,
+      "rcap_at_k": 0.37857142857142856,
+      "queries": 14
+    },
+    {
+      "memType": "Procedural",
+      "task": "ToolBench",
+      "subset": "default",
+      "ndcg_at_k": 0.6094115129908869,
+      "rcap_at_k": 0.5711666666666666,
+      "queries": 1100
+    }
+  ],
+  "elapsed_seconds": 683.437
+}
