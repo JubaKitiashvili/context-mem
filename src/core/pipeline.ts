@@ -109,12 +109,12 @@ export class Pipeline {
       };
     }
 
-    // 2.5 Importance classification (zero-LLM, deterministic)
-    const importance = classifyImportance(cleaned, type);
-
-    // 2.6 Entity extraction (zero-LLM, deterministic)
+    // 2.5 Entity extraction (zero-LLM, deterministic) — before importance so entities can boost score
     const extractedEntities = extractEntities(cleaned);
     const entityNames = extractedEntities.map(e => e.name);
+
+    // 2.6 Importance classification (zero-LLM, deterministic) — with entity boost
+    const importance = classifyImportance(cleaned, type, { entities: entityNames });
 
     // 2.7 Topic detection (zero-LLM, deterministic)
     const detectedTopics = detectTopics(cleaned, undefined, entityNames);

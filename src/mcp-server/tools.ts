@@ -78,6 +78,7 @@ export interface ToolKernel {
   knowledgeGraph?: KnowledgeGraph;
   agentRegistry?: AgentRegistry;
   llmService?: LLMService;
+  feedbackEngine?: import('../core/feedback-engine.js').FeedbackEngine;
 }
 
 // ---------------------------------------------------------------------------
@@ -870,6 +871,11 @@ export async function handleSearch(
         );
       } catch {
         // Non-critical: don't fail search if access_count update fails
+      }
+
+      // Track search results for feedback engine
+      if (kernel.feedbackEngine) {
+        try { kernel.feedbackEngine.trackSearchResults(ids); } catch { /* non-critical */ }
       }
     }
   }
