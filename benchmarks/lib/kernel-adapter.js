@@ -14,7 +14,7 @@ const Database = require('better-sqlite3');
 const projectRoot = path.resolve(__dirname, '..', '..');
 const { migrations } = require(path.join(projectRoot, 'dist/plugins/storage/migrations.js'));
 const { sanitizeFTS5Query } = require(path.join(projectRoot, 'dist/plugins/search/fts5-utils.js'));
-const { buildORQuery, buildANDQuery, buildEntityQuery, extractKeywords } = require(path.join(projectRoot, 'dist/plugins/search/query-builder.js'));
+const { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords } = require(path.join(projectRoot, 'dist/plugins/search/query-builder.js'));
 
 // ── Vector search helpers (optional) ────────────────────────────────────────
 let _embedder = null;
@@ -148,11 +148,19 @@ class BenchKernel {
     const entityQ = buildEntityQuery(query);
     if (entityQ) runFTS(entityQ, 1.8);
 
-    // Strategy 3: Original sanitized (core: sanitizeFTS5Query) — FTS5 default
+    // Strategy 3: Phrase matching (core: buildPhraseQuery)
+    const phraseQ = buildPhraseQuery(query);
+    if (phraseQ) runFTS(phraseQ, 1.9);
+
+    // Strategy 4: Original sanitized (core: sanitizeFTS5Query) — FTS5 default
     const sanitized = sanitizeFTS5Query(query);
     if (sanitized && sanitized !== '""') runFTS(sanitized, 1.5);
 
-    // Strategy 4: OR-mode with synonyms (core: buildORQuery) — broad recall
+    // Strategy 5: Relaxed AND (core: buildRelaxedANDQuery) — entity + top keywords
+    const relaxedQ = buildRelaxedANDQuery(query);
+    if (relaxedQ && relaxedQ !== andQ) runFTS(relaxedQ, 1.2);
+
+    // Strategy 6: OR-mode with synonyms (core: buildORQuery) — broad recall
     const orQ = buildORQuery(query);
     if (orQ) runFTS(orQ, 1.0);
 

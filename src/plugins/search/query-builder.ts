@@ -128,6 +128,22 @@ export function buildANDQuery(query: string): string | null {
   return words.slice(0, 8).map(w => `"${w}"`).join(' AND ');
 }
 
+/** Build relaxed AND query — uses entity + top content words, less strict than full AND. */
+export function buildRelaxedANDQuery(query: string): string | null {
+  const entities = extractEntities(query);
+  const keywords = extractKeywords(query);
+  if (keywords.length < 3) return null; // full AND is fine for short queries
+
+  // Prioritize entities and longer keywords (more specific)
+  const entityWords = entities.map(e => e.toLowerCase().split(/\s+/)).flat().filter(w => w.length >= 3);
+  const importantWords = [...new Set([...entityWords, ...keywords.filter(w => w.length >= 5)])];
+
+  // Take top 3-4 most important terms
+  const terms = importantWords.slice(0, 4);
+  if (terms.length < 2) return null;
+  return terms.map(w => `"${w}"`).join(' AND ');
+}
+
 /** Build phrase query from consecutive keyword pairs. Finds exact multi-word matches. */
 export function buildPhraseQuery(query: string): string | null {
   const words = extractKeywords(query);

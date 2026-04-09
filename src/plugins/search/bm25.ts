@@ -2,7 +2,7 @@ import type { SearchPlugin, PluginConfig, SearchResult, SearchOpts } from '../..
 import type { BetterSqlite3Storage } from '../storage/better-sqlite3.js';
 import { sanitizeFTS5Query } from './fts5-utils.js';
 import { extractBestSnippet } from './snippet-extractor.js';
-import { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, extractKeywords } from './query-builder.js';
+import { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords } from './query-builder.js';
 
 export class BM25Search implements SearchPlugin {
   name = 'bm25-search';
@@ -72,7 +72,11 @@ export class BM25Search implements SearchPlugin {
     const sanitized = sanitizeFTS5Query(query);
     if (sanitized && sanitized !== '""') runQuery(sanitized, 1.5);
 
-    // Strategy 5: OR-mode with synonym expansion (broad recall)
+    // Strategy 5: Relaxed AND (entity + top content words, fewer terms than full AND)
+    const relaxedAnd = buildRelaxedANDQuery(query);
+    if (relaxedAnd && relaxedAnd !== andQuery) runQuery(relaxedAnd, 1.2);
+
+    // Strategy 6: OR-mode with synonym expansion (broad recall)
     const orQuery = buildORQuery(query);
     if (orQuery) runQuery(orQuery, 1.0);
 
