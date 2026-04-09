@@ -13,7 +13,7 @@ const STOP_WORDS = new Set([
   'been', 'being', 'also', 'just', 'than', 'then', 'very', 'too',
 ]);
 
-const EXPANSIONS: Record<string, string[]> = {
+export const EXPANSIONS: Record<string, string[]> = {
   // Recommendation / preference — targeted for LME preference failures
   recommend: ['suggest', 'prefer', 'favorite', 'enjoy'],
   suggest: ['recommend', 'prefer', 'favorite'],

@@ -110,9 +110,10 @@ for (let ci = 0; ci < conversations.length; ci++) {
   const kernel = new BenchKernel().open();
   const diaIdToSessId = new Map(); // dia_id → sess_id
 
-  // Pre-extract summaries and observations for enrichment
+  // Pre-extract summaries, observations, and events for enrichment
   const summaries = conv.session_summary || {};
   const observations = conv.observation || {};
+  const events = conv.event_summary || {};
 
   for (const session of sessions) {
     const sessId = `sess_${session.index}`;
@@ -136,6 +137,21 @@ for (let ci = 0; ci < conversations.length; ci++) {
             for (const fact of facts) {
               const text = Array.isArray(fact) ? fact[0] : fact;
               if (text) texts.push(`${speaker}: ${text}`);
+            }
+          }
+        }
+      }
+
+      // Enrich with event summaries (key events with dates)
+      const evtKey = `events_session_${session.index}`;
+      if (events[evtKey]) {
+        const evt = events[evtKey];
+        if (evt.date) texts.push(`Date: ${evt.date}`);
+        for (const [speaker, evtList] of Object.entries(evt)) {
+          if (speaker === 'date') continue;
+          if (Array.isArray(evtList)) {
+            for (const e of evtList) {
+              if (e) texts.push(`Event: ${e}`);
             }
           }
         }

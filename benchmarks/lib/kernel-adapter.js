@@ -14,7 +14,7 @@ const Database = require('better-sqlite3');
 const projectRoot = path.resolve(__dirname, '..', '..');
 const { migrations } = require(path.join(projectRoot, 'dist/plugins/storage/migrations.js'));
 const { sanitizeFTS5Query } = require(path.join(projectRoot, 'dist/plugins/search/fts5-utils.js'));
-const { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords } = require(path.join(projectRoot, 'dist/plugins/search/query-builder.js'));
+const { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, EXPANSIONS } = require(path.join(projectRoot, 'dist/plugins/search/query-builder.js'));
 
 // ── Vector search helpers (optional) ────────────────────────────────────────
 let _embedder = null;
@@ -132,7 +132,7 @@ class BenchKernel {
           SELECT o.id, bm25(obs_fts, 1.0, 0.75) AS score
           FROM obs_fts JOIN observations o ON o.rowid = obs_fts.rowid
           WHERE obs_fts MATCH ? ORDER BY score LIMIT ?
-        `).all(matchExpr, limit * 3);
+        `).all(matchExpr, limit * 5);
         for (const r of rows) {
           const relevance = Math.abs(r.score) * weight;
           if (!seen.has(r.id) || relevance > seen.get(r.id)) seen.set(r.id, relevance);
@@ -213,10 +213,27 @@ class BenchKernel {
         const rows = this.db.prepare(`SELECT id, content FROM observations WHERE id IN (${placeholders})`).all(...ids);
         const contentMap = new Map(rows.map(r => [r.id, r.content.toLowerCase()]));
 
+        // Build synonym lookup for query words
+        const synonymMap = new Map();
+        for (const w of queryWords) {
+          const syns = EXPANSIONS && EXPANSIONS[w] ? EXPANSIONS[w] : [];
+          synonymMap.set(w, syns);
+        }
+
         for (const [id, baseScore] of seen) {
           const content = contentMap.get(id);
           if (!content) continue;
-          const density = queryWords.filter(w => content.includes(w)).length / queryWords.length;
+          // Exact keyword density
+          const exactHits = queryWords.filter(w => content.includes(w)).length;
+          // Synonym-aware: check if any synonym matches
+          let synHits = 0;
+          for (const [w, syns] of synonymMap) {
+            if (!content.includes(w) && syns.some(s => content.includes(s))) {
+              synHits++;
+            }
+          }
+          const totalHits = exactHits + synHits * 0.7; // synonyms worth 70% of exact
+          const density = totalHits / queryWords.length;
           const bigramHits = queryBigrams.filter(bg => content.includes(bg)).length;
           const bigramScore = queryBigrams.length > 0 ? bigramHits / queryBigrams.length : 0;
           const boost = density * 3.0 + bigramScore * 2.0;

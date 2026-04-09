@@ -2,7 +2,7 @@ import type { SearchPlugin, PluginConfig, SearchResult, SearchOpts } from '../..
 import type { BetterSqlite3Storage } from '../storage/better-sqlite3.js';
 import { sanitizeFTS5Query } from './fts5-utils.js';
 import { extractBestSnippet } from './snippet-extractor.js';
-import { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords } from './query-builder.js';
+import { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, EXPANSIONS } from './query-builder.js';
 
 export class BM25Search implements SearchPlugin {
   name = 'bm25-search';
@@ -93,12 +93,21 @@ export class BM25Search implements SearchPlugin {
       queryBigrams.push(queryWords[i] + ' ' + queryWords[i + 1]);
     }
     if (queryWords.length > 0) {
-      for (const [id, entry] of seen) {
+      // Build synonym lookup
+      const synonymMap = new Map<string, string[]>();
+      for (const w of queryWords) {
+        synonymMap.set(w, EXPANSIONS[w] || []);
+      }
+      for (const [, entry] of seen) {
         const content = (entry.row.content || entry.row.summary || '').toLowerCase();
-        const density = queryWords.filter(w => content.includes(w)).length / queryWords.length;
+        const exactHits = queryWords.filter(w => content.includes(w)).length;
+        let synHits = 0;
+        for (const [w, syns] of synonymMap) {
+          if (!content.includes(w) && syns.some(s => content.includes(s))) synHits++;
+        }
+        const density = (exactHits + synHits * 0.7) / queryWords.length;
         const bigramHits = queryBigrams.filter(bg => content.includes(bg)).length;
         const bigramScore = queryBigrams.length > 0 ? bigramHits / queryBigrams.length : 0;
-        // Proportional boost: scale by existing score to avoid displacing high-BM25 results
         const boost = density * 0.4 + bigramScore * 0.3;
         entry.score *= (1 + boost);
       }
