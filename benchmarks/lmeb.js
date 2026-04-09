@@ -86,28 +86,33 @@ function discoverTasks(baseDir) {
       const taskDir = path.join(typeDir, taskName);
       if (!fs.statSync(taskDir).isDirectory()) continue;
 
-      const corpusFile = path.join(taskDir, 'corpus.jsonl');
-      if (!fs.existsSync(corpusFile)) continue;
+      // Corpus can be at task root or per-subset
+      const rootCorpus = path.join(taskDir, 'corpus.jsonl');
+      const hasRootCorpus = fs.existsSync(rootCorpus);
 
       // Find subsets (directories with queries.jsonl)
       const subsets = [];
       for (const item of fs.readdirSync(taskDir)) {
         const subDir = path.join(taskDir, item);
-        if (fs.statSync(subDir).isDirectory() && fs.existsSync(path.join(subDir, 'queries.jsonl'))) {
-          if (SUBSET_FILTER && item !== SUBSET_FILTER) continue;
-          subsets.push(item);
-        }
+        if (!fs.statSync(subDir).isDirectory()) continue;
+        if (!fs.existsSync(path.join(subDir, 'queries.jsonl'))) continue;
+        if (SUBSET_FILTER && item !== SUBSET_FILTER) continue;
+        // Per-subset corpus takes precedence, fall back to root
+        const subCorpus = path.join(subDir, 'corpus.jsonl');
+        const corpusPath = fs.existsSync(subCorpus) ? subCorpus : (hasRootCorpus ? rootCorpus : null);
+        if (!corpusPath) continue;
+        subsets.push({ name: item, corpusFile: corpusPath });
       }
 
       // Also check if queries.jsonl is at task root level
-      if (fs.existsSync(path.join(taskDir, 'queries.jsonl')) && fs.existsSync(path.join(taskDir, 'qrels.tsv'))) {
+      if (hasRootCorpus && fs.existsSync(path.join(taskDir, 'queries.jsonl')) && fs.existsSync(path.join(taskDir, 'qrels.tsv'))) {
         if (!SUBSET_FILTER || SUBSET_FILTER === 'default') {
-          subsets.push('_root');
+          subsets.push({ name: '_root', corpusFile: rootCorpus });
         }
       }
 
       if (subsets.length > 0) {
-        tasks.push({ memType, taskName, taskDir, corpusFile, subsets });
+        tasks.push({ memType, taskName, taskDir, subsets });
       }
     }
   }
@@ -158,23 +163,31 @@ const allTaskResults = [];
 const startTime = Date.now();
 
 for (const task of tasks) {
-  // Load corpus once per task
-  const corpus = readJsonl(task.corpusFile);
-  const corpusMap = new Map();
-  corpus.forEach(doc => corpusMap.set(doc.id, doc));
-
-  // Load candidates if available
-  const candidatesFile = path.join(task.taskDir, 'candidates.jsonl');
-  const candidatesByScene = new Map();
-  if (fs.existsSync(candidatesFile)) {
-    const candidates = readJsonl(candidatesFile);
-    candidates.forEach(c => candidatesByScene.set(c.scene_id, new Set(c.candidate_doc_ids)));
-  }
-
   for (const subset of task.subsets) {
-    const subDir = subset === '_root' ? task.taskDir : path.join(task.taskDir, subset);
+    const subDir = subset.name === '_root' ? task.taskDir : path.join(task.taskDir, subset.name);
     const queries = readJsonl(path.join(subDir, 'queries.jsonl'));
     const qrels = readQrels(path.join(subDir, 'qrels.tsv'));
+
+    // Load corpus for this subset
+    const corpus = readJsonl(subset.corpusFile);
+
+    // Skip huge corpuses (>50K docs) — too slow for FTS5 per-query rebuild
+    if (corpus.length > 50000) {
+      console.log(`  ${task.taskName}/${subset.name}: SKIPPED (corpus ${corpus.length} docs too large)`);
+      continue;
+    }
+
+    // Load candidates if available
+    const candidatesFile = path.join(subDir, 'candidates.jsonl');
+    const rootCandidates = path.join(task.taskDir, 'candidates.jsonl');
+    const candFile = fs.existsSync(candidatesFile) ? candidatesFile : (fs.existsSync(rootCandidates) ? rootCandidates : null);
+    const candidatesByScene = new Map();
+    if (candFile) {
+      const candidates = readJsonl(candFile);
+      candidates.forEach(c => candidatesByScene.set(c.scene_id, new Set(c.candidate_doc_ids)));
+    }
+
+    {
 
     if (!queries.length) continue;
 
@@ -194,7 +207,8 @@ for (const task of tasks) {
       if (!relevantIds || relevantIds.size === 0) continue;
 
       // Get scene_id for candidate filtering
-      const sceneId = query.id.split('_').slice(0, 2).join('_');
+      const qid = String(query.id);
+      const sceneId = qid.split('_').slice(0, 2).join('_');
       const candidateSet = candidatesByScene.get(sceneId);
 
       let results = kernel.search(query.text, TOP_K * 5); // over-fetch for filtering
@@ -218,7 +232,7 @@ for (const task of tasks) {
     if (queryCount > 0) {
       const avgNdcg = ndcgSum / queryCount;
       const avgRcap = rcapSum / queryCount;
-      const subsetName = subset === '_root' ? 'default' : subset;
+      const subsetName = subset.name === '_root' ? 'default' : subset.name;
       console.log(`  ${task.taskName}/${subsetName}: NDCG@${TOP_K}=${avgNdcg.toFixed(3)}  R_cap@${TOP_K}=${formatPercent(avgRcap)}  (${queryCount} queries)`);
 
       allTaskResults.push({
@@ -229,6 +243,7 @@ for (const task of tasks) {
         rcap_at_k: avgRcap,
         queries: queryCount,
       });
+    }
     }
   }
 }

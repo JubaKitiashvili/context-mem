@@ -53,8 +53,9 @@ function buildFTS5Query(query) {
   // Expand with synonyms
   const expanded = new Set(words);
   for (const w of words) {
-    const syns = EXPANSIONS[w];
-    if (syns) syns.forEach(s => expanded.add(s));
+    if (Object.prototype.hasOwnProperty.call(EXPANSIONS, w)) {
+      EXPANSIONS[w].forEach(s => expanded.add(s));
+    }
   }
   return [...expanded].map(w => `"${w}"`).join(' OR ');
 }
