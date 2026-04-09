@@ -845,6 +845,289 @@ function getAgents() {
   } catch { return []; }
 }
 
+// --- Total Recall API helpers ---
+
+function getImportanceDistribution() {
+  try {
+    const rows = db.prepare(`
+      SELECT
+        CASE
+          WHEN importance_score >= 0.9 THEN '0.9-1.0'
+          WHEN importance_score >= 0.8 THEN '0.8-0.9'
+          WHEN importance_score >= 0.7 THEN '0.7-0.8'
+          WHEN importance_score >= 0.6 THEN '0.6-0.7'
+          WHEN importance_score >= 0.5 THEN '0.5-0.6'
+          WHEN importance_score >= 0.4 THEN '0.4-0.5'
+          WHEN importance_score >= 0.3 THEN '0.3-0.4'
+          ELSE '0.0-0.3'
+        END as bucket,
+        COUNT(*) as count
+      FROM observations
+      GROUP BY bucket
+      ORDER BY bucket DESC
+    `).all();
+    return rows;
+  } catch { return []; }
+}
+
+function getCompressionTiers() {
+  try {
+    const rows = db.prepare(`
+      SELECT compression_tier as tier, COUNT(*) as count
+      FROM observations
+      GROUP BY compression_tier
+      ORDER BY CASE compression_tier
+        WHEN 'verbatim' THEN 1
+        WHEN 'light' THEN 2
+        WHEN 'medium' THEN 3
+        WHEN 'distilled' THEN 4
+        ELSE 5
+      END
+    `).all();
+    const total = rows.reduce((s, r) => s + r.count, 0);
+    return { tiers: rows, total };
+  } catch { return { tiers: [], total: 0 }; }
+}
+
+function getSignificanceFlags() {
+  try {
+    const flags = { DECISION: 0, ORIGIN: 0, PIVOT: 0, CORE: 0, MILESTONE: 0, PROBLEM: 0 };
+    const rows = db.prepare("SELECT metadata FROM observations WHERE metadata LIKE '%significance_flags%'").all();
+    for (const row of rows) {
+      try {
+        const meta = JSON.parse(row.metadata);
+        if (Array.isArray(meta.significance_flags)) {
+          for (const f of meta.significance_flags) {
+            if (flags[f] !== undefined) flags[f]++;
+          }
+        }
+      } catch {}
+    }
+    const pinned = db.prepare('SELECT COUNT(*) as v FROM observations WHERE pinned = 1').get();
+    return { flags, pinned_count: pinned?.v || 0 };
+  } catch { return { flags: {}, pinned_count: 0 }; }
+}
+
+function getTopicsList(limit = 50) {
+  try {
+    return db.prepare(
+      'SELECT id, name, observation_count, last_seen FROM topics ORDER BY observation_count DESC LIMIT ?'
+    ).all(limit);
+  } catch { return []; }
+}
+
+function getTopicObservations(topicName, limit = 20) {
+  try {
+    return db.prepare(`
+      SELECT o.id, o.type, o.summary, substr(o.content, 1, 300) as content_preview,
+             o.indexed_at, o.importance_score, o.pinned, o.compression_tier, o.metadata
+      FROM observation_topics ot
+      JOIN topics t ON t.id = ot.topic_id
+      JOIN observations o ON o.id = ot.observation_id
+      WHERE t.name = ?
+      ORDER BY o.importance_score DESC, o.indexed_at DESC
+      LIMIT ?
+    `).all(topicName, limit);
+  } catch { return []; }
+}
+
+function getEntitiesSummary() {
+  try {
+    const byType = db.prepare(
+      'SELECT entity_type, COUNT(*) as count FROM entities GROUP BY entity_type ORDER BY count DESC'
+    ).all();
+    const total = byType.reduce((s, r) => s + r.count, 0);
+    const topByRelationships = db.prepare(`
+      SELECT e.name, e.entity_type,
+             (SELECT COUNT(*) FROM relationships r WHERE r.from_entity = e.id OR r.to_entity = e.id) as rel_count
+      FROM entities e
+      ORDER BY rel_count DESC LIMIT 10
+    `).all();
+    return { by_type: byType, total, top_connected: topByRelationships };
+  } catch { return { by_type: [], total: 0, top_connected: [] }; }
+}
+
+function getPeopleList(limit = 20) {
+  try {
+    return db.prepare(`
+      SELECT e.id, e.name, e.created_at,
+             (SELECT COUNT(*) FROM relationships r WHERE r.from_entity = e.id OR r.to_entity = e.id) as rel_count
+      FROM entities e WHERE e.entity_type = 'person'
+      ORDER BY rel_count DESC, e.created_at DESC LIMIT ?
+    `).all(limit);
+  } catch { return []; }
+}
+
+function getTemporalFacts() {
+  try {
+    const active = db.prepare('SELECT COUNT(*) as v FROM knowledge WHERE archived = 0 AND valid_to IS NULL').get();
+    const superseded = db.prepare('SELECT COUNT(*) as v FROM knowledge WHERE valid_to IS NOT NULL').get();
+    const recent = db.prepare(`
+      SELECT id, title, valid_from, valid_to, superseded_by
+      FROM knowledge WHERE valid_to IS NOT NULL
+      ORDER BY valid_to DESC LIMIT 5
+    `).all();
+    return { active: active?.v || 0, superseded: superseded?.v || 0, recent_supersessions: recent };
+  } catch { return { active: 0, superseded: 0, recent_supersessions: [] }; }
+}
+
+function getPressureEntries(limit = 10) {
+  try {
+    const now = Date.now();
+    const rows = db.prepare(`
+      SELECT id, type, summary, content, indexed_at, importance_score, access_count, pinned, last_useful_at
+      FROM observations WHERE pinned = 0
+      ORDER BY importance_score ASC, indexed_at ASC LIMIT 50
+    `).all();
+    const entries = [];
+    for (const o of rows) {
+      const ageDays = (now - o.indexed_at) / (24 * 60 * 60 * 1000);
+      const recency = Math.pow(0.5, ageDays / 14);
+      const accessFactor = Math.log2(Math.max(1, (o.access_count || 0) + 1)) / 5;
+      const usefulFactor = o.last_useful_at ? 0.5 : 0;
+      const importance = o.importance_score || 0.5;
+      const survival = importance * 0.4 + recency * 0.3 + accessFactor * 0.2 + usefulFactor * 0.1;
+      const risk = Math.max(0, Math.min(1, 1 - survival));
+      const reasons = [];
+      if (importance < 0.4) reasons.push('low importance');
+      if (ageDays > 30) reasons.push(Math.round(ageDays) + ' days old');
+      if (!o.access_count) reasons.push('never accessed');
+      if (!o.last_useful_at) reasons.push('never useful');
+      entries.push({
+        id: o.id, title: (o.summary || o.content || '').slice(0, 100), type: o.type,
+        risk_score: Math.round(risk * 100) / 100, reasons, age_days: Math.round(ageDays),
+        access_count: o.access_count || 0, importance_score: o.importance_score
+      });
+    }
+    return entries.sort((a, b) => b.risk_score - a.risk_score).slice(0, limit);
+  } catch { return []; }
+}
+
+function getWakeUpPreview() {
+  try {
+    const profile = db.prepare('SELECT content FROM project_profile WHERE id = 1').get();
+    const knowledge = db.prepare(`
+      SELECT title, content, relevance_score, access_count FROM knowledge
+      WHERE archived = 0 AND valid_to IS NULL
+      ORDER BY relevance_score DESC, access_count DESC LIMIT 5
+    `).all();
+    const entities = db.prepare(`
+      SELECT e.name, e.entity_type,
+             (SELECT COUNT(*) FROM relationships r WHERE r.from_entity = e.id OR r.to_entity = e.id) as rel_count
+      FROM entities e ORDER BY rel_count DESC, e.updated_at DESC LIMIT 5
+    `).all();
+    return {
+      l0_profile: profile?.content || '',
+      l1_critical: knowledge.map(k => ({ title: k.title, content: k.content.slice(0, 120), score: k.relevance_score })),
+      l3_entities: entities.filter(e => e.rel_count > 0).map(e => ({ name: e.name, type: e.entity_type, connections: e.rel_count })),
+    };
+  } catch { return { l0_profile: '', l1_critical: [], l3_entities: [] }; }
+}
+
+function getDecisionTrail(query) {
+  try {
+    const decisions = db.prepare(`
+      SELECT id, content, summary, indexed_at, metadata, session_id
+      FROM observations
+      WHERE (type = 'decision' OR metadata LIKE '%DECISION%')
+        AND (content LIKE ? OR summary LIKE ?)
+      ORDER BY indexed_at DESC LIMIT 5
+    `).all('%' + query + '%', '%' + query + '%');
+    if (decisions.length === 0) return null;
+    const d = decisions[0];
+    const evidence = [];
+    if (d.session_id) {
+      const events = db.prepare(`
+        SELECT event_type, data, timestamp FROM events
+        WHERE session_id = ? AND timestamp < ? AND timestamp > ?
+        ORDER BY timestamp ASC LIMIT 15
+      `).all(d.session_id, d.indexed_at, d.indexed_at - 3600000);
+      for (const e of events) {
+        let data = {}; try { data = JSON.parse(e.data); } catch {}
+        evidence.push({ type: e.event_type, content: data.file || JSON.stringify(data).slice(0, 150), timestamp: e.timestamp });
+      }
+    }
+    evidence.push({ type: 'decision', content: (d.summary || d.content).slice(0, 300), timestamp: d.indexed_at });
+    let flags = []; try { flags = JSON.parse(d.metadata).significance_flags || []; } catch {}
+    return { decision: (d.summary || d.content).slice(0, 200), date: d.indexed_at, evidence, flags };
+  } catch { return null; }
+}
+
+function generateNarrativeApi(format, sessionId, topic) {
+  try {
+    const data = { decisions: [], errors: [], changes: [], patterns: [], people: [] };
+    let where = '1=1'; const params = [];
+    if (sessionId) { where += ' AND session_id = ?'; params.push(sessionId); }
+    if (topic) { where += ' AND (content LIKE ? OR summary LIKE ?)'; params.push('%' + topic + '%', '%' + topic + '%'); }
+    try {
+      data.decisions = db.prepare(`SELECT summary, content FROM observations WHERE ${where} AND type = 'decision' ORDER BY indexed_at DESC LIMIT 10`).all(...params).map(d => (d.summary || d.content).slice(0, 150));
+      data.errors = db.prepare(`SELECT summary, content FROM observations WHERE ${where} AND type = 'error' ORDER BY indexed_at DESC LIMIT 5`).all(...params).map(e => (e.summary || e.content).slice(0, 150));
+      data.changes = db.prepare(`SELECT summary, content FROM observations WHERE ${where} AND type IN ('code','commit') ORDER BY indexed_at DESC LIMIT 10`).all(...params).map(c => (c.summary || c.content).slice(0, 150));
+    } catch {}
+    try { data.patterns = db.prepare("SELECT title FROM knowledge WHERE category = 'pattern' AND archived = 0 ORDER BY access_count DESC LIMIT 5").all().map(p => p.title); } catch {}
+    try { data.people = db.prepare("SELECT name FROM entities WHERE entity_type = 'person' ORDER BY updated_at DESC LIMIT 5").all().map(p => p.name); } catch {}
+    // Template rendering
+    if (format === 'pr') {
+      let t = '## Summary\n'; t += data.changes.length ? data.changes.map(c => '- ' + c).join('\n') : 'No changes recorded.';
+      if (data.decisions.length) t += '\n\n## Decisions\n' + data.decisions.map(d => '- ' + d).join('\n');
+      if (data.errors.length) t += '\n\n## Issues Resolved\n' + data.errors.map(e => '- ' + e).join('\n');
+      t += '\n\n## Test Plan\n- [ ] Verify changes\n- [ ] Run test suite'; return t;
+    } else if (format === 'standup') {
+      const done = data.changes.length ? data.changes.slice(0, 3).map(c => '- ' + c).join('\n') : '- No changes';
+      const blockers = data.errors.length ? data.errors.slice(0, 2).map(e => '- ' + e).join('\n') : '- None';
+      return '**Done:**\n' + done + '\n\n**Next:**\n- Continue current work\n\n**Blockers:**\n' + blockers;
+    } else if (format === 'adr') {
+      const title = data.decisions[0] || 'Untitled Decision';
+      const ctx = data.errors.length ? data.errors.map(e => '- ' + e).join('\n') : '- Context not recorded';
+      const dec = data.decisions.length ? data.decisions.map(d => '- ' + d).join('\n') : '- Decision not recorded';
+      const con = data.changes.length ? data.changes.slice(0, 3).map(c => '- ' + c).join('\n') : '- Not yet observed';
+      return '# ' + title + '\n\n## Context\n' + ctx + '\n\n## Decision\n' + dec + '\n\n## Consequences\n' + con;
+    } else if (format === 'onboarding') {
+      let t = '# Project Overview';
+      if (data.patterns.length) t += '\n\n## Patterns\n' + data.patterns.map(p => '- ' + p).join('\n');
+      if (data.decisions.length) t += '\n\n## Key Decisions\n' + data.decisions.map(d => '- ' + d).join('\n');
+      if (data.people.length) t += '\n\n## Team\n' + data.people.map(p => '- ' + p).join('\n');
+      return t;
+    }
+    return 'Unknown format: ' + format;
+  } catch (e) { return 'Error: ' + e.message; }
+}
+
+function getPinnedObservations(limit = 20) {
+  try {
+    return db.prepare(`
+      SELECT id, type, summary, substr(content, 1, 300) as content_preview,
+             indexed_at, importance_score, compression_tier, metadata
+      FROM observations WHERE pinned = 1
+      ORDER BY indexed_at DESC LIMIT ?
+    `).all(limit);
+  } catch { return []; }
+}
+
+function getTunnels() {
+  try {
+    const topics = db.prepare('SELECT name FROM topics WHERE observation_count > 0').all();
+    // Check global store for cross-project matches
+    const globalDbPath = path.join(os.homedir(), '.context-mem', 'global', 'store.db');
+    if (!fs.existsSync(globalDbPath)) return [];
+    const globalDb = new Database(globalDbPath, { readonly: true });
+    const tunnels = [];
+    for (const t of topics) {
+      try {
+        const matches = globalDb.prepare("SELECT source_project FROM global_knowledge WHERE title LIKE ? OR content LIKE ? LIMIT 5")
+          .all('%' + t.name + '%', '%' + t.name + '%');
+        if (matches.length > 0) {
+          const projects = new Set([currentProject || PROJECT_DIR]);
+          for (const m of matches) if (m.source_project) projects.add(m.source_project);
+          if (projects.size >= 2) tunnels.push({ topic: t.name, projects: [...projects] });
+        }
+      } catch {}
+    }
+    globalDb.close();
+    return tunnels;
+  } catch { return []; }
+}
+
 // --- API router ---
 function handleApi(req, res) {
   const url = new URL(req.url, `http://localhost:${PORT}`);
@@ -1220,6 +1503,58 @@ function handleApi(req, res) {
           Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100),
           url.searchParams.get('category') || null
         );
+        break;
+      // --- Total Recall API routes ---
+      case '/api/importance-distribution':
+        data = getImportanceDistribution();
+        break;
+      case '/api/compression-tiers':
+        data = getCompressionTiers();
+        break;
+      case '/api/significance-flags':
+        data = getSignificanceFlags();
+        break;
+      case '/api/topics':
+        data = getTopicsList(Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 200));
+        break;
+      case '/api/topic-observations':
+        data = getTopicObservations(
+          url.searchParams.get('topic') || '',
+          Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100)
+        );
+        break;
+      case '/api/entities-summary':
+        data = getEntitiesSummary();
+        break;
+      case '/api/people':
+        data = getPeopleList(Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100));
+        break;
+      case '/api/temporal-facts':
+        data = getTemporalFacts();
+        break;
+      case '/api/pressure':
+        data = getPressureEntries(Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 50));
+        break;
+      case '/api/wake-up-preview':
+        data = getWakeUpPreview();
+        break;
+      case '/api/decision-trail':
+        data = getDecisionTrail(url.searchParams.get('q') || '');
+        break;
+      case '/api/narrative': {
+        const narrative = generateNarrativeApi(
+          url.searchParams.get('format') || 'pr',
+          url.searchParams.get('session') || null,
+          url.searchParams.get('topic') || null
+        );
+        data = { narrative, format: url.searchParams.get('format') || 'pr' };
+        break;
+      }
+      case '/api/pinned':
+        data = getPinnedObservations(Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100));
+        break;
+      case '/api/tunnels':
+        data = getTunnels();
         break;
       default:
         // Path-based observation lookup: /api/observation/<id>
