@@ -45,7 +45,7 @@ export class BM25Search implements SearchPlugin {
           JOIN observations o ON o.rowid = obs_fts.rowid
           WHERE obs_fts MATCH ?${filterSQL}
           ORDER BY bm25(obs_fts) LIMIT ?`;
-        const rows = this.storage.prepare(sql).all(matchExpr, ...filterParams, limit * 3) as RowData[];
+        const rows = this.storage.prepare(sql).all(matchExpr, ...filterParams, limit * 5) as RowData[];
         for (const row of rows) {
           const score = Math.abs(row.relevance) * weight;
           const existing = seen.get(row.id);
@@ -92,23 +92,43 @@ export class BM25Search implements SearchPlugin {
     for (let i = 0; i < queryWords.length - 1; i++) {
       queryBigrams.push(queryWords[i] + ' ' + queryWords[i + 1]);
     }
-    if (queryWords.length > 0) {
+    if (queryWords.length > 0 && seen.size > 0) {
       // Build synonym lookup
       const synonymMap = new Map<string, string[]>();
       for (const w of queryWords) {
         synonymMap.set(w, EXPANSIONS[w] || []);
       }
+
+      // Compute IDF: words appearing in fewer documents get higher weight
+      const docFreq = new Map<string, number>();
+      for (const w of queryWords) {
+        let count = 0;
+        for (const [, entry] of seen) {
+          const content = (entry.row.content || entry.row.summary || '').toLowerCase();
+          if (content.includes(w)) count++;
+        }
+        docFreq.set(w, count);
+      }
+      const N = seen.size || 1;
+
       for (const [, entry] of seen) {
         const content = (entry.row.content || entry.row.summary || '').toLowerCase();
-        const exactHits = queryWords.filter(w => content.includes(w)).length;
-        let synHits = 0;
-        for (const [w, syns] of synonymMap) {
-          if (!content.includes(w) && syns.some(s => content.includes(s))) synHits++;
+        let weightedHits = 0;
+        for (const w of queryWords) {
+          const df = docFreq.get(w) || 0;
+          const idf = Math.log((N + 1) / (df + 1));
+          if (content.includes(w)) {
+            weightedHits += idf;
+          } else {
+            const syns = synonymMap.get(w) || [];
+            if (syns.some(s => content.includes(s))) weightedHits += idf * 0.7;
+          }
         }
-        const density = (exactHits + synHits * 0.7) / queryWords.length;
+        const maxIdf = queryWords.reduce((sum, w) => sum + Math.log((N + 1) / ((docFreq.get(w) || 0) + 1)), 0);
+        const idfDensity = maxIdf > 0 ? weightedHits / maxIdf : 0;
         const bigramHits = queryBigrams.filter(bg => content.includes(bg)).length;
         const bigramScore = queryBigrams.length > 0 ? bigramHits / queryBigrams.length : 0;
-        const boost = density * 0.4 + bigramScore * 0.3;
+        const boost = idfDensity * 0.5 + bigramScore * 0.3;
         entry.score *= (1 + boost);
       }
     }
