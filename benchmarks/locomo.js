@@ -52,6 +52,7 @@ const LIMIT = parseInt(getArg('limit', '0'), 10);
 const GRANULARITY = getArg('granularity', 'session');
 const TOP_K = parseInt(getArg('top-k', '10'), 10);
 const OUT_FILE = getArg('out', null);
+const USE_VECTOR = args.includes('--vector');
 
 // ── Load data ───────────────────────────────────────────────────────────────
 printHeader('context-mem × LoCoMo Benchmark');
@@ -98,6 +99,7 @@ const resultsLog = [];
 const startTime = Date.now();
 let totalQuestions = 0;
 
+(async () => {
 for (let ci = 0; ci < conversations.length; ci++) {
   const conv = conversations[ci];
   const convData = conv.conversation || conv;
@@ -173,6 +175,11 @@ for (let ci = 0; ci < conversations.length; ci++) {
     }
   }
 
+  // Vector embedding (when enabled)
+  if (USE_VECTOR) {
+    await kernel.embedAll();
+  }
+
   // Run each QA pair
   for (const qa of qaPairs) {
     const question = qa.question;
@@ -192,7 +199,9 @@ for (let ci = 0; ci < conversations.length; ci++) {
 
     if (!correctIds.length) continue;
 
-    const results = kernel.search(question, TOP_K);
+    const results = USE_VECTOR
+      ? await kernel.searchAsync(question, TOP_K)
+      : kernel.search(question, TOP_K);
     const retrievedIds = results.map(r => r.id);
 
     const recall = correctIds.some(cid => retrievedIds.includes(cid)) ? 1.0 : 0.0;
@@ -260,3 +269,4 @@ fs.writeFileSync(outPath, JSON.stringify({
   details: resultsLog,
 }, null, 2));
 console.log(`  Results saved: ${outPath}`);
+})();
