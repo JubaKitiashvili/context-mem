@@ -14,7 +14,7 @@ const Database = require('better-sqlite3');
 const projectRoot = path.resolve(__dirname, '..', '..');
 const { migrations } = require(path.join(projectRoot, 'dist/plugins/storage/migrations.js'));
 const { sanitizeFTS5Query } = require(path.join(projectRoot, 'dist/plugins/search/fts5-utils.js'));
-const { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, extractKeywords } = require(path.join(projectRoot, 'dist/plugins/search/query-builder.js'));
+const { buildORQuery, buildANDQuery, buildEntityQuery, extractKeywords } = require(path.join(projectRoot, 'dist/plugins/search/query-builder.js'));
 
 // ── Vector search helpers (optional) ────────────────────────────────────────
 let _embedder = null;
@@ -144,11 +144,7 @@ class BenchKernel {
     const andQ = buildANDQuery(query);
     if (andQ) runFTS(andQ, 2.0);
 
-    // Strategy 2: Phrase matching (core: buildPhraseQuery) — consecutive word pairs
-    const phraseQ = buildPhraseQuery(query);
-    if (phraseQ) runFTS(phraseQ, 1.9);
-
-    // Strategy 3: Entity-focused (core: buildEntityQuery) — names, dates
+    // Strategy 2: Entity-focused (core: buildEntityQuery) — names, dates
     const entityQ = buildEntityQuery(query);
     if (entityQ) runFTS(entityQ, 1.8);
 
