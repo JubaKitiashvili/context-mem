@@ -191,7 +191,7 @@ class BenchKernel {
         const simC = docEmb.content ? cosineSimilarity(this._queryEmbedding, docEmb.content) : 0;
         const sim = Math.max(simS, simC);
         if (sim >= 0.15) {
-          const relevance = sim * 8.0;
+          const relevance = sim * 3.0;
           if (!seen.has(docId)) seen.set(docId, relevance);
           else seen.set(docId, seen.get(docId) + relevance);
         }
