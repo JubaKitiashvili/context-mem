@@ -248,6 +248,48 @@ class BenchKernel {
       }
     }
 
+    // ── Reranker: keyword density + exact phrase + bigram matching ────────
+    const queryLower = query.toLowerCase();
+    const queryWords = queryLower.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w));
+    // Build bigrams from query
+    const queryBigrams = [];
+    for (let i = 0; i < queryWords.length - 1; i++) {
+      queryBigrams.push(queryWords[i] + ' ' + queryWords[i + 1]);
+    }
+
+    if (queryWords.length > 0 && seen.size > 0) {
+      // Fetch content for all candidates
+      const ids = [...seen.keys()];
+      const placeholders = ids.map(() => '?').join(',');
+      let contentMap;
+      try {
+        const rows = this.db.prepare(`SELECT id, content FROM observations WHERE id IN (${placeholders})`).all(...ids);
+        contentMap = new Map(rows.map(r => [r.id, r.content.toLowerCase()]));
+      } catch {
+        contentMap = new Map();
+      }
+
+      for (const [id, baseScore] of seen) {
+        const content = contentMap.get(id);
+        if (!content) continue;
+
+        // Keyword density: what fraction of query keywords appear in this doc
+        const keywordHits = queryWords.filter(w => content.includes(w)).length;
+        const density = keywordHits / queryWords.length;
+
+        // Bigram matching: consecutive query words appearing together
+        const bigramHits = queryBigrams.filter(bg => content.includes(bg)).length;
+        const bigramScore = queryBigrams.length > 0 ? bigramHits / queryBigrams.length : 0;
+
+        // Exact phrase match (huge boost)
+        const phraseMatch = content.includes(queryLower.replace(/[^\w\s]/g, '').trim().slice(0, 50)) ? 2.0 : 0;
+
+        // Combined rerank score
+        const boost = density * 3.0 + bigramScore * 2.0 + phraseMatch;
+        seen.set(id, baseScore + boost);
+      }
+    }
+
     // Sort by relevance (higher = better) and return top-K
     return [...seen.entries()]
       .sort((a, b) => b[1] - a[1])
