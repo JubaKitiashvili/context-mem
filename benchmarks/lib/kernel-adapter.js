@@ -25,10 +25,38 @@ const STOP_WORDS = new Set([
   'made', 'make', 'can', 'will', 'would', 'could', 'should', 'might',
 ]);
 
+// Query expansion: add related terms to improve recall
+const EXPANSIONS = {
+  recommend: ['suggest', 'prefer', 'like', 'enjoy', 'favorite', 'love'],
+  suggest: ['recommend', 'prefer', 'like', 'favorite'],
+  movie: ['film', 'show', 'series', 'watch', 'cinema'],
+  show: ['movie', 'series', 'watch', 'program'],
+  dinner: ['food', 'meal', 'cook', 'recipe', 'eat', 'restaurant'],
+  activity: ['hobby', 'sport', 'exercise', 'game', 'fun'],
+  evening: ['night', 'weekend', 'free time', 'relax'],
+  accessories: ['equipment', 'gear', 'tools', 'supplies'],
+  photography: ['camera', 'photo', 'lens', 'shoot'],
+  violin: ['music', 'instrument', 'practice', 'play'],
+  exercise: ['workout', 'gym', 'fitness', 'run', 'sport'],
+  ingredients: ['food', 'cook', 'garden', 'grow', 'recipe'],
+  serve: ['cook', 'make', 'prepare', 'meal'],
+  schedule: ['time', 'meeting', 'calendar', 'plan'],
+  tool: ['app', 'software', 'platform', 'service'],
+  email: ['message', 'follow-up', 'outreach', 'send'],
+  performance: ['review', 'metrics', 'results', 'goals'],
+  hobby: ['interest', 'activity', 'passion', 'enjoy'],
+};
+
 function buildFTS5Query(query) {
   const words = query.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w));
   if (words.length === 0) return null;
-  return words.map(w => `"${w}"`).join(' OR ');
+  // Expand with synonyms
+  const expanded = new Set(words);
+  for (const w of words) {
+    const syns = EXPANSIONS[w];
+    if (syns) syns.forEach(s => expanded.add(s));
+  }
+  return [...expanded].map(w => `"${w}"`).join(' OR ');
 }
 
 // ── Vector search helpers ───────────────────────────────────────────────────

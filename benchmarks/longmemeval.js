@@ -45,6 +45,7 @@ function getArg(name, defaultVal) {
 
 const LIMIT = parseInt(getArg('limit', '0'), 10);
 const GRANULARITY = getArg('granularity', 'session');
+const USE_VECTOR = args.includes('--vector');
 const TOP_K = parseInt(getArg('top-k', '10'), 10);
 const OUT_FILE = getArg('out', null);
 
@@ -70,6 +71,7 @@ const perType = {};
 const resultsLog = [];
 const startTime = Date.now();
 
+(async () => {
 for (let qi = 0; qi < entries.length; qi++) {
   const entry = entries[qi];
   const question = entry.question || entry.query;
@@ -110,8 +112,15 @@ for (let qi = 0; qi < entries.length; qi++) {
     }
   }
 
-  // Query
-  const results = kernel.search(question, Math.max(TOP_K, 10));
+  // Vector embedding (when enabled)
+  if (USE_VECTOR) {
+    await kernel.embedAll();
+  }
+
+  // Query (hybrid when vector enabled)
+  const results = USE_VECTOR
+    ? await kernel.searchAsync(question, Math.max(TOP_K, 10))
+    : kernel.search(question, Math.max(TOP_K, 10));
   const retrievedIds = results.map(r => kernel.resolveId(r.id));
 
   // For turn granularity, map back to session IDs for scoring
@@ -201,3 +210,5 @@ fs.writeFileSync(outPath, JSON.stringify({
   details: resultsLog,
 }, null, 2));
 console.log(`  Results saved: ${outPath}`);
+
+})().catch(e => { console.error(e); process.exit(1); });

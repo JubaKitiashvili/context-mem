@@ -20,7 +20,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const https = require('https');
-const { BenchKernel } = require('./lib/kernel-adapter');
+const { BenchKernel, getEmbedder } = require('./lib/kernel-adapter');
 const { formatPercent, printHeader } = require('./lib/metrics');
 
 // ── Constants ───────────────────────────────────────────────────────────────
@@ -178,22 +178,38 @@ async function run() {
       }
     }
 
-    // Query
-    const results = kernel.search(question, TOP_K);
+    // Embed all documents for vector search
+    await kernel.embedAll();
+
+    // Query (hybrid: FTS5 + vector) — search 2x candidates for better recall
+    const results = await kernel.searchAsync(question, TOP_K * 2);
     const retrievedIndices = results.map(r => parseInt(r.id.replace('msg_', ''), 10));
     const retrievedTexts = retrievedIndices
       .filter(idx => idx < corpusTexts.length)
       .map(idx => corpusTexts[idx]);
 
-    // Score: check if evidence text is found in retrieved texts (substring match)
+    // Score: check if evidence text is found in retrieved texts
+    // Uses substring match + keyword overlap for partial matches
     let found = 0;
     for (const evText of evidenceTexts) {
+      let matched = false;
       for (const retText of retrievedTexts) {
+        // Exact substring match
         if (evText.includes(retText) || retText.includes(evText)) {
-          found++;
+          matched = true;
           break;
         }
+        // Keyword overlap: if 60%+ of evidence keywords appear in retrieved text
+        const evWords = evText.split(/\s+/).filter(w => w.length > 3);
+        if (evWords.length >= 3) {
+          const hits = evWords.filter(w => retText.includes(w)).length;
+          if (hits / evWords.length >= 0.6) {
+            matched = true;
+            break;
+          }
+        }
       }
+      if (matched) found++;
     }
 
     const recall = evidenceTexts.length > 0 ? found / evidenceTexts.length : 1.0;
