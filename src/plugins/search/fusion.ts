@@ -259,6 +259,63 @@ export function rerank(results: SearchResult[], intentType: SearchIntent['intent
   }).sort((a, b) => b.relevance_score - a.relevance_score);
 }
 
+/**
+ * MMR (Maximal Marginal Relevance) diversification.
+ * Prevents top-K from being dominated by near-duplicate results.
+ * Uses snippet overlap as a proxy for similarity.
+ */
+function mmrDiversify(results: SearchResult[], limit: number, lambda = 0.7): SearchResult[] {
+  if (results.length <= limit) return results;
+
+  const selected: SearchResult[] = [];
+  const remaining = [...results];
+
+  // Always take the top result
+  selected.push(remaining.shift()!);
+
+  while (selected.length < limit && remaining.length > 0) {
+    let bestIdx = 0;
+    let bestScore = -Infinity;
+
+    for (let i = 0; i < remaining.length; i++) {
+      const candidate = remaining[i];
+      const relevance = candidate.relevance_score;
+
+      // Max similarity to any already-selected result (snippet overlap)
+      let maxSim = 0;
+      const candSnippet = (candidate.snippet || candidate.title || '').toLowerCase();
+      for (const sel of selected) {
+        const selSnippet = (sel.snippet || sel.title || '').toLowerCase();
+        const overlap = snippetOverlap(candSnippet, selSnippet);
+        if (overlap > maxSim) maxSim = overlap;
+      }
+
+      // MMR score: balance relevance vs diversity
+      const mmrScore = lambda * relevance - (1 - lambda) * maxSim * relevance;
+      if (mmrScore > bestScore) {
+        bestScore = mmrScore;
+        bestIdx = i;
+      }
+    }
+
+    selected.push(remaining.splice(bestIdx, 1)[0]);
+  }
+
+  return selected;
+}
+
+/** Compute word-level overlap ratio between two snippets. */
+function snippetOverlap(a: string, b: string): number {
+  const wordsA = new Set(a.split(/\s+/).filter(w => w.length >= 3));
+  const wordsB = new Set(b.split(/\s+/).filter(w => w.length >= 3));
+  if (wordsA.size === 0 || wordsB.size === 0) return 0;
+  let overlap = 0;
+  for (const w of wordsA) {
+    if (wordsB.has(w)) overlap++;
+  }
+  return overlap / Math.min(wordsA.size, wordsB.size);
+}
+
 interface BlockPlugins {
   session: SearchPlugin[];
   project: SearchPlugin[];

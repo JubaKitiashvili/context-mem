@@ -2,7 +2,7 @@ import type { SearchPlugin, PluginConfig, SearchResult, SearchOpts } from '../..
 import type { BetterSqlite3Storage } from '../storage/better-sqlite3.js';
 import { sanitizeFTS5Query } from './fts5-utils.js';
 import { extractBestSnippet } from './snippet-extractor.js';
-import { buildORQuery, buildANDQuery, buildEntityQuery, extractKeywords } from './query-builder.js';
+import { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, extractKeywords } from './query-builder.js';
 
 export class BM25Search implements SearchPlugin {
   name = 'bm25-search';
@@ -60,17 +60,45 @@ export class BM25Search implements SearchPlugin {
     const andQuery = buildANDQuery(query);
     if (andQuery) runQuery(andQuery, 2.0);
 
-    // Strategy 2: Entity-focused (proper nouns, dates)
+    // Strategy 2: Phrase matching (consecutive keyword pairs)
+    const phraseQuery = buildPhraseQuery(query);
+    if (phraseQuery) runQuery(phraseQuery, 1.9);
+
+    // Strategy 3: Entity-focused (proper nouns, dates)
     const entityQuery = buildEntityQuery(query);
     if (entityQuery) runQuery(entityQuery, 1.8);
 
-    // Strategy 3: Original sanitized query (FTS5 default tokenization)
+    // Strategy 4: Original sanitized query (FTS5 default tokenization)
     const sanitized = sanitizeFTS5Query(query);
     if (sanitized && sanitized !== '""') runQuery(sanitized, 1.5);
 
-    // Strategy 4: OR-mode with synonym expansion (broad recall)
+    // Strategy 5: OR-mode with synonym expansion (broad recall)
     const orQuery = buildORQuery(query);
     if (orQuery) runQuery(orQuery, 1.0);
+
+    // Strategy 6: Individual keyword fallback (long-tail catch)
+    const keywords = extractKeywords(query).filter(w => w.length >= 4);
+    for (const kw of keywords.slice(0, 5)) {
+      runQuery(`"${kw}"`, 0.5);
+    }
+
+    // Content-based reranking on full content (not just snippet)
+    const queryWords = extractKeywords(query);
+    const queryBigrams: string[] = [];
+    for (let i = 0; i < queryWords.length - 1; i++) {
+      queryBigrams.push(queryWords[i] + ' ' + queryWords[i + 1]);
+    }
+    if (queryWords.length > 0) {
+      for (const [id, entry] of seen) {
+        const content = (entry.row.content || entry.row.summary || '').toLowerCase();
+        const density = queryWords.filter(w => content.includes(w)).length / queryWords.length;
+        const bigramHits = queryBigrams.filter(bg => content.includes(bg)).length;
+        const bigramScore = queryBigrams.length > 0 ? bigramHits / queryBigrams.length : 0;
+        // Proportional boost: scale by existing score to avoid displacing high-BM25 results
+        const boost = density * 0.4 + bigramScore * 0.3;
+        entry.score *= (1 + boost);
+      }
+    }
 
     // Convert to results, sorted by score
     const results = [...seen.values()]
