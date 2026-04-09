@@ -14,6 +14,8 @@
     "test": "node --test 'dist/tests/**/*.test.js'",
     "test:watch": "tsc --watch & node --test --watch 'dist/tests/**/*.test.js'",
     "lint": "tsc --noEmit",
+    "bench": "node benchmarks/run-all.js",
+    "bench:full": "node benchmarks/run-all.js --full",
     "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
