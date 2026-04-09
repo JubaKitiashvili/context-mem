@@ -1597,6 +1597,13 @@ export async function handleEmitEvent(
     params.agent,
   );
 
+  // Track file_modify events for feedback engine
+  if (params.event_type === 'file_modify' && kernel.feedbackEngine) {
+    try {
+      kernel.feedbackEngine.checkUsefulness(params.data || {});
+    } catch { /* non-critical */ }
+  }
+
   return { id: event.id, event_type: event.event_type, priority: event.priority };
 }
 
@@ -2453,6 +2460,11 @@ export async function handleHandoffSession(
   // Update with summary
   const reason = params.reason || 'Manual handoff';
   kernel.sessionManager.updateChainEntry(kernel.sessionId, { summary: reason });
+
+  // Flush feedback engine — save usefulness data before session ends
+  if (kernel.feedbackEngine) {
+    try { kernel.feedbackEngine.flushFeedback(); } catch { /* non-critical */ }
+  }
 
   // Generate continuation prompt
   const prompt = kernel.sessionManager.generateContinuationPrompt(kernel.sessionId);
