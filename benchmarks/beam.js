@@ -40,7 +40,7 @@ function getArg(name, defaultVal) {
 }
 
 const LIMIT = parseInt(getArg('limit', '0'), 10);
-const TOP_K = parseInt(getArg('top-k', '10'), 10);
+const TOP_K = parseInt(getArg('top-k', '20'), 10);
 const OUT_FILE = getArg('out', null);
 
 // ── Load conversations ──────────────────────────────────────────────────────
@@ -97,6 +97,7 @@ const resultsLog = [];
 const startTime = Date.now();
 let totalQuestions = 0;
 
+(async () => {
 for (let ci = 0; ci < conversations.length; ci++) {
   const conv = conversations[ci];
   const chatData = JSON.parse(fs.readFileSync(conv.chatPath, 'utf8'));
@@ -105,7 +106,7 @@ for (let ci = 0; ci < conversations.length; ci++) {
 
   if (!messages.length) continue;
 
-  // Build kernel with all user messages
+  // Build kernel with user messages
   const kernel = new BenchKernel().open();
   for (const msg of messages) {
     kernel.ingest(`msg_${msg.id}`, msg.content, { chat_id: msg.id });
@@ -121,7 +122,9 @@ for (let ci = 0; ci < conversations.length; ci++) {
 
       const correctDocIds = sourceIds.map(id => `msg_${id}`);
 
-      const results = kernel.search(q.question, TOP_K);
+      // Search with 3x oversampling for multi-source queries (summarization needs many hits)
+      const searchK = Math.max(TOP_K, sourceIds.length * 2);
+      const results = kernel.search(q.question, searchK);
       const retrievedIds = results.map(r => r.id);
 
       const r5 = recallAtK(retrievedIds, correctDocIds, 5);
@@ -185,3 +188,5 @@ fs.writeFileSync(outPath, JSON.stringify({
   details: resultsLog,
 }, null, 2));
 console.log(`\n  Results saved: ${outPath}`);
+
+})().catch(e => { console.error(e); process.exit(1); });
