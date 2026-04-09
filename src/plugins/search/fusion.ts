@@ -161,7 +161,7 @@ export class SearchFusion implements SearchOrchestrator {
       if (count >= 2) r.relevance_score *= (1 + 0.15 * (count - 1));
     }
 
-    const reranked = rerank(allResults, intent.intent_type);
+    const reranked = rerank(allResults, intent.intent_type, query);
     const finalResults = reranked.slice(0, opts.limit || 5);
 
     if (this.searchCallCount > SEARCH_MAX_FULL && finalResults.length > 0) {
@@ -202,7 +202,7 @@ const INTENT_WEIGHTS: Record<string, { relevance: number; recency: number; acces
  * For general intent, weights are adjusted dynamically based on result characteristics
  * (AttnRes mechanism: fixed query × content-dependent keys → adaptive weights).
  */
-export function rerank(results: SearchResult[], intentType: SearchIntent['intent_type'] = 'general'): SearchResult[] {
+export function rerank(results: SearchResult[], intentType: SearchIntent['intent_type'] = 'general', query?: string): SearchResult[] {
   const now = Date.now();
   let weights = { ...(INTENT_WEIGHTS[intentType] || INTENT_WEIGHTS.general) };
 
@@ -226,14 +226,35 @@ export function rerank(results: SearchResult[], intentType: SearchIntent['intent
     }
   }
 
+  // Keyword density boost from query terms matching snippet content
+  const queryTerms = query
+    ? query.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3)
+    : [];
+  // Build bigrams for phrase matching
+  const queryBigrams: string[] = [];
+  for (let i = 0; i < queryTerms.length - 1; i++) {
+    queryBigrams.push(queryTerms[i] + ' ' + queryTerms[i + 1]);
+  }
+
   return results.map(r => {
     const age = now - (r.timestamp || now);
     const recencyBoost = Math.pow(0.5, age / HALF_LIFE_MS);
     const accessBoost = Math.log2((r.access_count || 0) + 2) / 10;
 
+    // Content-based relevance boost
+    let contentBoost = 0;
+    if (queryTerms.length > 0 && r.snippet) {
+      const snippetLower = r.snippet.toLowerCase();
+      const keywordHits = queryTerms.filter(w => snippetLower.includes(w)).length;
+      const density = keywordHits / queryTerms.length;
+      const bigramHits = queryBigrams.filter(bg => snippetLower.includes(bg)).length;
+      const bigramScore = queryBigrams.length > 0 ? bigramHits / queryBigrams.length : 0;
+      contentBoost = density * 0.3 + bigramScore * 0.2;
+    }
+
     return {
       ...r,
-      relevance_score: r.relevance_score * (weights.relevance + weights.recency * recencyBoost + weights.access * accessBoost),
+      relevance_score: r.relevance_score * (weights.relevance + weights.recency * recencyBoost + weights.access * accessBoost + contentBoost),
     };
   }).sort((a, b) => b.relevance_score - a.relevance_score);
 }
