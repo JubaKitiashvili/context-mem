@@ -19,7 +19,7 @@ export class VectorSearch implements SearchPlugin {
   async destroy(): Promise<void> {}
 
   async search(query: string, opts: SearchOpts): Promise<SearchResult[]> {
-    const queryEmbedding = await Embedder.embed(query);
+    const queryEmbedding = await Embedder.embedQuery(query);
     if (!queryEmbedding) return [];
 
     const limit = opts.limit || 5;

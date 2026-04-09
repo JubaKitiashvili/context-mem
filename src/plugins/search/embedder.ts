@@ -39,7 +39,7 @@ export class Embedder {
     return _available;
   }
 
-  /** Embed text into a Float32Array(384) or null if unavailable */
+  /** Embed text into a Float32Array(768) or null if unavailable */
   static async embed(text: string): Promise<Float32Array | null> {
     if (!(await Embedder.isAvailable())) return null;
     try {
@@ -50,18 +50,38 @@ export class Embedder {
         const rawMod = await import(/* webpackIgnore: true */ resolved);
         // Handle CJS/ESM interop — pipeline may be on .default or top-level
         const mod = rawMod.default && typeof rawMod.default.pipeline === 'function' ? rawMod.default : rawMod;
-        _pipeline = await mod.pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
+        _pipeline = await mod.pipeline('feature-extraction', 'nomic-ai/nomic-embed-text-v1.5', {
           dtype: 'fp32',
         });
       }
-      const output = await _pipeline(text, { pooling: 'mean', normalize: true });
+      // nomic-embed requires "search_query: " or "search_document: " prefix
+      const prefixedText = text.startsWith('search_query:') || text.startsWith('search_document:')
+        ? text
+        : `search_document: ${text}`;
+      const output = await _pipeline(prefixedText, { pooling: 'mean', normalize: true });
       return new Float32Array(output.data);
     } catch {
       return null;
     }
   }
 
-  /** Serialize Float32Array to Buffer (1536 bytes for 384 dims) */
+  /** Embed a search query (adds "search_query: " prefix for nomic-embed) */
+  static async embedQuery(text: string): Promise<Float32Array | null> {
+    if (!(await Embedder.isAvailable())) return null;
+    try {
+      if (!_pipeline) {
+        // Force pipeline init via embed()
+        await Embedder.embed(text);
+        if (!_pipeline) return null;
+      }
+      const output = await _pipeline(`search_query: ${text}`, { pooling: 'mean', normalize: true });
+      return new Float32Array(output.data);
+    } catch {
+      return null;
+    }
+  }
+
+  /** Serialize Float32Array to Buffer (3072 bytes for 768 dims) */
   static toBuffer(embedding: Float32Array): Buffer {
     return Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
   }

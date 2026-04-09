@@ -287,7 +287,7 @@ class BenchKernel {
     if (this._useVector && this._embeddings.size > 0) {
       const embedder = await getEmbedder();
       if (embedder) {
-        try { this._queryEmbedding = await embedder.embed(query); } catch { this._queryEmbedding = null; }
+        try { this._queryEmbedding = await (embedder.embedQuery || embedder.embed).call(embedder, query); } catch { this._queryEmbedding = null; }
       }
     }
     return this.search(query, limit, opts);
