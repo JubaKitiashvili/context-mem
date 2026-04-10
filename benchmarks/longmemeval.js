@@ -124,15 +124,21 @@ for (let qi = 0; qi < entries.length; qi++) {
     }
   }
 
-  // Query — BM25 first, then optional vector rerank (memory-efficient)
+  // Embed corpus for hybrid search (per-question, ~50 docs — manageable)
+  if (USE_VECTOR) {
+    await kernel.embedAll();
+  }
+
+  // Query — BM25 or hybrid parallel (BM25 + vector independent retrieval)
   const searchOpts = {};
   if (entry.question_date) searchOpts.referenceDate = entry.question_date;
-  const bm25Results = kernel.search(question, USE_VECTOR ? 30 : Math.max(TOP_K, 10), searchOpts);
 
-  let results = bm25Results;
-  if (USE_VECTOR && bm25Results.length > 0) {
-    // Vector rerank: embed only BM25 top-30 candidates + query (not entire corpus)
-    results = await kernel.vectorRerank(question, bm25Results, Math.max(TOP_K, 10));
+  let results;
+  if (USE_VECTOR) {
+    // Hybrid parallel: BM25 and vector find candidates independently, then merge
+    results = await kernel.hybridSearch(question, Math.max(TOP_K, 10), searchOpts);
+  } else {
+    results = kernel.search(question, Math.max(TOP_K, 10), searchOpts);
   }
   const retrievedIds = results.map(r => kernel.resolveId(r.id));
 

@@ -175,6 +175,11 @@ for (let ci = 0; ci < conversations.length; ci++) {
     }
   }
 
+  // Embed corpus for hybrid search (once per conversation, ~20-30 sessions)
+  if (USE_VECTOR) {
+    await kernel.embedAll();
+  }
+
   // Run each QA pair
   for (const qa of qaPairs) {
     const question = qa.question;
@@ -196,8 +201,7 @@ for (let ci = 0; ci < conversations.length; ci++) {
 
     let results;
     if (USE_VECTOR) {
-      const bm25Results = kernel.search(question, 30);
-      results = await kernel.vectorRerank(question, bm25Results, TOP_K);
+      results = await kernel.hybridSearch(question, TOP_K);
     } else {
       results = kernel.search(question, TOP_K);
     }

@@ -316,6 +316,70 @@ class BenchKernel {
     }
   }
 
+  /**
+   * Hybrid parallel search: BM25 and vector retrieve independently, then merge.
+   * Finds documents that either BM25 or vector excels at — covers semantic gap.
+   * Requires embedAll() to have been called first.
+   */
+  async hybridSearch(query, limit = 10, opts = {}) {
+    // BM25 retrieval (top-30)
+    const bm25Results = this.search(query, 30, opts);
+
+    // Vector retrieval (top-30 from pre-computed embeddings)
+    const embedder = await getEmbedder();
+    if (!embedder || this._embeddings.size === 0) {
+      return bm25Results.slice(0, limit);
+    }
+
+    let queryEmb;
+    try {
+      queryEmb = await (embedder.embedQuery || embedder.embed).call(embedder, query);
+    } catch { return bm25Results.slice(0, limit); }
+    if (!queryEmb) return bm25Results.slice(0, limit);
+
+    // Vector search over pre-computed embeddings
+    const vectorResults = [];
+    for (const [docId, docEmb] of this._embeddings) {
+      const simS = docEmb.summary ? cosineSimilarity(queryEmb, docEmb.summary) : 0;
+      const simC = docEmb.content ? cosineSimilarity(queryEmb, docEmb.content) : 0;
+      const sim = Math.max(simS, simC);
+      if (sim >= 0.20) {
+        vectorResults.push({ id: docId, score: sim });
+      }
+    }
+    vectorResults.sort((a, b) => b.score - a.score);
+    const topVector = vectorResults.slice(0, 30);
+
+    // Merge: BM25 scores normalized + vector scores, weighted
+    const merged = new Map(); // id → { bm25Score, vectorScore }
+    const BM25_WEIGHT = 0.55;
+    const VECTOR_WEIGHT = 0.45;
+
+    // BM25 results (already normalized 0-1 from search())
+    const bm25Max = bm25Results.length > 0 ? Math.max(...bm25Results.map(r => r.score)) : 1;
+    for (const r of bm25Results) {
+      const normScore = bm25Max > 0 ? r.score / bm25Max : 0;
+      merged.set(r.id, { score: normScore * BM25_WEIGHT, id: r.id });
+    }
+
+    // Vector results (cosine similarity already 0-1)
+    for (const r of topVector) {
+      const existing = merged.get(r.id);
+      if (existing) {
+        existing.score += r.score * VECTOR_WEIGHT;
+      } else {
+        merged.set(r.id, { score: r.score * VECTOR_WEIGHT, id: r.id });
+      }
+    }
+
+    // Sort by fused score
+    const fusedResults = [...merged.values()]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
+
+    return fusedResults;
+  }
+
   close() {
     if (this.db) { this.db.close(); this.db = null; }
     this._embeddings.clear();
