@@ -1,0 +1,10850 @@
+{
+  "benchmark": "MemBench",
+  "system": "context-mem",
+  "mode": "hybrid",
+  "top_k": 10,
+  "items": 500,
+  "overall_recall": 0.994,
+  "elapsed_seconds": 20.508,
+  "per_category": {
+    "simple": {
+      "hits": 497,
+      "total": 500
+    }
+  },
+  "details": [
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my niece's company?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        119
+      ],
+      "retrieved_sids": [
+        119,
+        101,
+        135,
+        11,
+        148,
+        145,
+        64,
+        117,
+        111,
+        22
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my cousin, who is male?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        59
+      ],
+      "retrieved_sids": [
+        101,
+        143,
+        33,
+        59,
+        15,
+        47,
+        161,
+        42,
+        58,
+        123
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my brother?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        84
+      ],
+      "retrieved_sids": [
+        84,
+        18,
+        44,
+        85,
+        28,
+        136,
+        123,
+        40,
+        9,
+        30
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my aunt?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        13
+      ],
+      "retrieved_sids": [
+        13,
+        22,
+        19,
+        0,
+        147,
+        125,
+        98,
+        106,
+        42,
+        105
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        40
+      ],
+      "retrieved_sids": [
+        40,
+        98,
+        9,
+        59,
+        135,
+        75,
+        124,
+        162,
+        21,
+        99
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my brother have?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        81
+      ],
+      "retrieved_sids": [
+        81,
+        20,
+        139,
+        132,
+        63,
+        111,
+        30,
+        68,
+        92,
+        159
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my nephew have?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        105
+      ],
+      "retrieved_sids": [
+        105,
+        68,
+        135,
+        97,
+        52,
+        8,
+        131,
+        98,
+        103,
+        149
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my sister?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        144
+      ],
+      "retrieved_sids": [
+        68,
+        144,
+        78,
+        87,
+        158,
+        145,
+        80,
+        79,
+        64,
+        36
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my male cousin?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        64
+      ],
+      "retrieved_sids": [
+        64,
+        82,
+        118,
+        80,
+        60,
+        102,
+        107,
+        103,
+        146,
+        43
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the educational background of that coworker?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        113
+      ],
+      "retrieved_sids": [
+        7,
+        48,
+        113,
+        50,
+        57,
+        58,
+        138,
+        112,
+        120,
+        114
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does the coworker do for a living?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        124
+      ],
+      "retrieved_sids": [
+        86,
+        150,
+        124,
+        140,
+        123,
+        1,
+        103,
+        90,
+        131,
+        127
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the location of my father's workplace?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        92
+      ],
+      "retrieved_sids": [
+        153,
+        136,
+        94,
+        92,
+        81,
+        3,
+        46,
+        68,
+        125,
+        75
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the subordinate?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        32
+      ],
+      "retrieved_sids": [
+        47,
+        32,
+        131,
+        109,
+        21,
+        114,
+        156,
+        85,
+        37,
+        135
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does the coworker have?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        148
+      ],
+      "retrieved_sids": [
+        30,
+        148,
+        134,
+        92,
+        91,
+        109,
+        50,
+        26,
+        158,
+        156
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of the boss?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        56
+      ],
+      "retrieved_sids": [
+        157,
+        62,
+        6,
+        30,
+        68,
+        42,
+        56,
+        61,
+        12,
+        18
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of the subordinate?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        13
+      ],
+      "retrieved_sids": [
+        13,
+        35,
+        160,
+        73,
+        96,
+        138,
+        117,
+        161,
+        136,
+        74
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my aunt?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        143
+      ],
+      "retrieved_sids": [
+        46,
+        143,
+        85,
+        110,
+        107,
+        32,
+        142,
+        123,
+        109,
+        36
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my sister?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        24
+      ],
+      "retrieved_sids": [
+        24,
+        128,
+        5,
+        32,
+        107,
+        20,
+        148,
+        89,
+        87,
+        43
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the education background of that coworker?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        144
+      ],
+      "retrieved_sids": [
+        24,
+        72,
+        92,
+        106,
+        21,
+        50,
+        144,
+        165,
+        145,
+        51
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of that subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        97
+      ],
+      "retrieved_sids": [
+        97,
+        31,
+        86,
+        23,
+        28,
+        137,
+        112,
+        150,
+        164,
+        131
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my nephew have?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        6
+      ],
+      "retrieved_sids": [
+        6,
+        34,
+        50,
+        135,
+        96,
+        72,
+        18,
+        157,
+        0,
+        92
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my coworker have?",
+      "ground_truth": "A",
+      "hit": false,
+      "target_sids": [
+        70
+      ],
+      "retrieved_sids": [
+        150,
+        79,
+        6,
+        10,
+        130,
+        105,
+        66,
+        71,
+        84,
+        95
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my mother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        38
+      ],
+      "retrieved_sids": [
+        108,
+        7,
+        37,
+        36,
+        21,
+        38,
+        47,
+        69,
+        109,
+        78
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my sister?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        19
+      ],
+      "retrieved_sids": [
+        19,
+        0,
+        13,
+        79,
+        117,
+        121,
+        126,
+        77,
+        80,
+        64
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my subordinate's company?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        61
+      ],
+      "retrieved_sids": [
+        61,
+        9,
+        140,
+        114,
+        42,
+        118,
+        135,
+        70,
+        107,
+        87
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the age of the subordinate?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        75
+      ],
+      "retrieved_sids": [
+        75,
+        144,
+        61,
+        104,
+        0,
+        122,
+        40,
+        143,
+        20,
+        24
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does the subordinate enjoy?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        135
+      ],
+      "retrieved_sids": [
+        135,
+        29,
+        11,
+        88,
+        52,
+        153,
+        32,
+        123,
+        156,
+        111
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What level of education has my mother completed?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        118
+      ],
+      "retrieved_sids": [
+        6,
+        118,
+        44,
+        24,
+        86,
+        27,
+        139,
+        101,
+        129
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my subordinate's birthday?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        15
+      ],
+      "retrieved_sids": [
+        15,
+        0,
+        44,
+        127,
+        109,
+        81,
+        65,
+        24,
+        82,
+        60
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my sister?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        163
+      ],
+      "retrieved_sids": [
+        68,
+        163,
+        145,
+        8,
+        53,
+        128,
+        86,
+        112,
+        45,
+        27
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my female cousin?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        24
+      ],
+      "retrieved_sids": [
+        24,
+        2,
+        149,
+        36,
+        85,
+        45,
+        117,
+        106,
+        135,
+        64
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my uncle?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        67
+      ],
+      "retrieved_sids": [
+        67,
+        60,
+        21,
+        121,
+        141,
+        1,
+        102,
+        142,
+        59,
+        23
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my male cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        141
+      ],
+      "retrieved_sids": [
+        141,
+        74,
+        91,
+        52,
+        109,
+        142,
+        13,
+        122,
+        75,
+        15
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is the coworker?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        151
+      ],
+      "retrieved_sids": [
+        151,
+        162,
+        161,
+        144,
+        85,
+        62,
+        103,
+        17,
+        139,
+        20
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of that coworker?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        26
+      ],
+      "retrieved_sids": [
+        26,
+        139,
+        72,
+        96,
+        113,
+        58,
+        23,
+        34,
+        20,
+        74
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Could anyone provide the contact number for my subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        109
+      ],
+      "retrieved_sids": [
+        109,
+        16,
+        148,
+        55,
+        77,
+        96,
+        15,
+        97,
+        139
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the education background of the coworker?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        112
+      ],
+      "retrieved_sids": [
+        61,
+        112,
+        122,
+        27,
+        127,
+        9,
+        165,
+        104,
+        70,
+        123
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my sister's birthday?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        139
+      ],
+      "retrieved_sids": [
+        139,
+        84,
+        121,
+        118,
+        44,
+        64,
+        144,
+        2,
+        57,
+        86
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my nephew have?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        48
+      ],
+      "retrieved_sids": [
+        48,
+        72,
+        153,
+        91,
+        107,
+        10,
+        17,
+        45,
+        42,
+        14
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my uncle?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        118
+      ],
+      "retrieved_sids": [
+        118,
+        102,
+        108,
+        122,
+        82,
+        70,
+        1,
+        21,
+        144,
+        4
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my father's birthday?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        50
+      ],
+      "retrieved_sids": [
+        50,
+        41,
+        59,
+        3,
+        84,
+        146,
+        63,
+        103,
+        132
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my father?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        99
+      ],
+      "retrieved_sids": [
+        129,
+        46,
+        99,
+        148,
+        45,
+        97,
+        6,
+        83,
+        94,
+        90
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What position does the coworker hold?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        38
+      ],
+      "retrieved_sids": [
+        7,
+        144,
+        38,
+        39,
+        89,
+        47,
+        76,
+        24,
+        34,
+        32
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What position does that coworker hold?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        34
+      ],
+      "retrieved_sids": [
+        22,
+        36,
+        39,
+        15,
+        34,
+        105,
+        66,
+        37,
+        20,
+        110
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is my male cousin's email address?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        100
+      ],
+      "retrieved_sids": [
+        100,
+        51,
+        138,
+        156,
+        52,
+        40,
+        30,
+        29,
+        97,
+        12
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the highest level of education attained by my aunt?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        51
+      ],
+      "retrieved_sids": [
+        90,
+        6,
+        153,
+        69,
+        51,
+        130,
+        105,
+        60,
+        24,
+        42
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my boss have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        89
+      ],
+      "retrieved_sids": [
+        112,
+        72,
+        89,
+        103,
+        48,
+        9,
+        47,
+        45,
+        155,
+        11
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the age of my father?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        108
+      ],
+      "retrieved_sids": [
+        108,
+        101,
+        61,
+        41,
+        112,
+        42,
+        1,
+        123,
+        142,
+        0
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my father?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        109
+      ],
+      "retrieved_sids": [
+        64,
+        109,
+        101,
+        146,
+        24,
+        124,
+        87,
+        138,
+        85,
+        4
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my father?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        52
+      ],
+      "retrieved_sids": [
+        52,
+        6,
+        91,
+        31,
+        117,
+        57,
+        40,
+        135,
+        74
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hobby of my mother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        18
+      ],
+      "retrieved_sids": [
+        153,
+        92,
+        71,
+        112,
+        18,
+        30,
+        0,
+        131,
+        80,
+        155
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my boss's birthday?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        79
+      ],
+      "retrieved_sids": [
+        79,
+        81,
+        61,
+        67,
+        22,
+        146,
+        106,
+        5,
+        84,
+        49
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of that subordinate?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        80
+      ],
+      "retrieved_sids": [
+        7,
+        79,
+        80,
+        24,
+        148,
+        144,
+        126,
+        95,
+        127,
+        145
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the level of education that my mother has completed?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        12
+      ],
+      "retrieved_sids": [
+        12,
+        157,
+        47,
+        111,
+        135,
+        158,
+        93,
+        70,
+        0,
+        1
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the coworker?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        118
+      ],
+      "retrieved_sids": [
+        86,
+        145,
+        46,
+        117,
+        112,
+        104,
+        130,
+        67,
+        118,
+        138
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my brother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        70
+      ],
+      "retrieved_sids": [
+        70,
+        63,
+        64,
+        1,
+        123,
+        42,
+        102,
+        82,
+        80,
+        21
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my boss do for a living?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        59
+      ],
+      "retrieved_sids": [
+        61,
+        60,
+        59,
+        75,
+        12,
+        156,
+        67,
+        135,
+        68,
+        41
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the birthday of my subordinate?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        93
+      ],
+      "retrieved_sids": [
+        93,
+        82,
+        23,
+        125,
+        145,
+        64,
+        2,
+        50,
+        105,
+        121
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my female cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        139
+      ],
+      "retrieved_sids": [
+        68,
+        139,
+        142,
+        128,
+        99,
+        25,
+        147,
+        116,
+        5,
+        124
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What position does my aunt hold?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        131
+      ],
+      "retrieved_sids": [
+        131,
+        143,
+        22,
+        77,
+        124,
+        163,
+        155,
+        13,
+        89,
+        91
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the date of my niece's birthday?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        59
+      ],
+      "retrieved_sids": [
+        59,
+        60,
+        41,
+        22,
+        64,
+        151,
+        2,
+        124,
+        106,
+        39
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my father enjoy?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        7
+      ],
+      "retrieved_sids": [
+        138,
+        54,
+        157,
+        7,
+        74,
+        111,
+        0,
+        55,
+        37,
+        28
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my brother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        61
+      ],
+      "retrieved_sids": [
+        61,
+        84,
+        118,
+        139,
+        75,
+        9,
+        38,
+        162,
+        59,
+        42
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is the coworker?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        64
+      ],
+      "retrieved_sids": [
+        64,
+        61,
+        41,
+        36,
+        80,
+        103,
+        145,
+        93,
+        124,
+        0
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my niece?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        115
+      ],
+      "retrieved_sids": [
+        115,
+        62,
+        101,
+        1,
+        146,
+        44,
+        123,
+        83,
+        155,
+        20
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my subordinate's birthday?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        13
+      ],
+      "retrieved_sids": [
+        13,
+        23,
+        133,
+        64,
+        102,
+        42,
+        83,
+        152,
+        151
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my female cousin?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        65
+      ],
+      "retrieved_sids": [
+        65,
+        80,
+        163,
+        99,
+        155,
+        144,
+        61,
+        162,
+        4,
+        78
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my brother do for a living?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        67
+      ],
+      "retrieved_sids": [
+        67,
+        112,
+        72,
+        51,
+        47,
+        120,
+        28,
+        61,
+        4,
+        8
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the location where my sister works?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        69
+      ],
+      "retrieved_sids": [
+        69,
+        149,
+        25,
+        104,
+        82,
+        73,
+        114,
+        60,
+        17,
+        18
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of that coworker?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        8
+      ],
+      "retrieved_sids": [
+        8,
+        15,
+        26,
+        58,
+        0,
+        93,
+        67,
+        123,
+        11,
+        101
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my niece?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        115
+      ],
+      "retrieved_sids": [
+        115,
+        19,
+        99,
+        117,
+        138,
+        139,
+        32,
+        123,
+        64,
+        4
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the date of my coworker's birthday?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        159
+      ],
+      "retrieved_sids": [
+        159,
+        155,
+        151,
+        142,
+        157,
+        64,
+        2,
+        127,
+        43,
+        104
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the date of my brother's birthday?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        28
+      ],
+      "retrieved_sids": [
+        28,
+        40,
+        21,
+        44,
+        83,
+        2,
+        64,
+        157,
+        104,
+        127
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the company where the coworker works?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        67
+      ],
+      "retrieved_sids": [
+        67,
+        126,
+        153,
+        68,
+        102,
+        9,
+        77,
+        125,
+        74,
+        60
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is my male cousin's email address?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        12
+      ],
+      "retrieved_sids": [
+        12,
+        57,
+        77,
+        146,
+        161,
+        0,
+        41,
+        144,
+        84,
+        124
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What position does my uncle hold?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        52
+      ],
+      "retrieved_sids": [
+        83,
+        52,
+        70,
+        72,
+        128,
+        120,
+        61,
+        41,
+        150,
+        28
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my niece enjoy?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        112
+      ],
+      "retrieved_sids": [
+        71,
+        112,
+        134,
+        155,
+        6,
+        45,
+        105,
+        124,
+        163,
+        108
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of my mother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        40
+      ],
+      "retrieved_sids": [
+        147,
+        21,
+        40,
+        105,
+        5,
+        138,
+        19,
+        13,
+        7,
+        50
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my sister?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        47
+      ],
+      "retrieved_sids": [
+        47,
+        44,
+        40,
+        7,
+        80,
+        0,
+        101,
+        141,
+        121,
+        20
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the boss?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        119
+      ],
+      "retrieved_sids": [
+        119,
+        125,
+        100,
+        111,
+        154,
+        155,
+        34,
+        115,
+        31
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my niece?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        49
+      ],
+      "retrieved_sids": [
+        49,
+        127,
+        46,
+        138,
+        86,
+        109,
+        87,
+        106,
+        58,
+        41
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the date of my niece's birthday?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        101
+      ],
+      "retrieved_sids": [
+        101,
+        144,
+        82,
+        30,
+        2,
+        134,
+        104,
+        42,
+        95,
+        161
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Where does my aunt work?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        2
+      ],
+      "retrieved_sids": [
+        2,
+        0,
+        19,
+        13,
+        110,
+        4,
+        47,
+        63,
+        125,
+        42
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my niece?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        44
+      ],
+      "retrieved_sids": [
+        44,
+        89,
+        107,
+        42,
+        63,
+        160,
+        126,
+        150,
+        27,
+        106
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my subordinate?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        98
+      ],
+      "retrieved_sids": [
+        98,
+        12,
+        73,
+        139,
+        37,
+        160,
+        99,
+        38
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the date of my sister's birthday?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        59
+      ],
+      "retrieved_sids": [
+        59,
+        52,
+        41,
+        82,
+        156,
+        139,
+        6,
+        104,
+        34,
+        18
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my aunt?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        75
+      ],
+      "retrieved_sids": [
+        134,
+        84,
+        64,
+        75,
+        60,
+        4,
+        47,
+        72,
+        30,
+        103
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my female cousin do for a living?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        58
+      ],
+      "retrieved_sids": [
+        21,
+        54,
+        118,
+        43,
+        58,
+        128,
+        133,
+        42,
+        33,
+        89
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my mother's company?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        164
+      ],
+      "retrieved_sids": [
+        164,
+        108,
+        146,
+        23,
+        124,
+        56,
+        136,
+        145,
+        86
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my subordinate?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        149
+      ],
+      "retrieved_sids": [
+        149,
+        15,
+        143,
+        144
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my female cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        16
+      ],
+      "retrieved_sids": [
+        16,
+        40,
+        44,
+        81,
+        19,
+        60,
+        0,
+        3,
+        20,
+        143
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my father?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        26
+      ],
+      "retrieved_sids": [
+        26,
+        21
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is the boss's birthday?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        69
+      ],
+      "retrieved_sids": [
+        69,
+        80,
+        61,
+        124,
+        43,
+        27,
+        3,
+        106,
+        134,
+        36
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of that subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        98
+      ],
+      "retrieved_sids": [
+        98,
+        81,
+        45,
+        128,
+        34,
+        127,
+        30,
+        20,
+        88,
+        148
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my niece?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        138
+      ],
+      "retrieved_sids": [
+        138,
+        155,
+        82,
+        123,
+        58,
+        100,
+        12,
+        4,
+        38,
+        44
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my sister do for a living?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        148
+      ],
+      "retrieved_sids": [
+        148,
+        4,
+        130,
+        45,
+        75,
+        91,
+        144,
+        88,
+        12,
+        147
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of that uncle?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        152
+      ],
+      "retrieved_sids": [
+        152,
+        141,
+        103,
+        42,
+        32,
+        77,
+        105,
+        67,
+        115,
+        144
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my father do for a living?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        114
+      ],
+      "retrieved_sids": [
+        48,
+        66,
+        87,
+        102,
+        114,
+        109,
+        29,
+        7,
+        74,
+        98
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of the boss?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        70
+      ],
+      "retrieved_sids": [
+        70,
+        135,
+        49,
+        79,
+        62,
+        147,
+        146,
+        149,
+        82,
+        81
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of my mother?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        33
+      ],
+      "retrieved_sids": [
+        21,
+        33,
+        129,
+        18,
+        148,
+        26,
+        67,
+        91,
+        110,
+        57
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the company where the boss works?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        57
+      ],
+      "retrieved_sids": [
+        45,
+        57,
+        12,
+        56,
+        131,
+        46,
+        91,
+        54,
+        39,
+        156
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the location where Father works?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        69
+      ],
+      "retrieved_sids": [
+        59,
+        147,
+        76,
+        69,
+        61,
+        8,
+        60,
+        104,
+        34,
+        5
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my niece enjoy?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        104
+      ],
+      "retrieved_sids": [
+        152,
+        9,
+        104,
+        131,
+        27,
+        42,
+        96,
+        91,
+        108,
+        103
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my mother?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        43
+      ],
+      "retrieved_sids": [
+        134,
+        43,
+        71,
+        30,
+        44,
+        42,
+        89,
+        14,
+        124,
+        68
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my nephew do for a living?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        89
+      ],
+      "retrieved_sids": [
+        90,
+        83,
+        39,
+        9,
+        89,
+        27,
+        157,
+        151,
+        129,
+        49
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my brother?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        17
+      ],
+      "retrieved_sids": [
+        17,
+        68,
+        0,
+        31,
+        41,
+        118,
+        150,
+        106,
+        64,
+        137
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of that coworker?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        30
+      ],
+      "retrieved_sids": [
+        63,
+        30,
+        95,
+        104,
+        4,
+        37,
+        21,
+        128,
+        31,
+        24
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does the boss have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        13
+      ],
+      "retrieved_sids": [
+        113,
+        0,
+        13,
+        93,
+        114,
+        69,
+        31,
+        87,
+        18,
+        7
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is my male cousin's email address?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        122
+      ],
+      "retrieved_sids": [
+        122,
+        35,
+        112,
+        154,
+        140,
+        123,
+        54,
+        97,
+        121,
+        84
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my sister?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        76
+      ],
+      "retrieved_sids": [
+        111,
+        76,
+        22,
+        45,
+        24,
+        74,
+        62,
+        67,
+        114,
+        75
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my nephew?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        83
+      ],
+      "retrieved_sids": [
+        83,
+        46,
+        82,
+        142,
+        68,
+        86,
+        75,
+        119,
+        126,
+        141
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my father have?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        90
+      ],
+      "retrieved_sids": [
+        9,
+        90,
+        111,
+        151,
+        79,
+        124,
+        68,
+        80,
+        16,
+        32
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my father?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        80
+      ],
+      "retrieved_sids": [
+        80,
+        40,
+        121,
+        157,
+        62,
+        72,
+        136,
+        140
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the coworker?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        39
+      ],
+      "retrieved_sids": [
+        39,
+        131,
+        132,
+        28,
+        19,
+        36,
+        38,
+        37,
+        21,
+        27
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of Uncle's company?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        42
+      ],
+      "retrieved_sids": [
+        42,
+        60,
+        40,
+        55,
+        68,
+        44,
+        150,
+        147,
+        25,
+        138
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of the boss?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        36
+      ],
+      "retrieved_sids": [
+        36,
+        31,
+        21,
+        111,
+        94,
+        84,
+        125,
+        58,
+        64,
+        146
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my uncle?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        30
+      ],
+      "retrieved_sids": [
+        30,
+        54,
+        20,
+        22,
+        60,
+        59,
+        131,
+        148,
+        165,
+        45
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the location of my father's workplace?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        162
+      ],
+      "retrieved_sids": [
+        72,
+        11,
+        164,
+        99,
+        106,
+        46,
+        162,
+        69,
+        68,
+        144
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my mother?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        102
+      ],
+      "retrieved_sids": [
+        102,
+        101,
+        40,
+        122,
+        20,
+        0,
+        60,
+        143,
+        80
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my father do for a living?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        13
+      ],
+      "retrieved_sids": [
+        12,
+        152,
+        13,
+        0,
+        25,
+        6,
+        149,
+        34,
+        43,
+        45
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of that coworker?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        115
+      ],
+      "retrieved_sids": [
+        115,
+        116,
+        152,
+        104,
+        73
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my niece?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        5
+      ],
+      "retrieved_sids": [
+        30,
+        5,
+        65,
+        23,
+        147,
+        119,
+        29,
+        109,
+        123,
+        0
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my nephew?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        95
+      ],
+      "retrieved_sids": [
+        95,
+        101,
+        82,
+        59,
+        41,
+        125,
+        65,
+        0,
+        20,
+        102
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the boss?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        63
+      ],
+      "retrieved_sids": [
+        63,
+        130,
+        147,
+        84,
+        44,
+        78,
+        54,
+        105,
+        58,
+        4
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the niece?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        140
+      ],
+      "retrieved_sids": [
+        140,
+        84,
+        6,
+        123,
+        110,
+        155,
+        86,
+        161,
+        109,
+        127
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my father?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        109
+      ],
+      "retrieved_sids": [
+        109,
+        102,
+        42,
+        22,
+        63,
+        1,
+        83,
+        62,
+        43
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the company where the boss works?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        1
+      ],
+      "retrieved_sids": [
+        1,
+        129,
+        148,
+        18,
+        112,
+        44,
+        96,
+        6,
+        12,
+        144
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the educational background of the boss?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        95
+      ],
+      "retrieved_sids": [
+        46,
+        95,
+        141,
+        26,
+        100,
+        14,
+        69,
+        98,
+        56,
+        92
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number of my male cousin?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        120
+      ],
+      "retrieved_sids": [
+        120,
+        92,
+        90,
+        158,
+        57,
+        12,
+        13,
+        104,
+        122,
+        107
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the level of education that my sister has achieved?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        130
+      ],
+      "retrieved_sids": [
+        130,
+        60,
+        2,
+        28,
+        89,
+        122,
+        156,
+        37,
+        132,
+        16
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my subordinate?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        10
+      ],
+      "retrieved_sids": [
+        10,
+        0,
+        26,
+        143,
+        57,
+        126,
+        13,
+        142,
+        149,
+        109
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the boss?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        76
+      ],
+      "retrieved_sids": [
+        131,
+        76,
+        144,
+        3,
+        70,
+        52,
+        85,
+        21,
+        115,
+        60
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of the boss?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        10
+      ],
+      "retrieved_sids": [
+        92,
+        10,
+        155,
+        117,
+        74,
+        47,
+        156,
+        12,
+        0,
+        13
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my coworker's birthday?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        160
+      ],
+      "retrieved_sids": [
+        160,
+        144,
+        152,
+        112,
+        25,
+        44,
+        2,
+        64,
+        84,
+        130
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What kind of education does my female cousin have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        112
+      ],
+      "retrieved_sids": [
+        112,
+        8,
+        66,
+        104,
+        20,
+        160,
+        28,
+        87,
+        7,
+        132
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my sister's birthday?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        42
+      ],
+      "retrieved_sids": [
+        42,
+        58,
+        40,
+        87,
+        63,
+        22,
+        144,
+        124,
+        103,
+        23
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my brother do for a living?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        108
+      ],
+      "retrieved_sids": [
+        146,
+        38,
+        108,
+        127,
+        26,
+        93,
+        102,
+        67,
+        64,
+        85
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the educational background of my sister?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        31
+      ],
+      "retrieved_sids": [
+        70,
+        112,
+        31,
+        149,
+        128,
+        20,
+        140,
+        44,
+        114,
+        155
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my aunt?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        77
+      ],
+      "retrieved_sids": [
+        104,
+        54,
+        39,
+        159,
+        99,
+        77,
+        61,
+        160,
+        12,
+        72
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Could the contact number for the boss be provided?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        145
+      ],
+      "retrieved_sids": [
+        139,
+        145,
+        100,
+        16,
+        76,
+        115,
+        52,
+        144,
+        150,
+        118
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the age of the nephew?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        91
+      ],
+      "retrieved_sids": [
+        91,
+        0,
+        107,
+        23,
+        81,
+        123,
+        41,
+        82,
+        144,
+        65
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my aunt?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        7
+      ],
+      "retrieved_sids": [
+        7,
+        0,
+        39,
+        84,
+        40,
+        47,
+        165,
+        105,
+        10,
+        111
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my uncle?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        128
+      ],
+      "retrieved_sids": [
+        128,
+        123,
+        31,
+        75,
+        76,
+        103,
+        144,
+        15,
+        83,
+        104
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my nephew's company?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        111
+      ],
+      "retrieved_sids": [
+        111,
+        36,
+        102,
+        8,
+        128,
+        50,
+        5,
+        86,
+        42,
+        64
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for the boss?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        89
+      ],
+      "retrieved_sids": [
+        89,
+        54,
+        74,
+        113,
+        30,
+        14,
+        12,
+        97,
+        82,
+        45
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of the subordinate?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        118
+      ],
+      "retrieved_sids": [
+        118,
+        74,
+        31,
+        55,
+        161,
+        97,
+        101,
+        120,
+        56,
+        96
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the educational background of my subordinate?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        80
+      ],
+      "retrieved_sids": [
+        4,
+        43,
+        80,
+        91,
+        25,
+        61,
+        50,
+        131,
+        152
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is my mother's hobby?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        14
+      ],
+      "retrieved_sids": [
+        14,
+        86,
+        130,
+        29,
+        149,
+        107,
+        50,
+        68,
+        148,
+        160
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the subordinate?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        157
+      ],
+      "retrieved_sids": [
+        157,
+        45,
+        121,
+        162,
+        27,
+        13,
+        67,
+        147,
+        120,
+        18
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the company where the boss works?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        152
+      ],
+      "retrieved_sids": [
+        152,
+        131,
+        109,
+        68,
+        163,
+        16,
+        143,
+        160,
+        115,
+        47
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my uncle?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        50
+      ],
+      "retrieved_sids": [
+        50,
+        142,
+        102,
+        57,
+        79,
+        38,
+        125,
+        54,
+        80,
+        2
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my father enjoy?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        66
+      ],
+      "retrieved_sids": [
+        23,
+        66,
+        46,
+        7,
+        132,
+        30,
+        61,
+        22,
+        116,
+        89
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my uncle enjoy?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        139
+      ],
+      "retrieved_sids": [
+        139,
+        108,
+        34,
+        47,
+        141,
+        153,
+        55,
+        83,
+        9,
+        130
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my cousin's company?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        112
+      ],
+      "retrieved_sids": [
+        144,
+        120,
+        141,
+        153,
+        160,
+        112,
+        142,
+        100,
+        131,
+        50
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my uncle?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        115
+      ],
+      "retrieved_sids": [
+        115,
+        120,
+        103,
+        13,
+        14,
+        65,
+        145,
+        16,
+        159,
+        22
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my mother's hometown?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        84
+      ],
+      "retrieved_sids": [
+        46,
+        35,
+        84,
+        124,
+        103,
+        24,
+        123,
+        62,
+        161,
+        101
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my subordinate's company?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        10
+      ],
+      "retrieved_sids": [
+        10,
+        72,
+        0,
+        81,
+        32,
+        113,
+        14,
+        34,
+        111,
+        103
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the boss?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        156
+      ],
+      "retrieved_sids": [
+        156,
+        89,
+        66,
+        76,
+        46,
+        113,
+        107,
+        27,
+        74,
+        88
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my mother?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        124
+      ],
+      "retrieved_sids": [
+        124,
+        123,
+        84,
+        160,
+        2,
+        152,
+        69,
+        65,
+        116,
+        19
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my niece's birthday?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        73
+      ],
+      "retrieved_sids": [
+        73,
+        23,
+        62,
+        128,
+        1,
+        104,
+        25,
+        41,
+        100,
+        2
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my father have?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        126
+      ],
+      "retrieved_sids": [
+        126,
+        32,
+        153,
+        45,
+        123,
+        111,
+        33,
+        8,
+        46,
+        156
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my mother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        29
+      ],
+      "retrieved_sids": [
+        29,
+        118,
+        98,
+        54,
+        153,
+        20,
+        99,
+        137,
+        55
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the age of my aunt?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        42
+      ],
+      "retrieved_sids": [
+        42,
+        0,
+        90,
+        41,
+        125,
+        121,
+        92,
+        61,
+        103,
+        20
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my aunt?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        3
+      ],
+      "retrieved_sids": [
+        3,
+        66,
+        103,
+        0,
+        25,
+        23,
+        43,
+        148,
+        24,
+        29
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of the boss?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        37
+      ],
+      "retrieved_sids": [
+        37,
+        61,
+        19,
+        51,
+        105,
+        1,
+        60,
+        154,
+        85,
+        121
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the educational background of the subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        114
+      ],
+      "retrieved_sids": [
+        114,
+        15,
+        126,
+        107,
+        155,
+        143,
+        104,
+        137,
+        129,
+        150
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the coworker?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        109
+      ],
+      "retrieved_sids": [
+        121,
+        4,
+        49,
+        122,
+        109,
+        86,
+        118,
+        103,
+        17,
+        149
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of my subordinate?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        49
+      ],
+      "retrieved_sids": [
+        49,
+        20,
+        110,
+        5,
+        26,
+        46,
+        51,
+        129,
+        67,
+        44
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my brother's company?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        86
+      ],
+      "retrieved_sids": [
+        86,
+        110,
+        100,
+        22,
+        99,
+        81,
+        147,
+        59,
+        60,
+        94
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the date of my brother's birthday?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        61
+      ],
+      "retrieved_sids": [
+        61,
+        5,
+        60,
+        20,
+        103,
+        38,
+        127,
+        13,
+        148,
+        126
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my brother?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        42
+      ],
+      "retrieved_sids": [
+        42,
+        41,
+        44,
+        24,
+        78,
+        81,
+        116,
+        117,
+        106,
+        18
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hobby of that uncle?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        145
+      ],
+      "retrieved_sids": [
+        145,
+        29,
+        111,
+        76,
+        50,
+        89,
+        139,
+        133,
+        144,
+        5
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my father?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        128
+      ],
+      "retrieved_sids": [
+        128,
+        10,
+        75,
+        122,
+        34,
+        100,
+        95,
+        161,
+        160,
+        45
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the hometown of that aunt?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        58
+      ],
+      "retrieved_sids": [
+        58,
+        88,
+        26,
+        108,
+        3,
+        45,
+        65,
+        11,
+        5,
+        41
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of the boss?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        21
+      ],
+      "retrieved_sids": [
+        21,
+        126,
+        109,
+        0,
+        107,
+        40,
+        147,
+        125,
+        71,
+        60
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my father?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        88
+      ],
+      "retrieved_sids": [
+        24,
+        88,
+        99,
+        40,
+        80,
+        44,
+        101,
+        84,
+        25,
+        120
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the company where the subordinate works?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        75
+      ],
+      "retrieved_sids": [
+        75,
+        88,
+        157,
+        130,
+        120,
+        151,
+        128,
+        61,
+        13,
+        9
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobbies does my female cousin have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        158
+      ],
+      "retrieved_sids": [
+        158,
+        92,
+        90,
+        164,
+        74,
+        50,
+        144,
+        8,
+        146,
+        111
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is my female cousin's email address?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        124
+      ],
+      "retrieved_sids": [
+        124,
+        58,
+        91,
+        122,
+        141,
+        109,
+        16,
+        37,
+        152,
+        153
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my male cousin have?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        69
+      ],
+      "retrieved_sids": [
+        135,
+        51,
+        69,
+        94,
+        96,
+        154,
+        76,
+        50,
+        29,
+        63
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my sister?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        79
+      ],
+      "retrieved_sids": [
+        79,
+        61,
+        83,
+        106,
+        21,
+        144,
+        124,
+        42,
+        1,
+        39
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of the boss?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        73
+      ],
+      "retrieved_sids": [
+        73,
+        161,
+        76,
+        82,
+        68,
+        60,
+        27,
+        48,
+        78,
+        69
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my subordinate's company?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        79
+      ],
+      "retrieved_sids": [
+        79,
+        151,
+        61,
+        46,
+        57,
+        130,
+        126,
+        43,
+        71,
+        28
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my aunt?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        7
+      ],
+      "retrieved_sids": [
+        7,
+        0,
+        14,
+        1,
+        5,
+        19,
+        38,
+        17,
+        100,
+        142
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the uncle?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        106
+      ],
+      "retrieved_sids": [
+        64,
+        106,
+        127,
+        44,
+        103,
+        121,
+        4,
+        29,
+        17,
+        78
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my brother enjoy?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        36
+      ],
+      "retrieved_sids": [
+        36,
+        7,
+        95,
+        71,
+        50,
+        153,
+        111,
+        42,
+        138,
+        129
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is my female cousin's email address?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        42
+      ],
+      "retrieved_sids": [
+        42,
+        0,
+        99,
+        139,
+        78,
+        116,
+        34,
+        100,
+        158,
+        3
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my female cousin?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        25
+      ],
+      "retrieved_sids": [
+        25,
+        20,
+        85,
+        116,
+        104,
+        124,
+        0,
+        62,
+        41,
+        83
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my nephew's birthday?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        82
+      ],
+      "retrieved_sids": [
+        82,
+        81,
+        46,
+        147,
+        142,
+        45,
+        102,
+        37,
+        18,
+        20
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my brother?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        44
+      ],
+      "retrieved_sids": [
+        44,
+        10,
+        76,
+        114,
+        99,
+        160,
+        40,
+        45,
+        158,
+        23
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my uncle?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        88
+      ],
+      "retrieved_sids": [
+        88,
+        37,
+        80,
+        6,
+        0,
+        23,
+        22,
+        96,
+        14,
+        19
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my nephew?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        46
+      ],
+      "retrieved_sids": [
+        110,
+        46,
+        161,
+        51,
+        23,
+        70,
+        160,
+        1,
+        42,
+        159
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my sister?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        51
+      ],
+      "retrieved_sids": [
+        51,
+        148,
+        68,
+        88,
+        42,
+        60,
+        87,
+        111,
+        136,
+        24
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my niece have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        25
+      ],
+      "retrieved_sids": [
+        89,
+        25,
+        50,
+        135,
+        36,
+        127,
+        57,
+        69,
+        109,
+        99
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my nephew's company?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        125
+      ],
+      "retrieved_sids": [
+        7,
+        38,
+        125,
+        121,
+        35,
+        138,
+        137,
+        26,
+        124,
+        78
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Where does my uncle work?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        93
+      ],
+      "retrieved_sids": [
+        93,
+        84,
+        34,
+        86,
+        24,
+        38,
+        19,
+        88,
+        40,
+        101
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of the subordinate?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        31
+      ],
+      "retrieved_sids": [
+        31,
+        107,
+        21,
+        81,
+        18,
+        53,
+        16,
+        111
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the age of that coworker?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        49
+      ],
+      "retrieved_sids": [
+        49,
+        17,
+        101,
+        1,
+        20,
+        59,
+        121,
+        40,
+        50,
+        81
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my brother have?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        127
+      ],
+      "retrieved_sids": [
+        107,
+        152,
+        12,
+        85,
+        43,
+        122,
+        81,
+        49,
+        127,
+        33
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my niece have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        131
+      ],
+      "retrieved_sids": [
+        150,
+        131,
+        2,
+        135,
+        113,
+        126,
+        46,
+        123,
+        140,
+        26
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my niece?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        73
+      ],
+      "retrieved_sids": [
+        73,
+        15,
+        133,
+        53,
+        155,
+        59,
+        135,
+        30,
+        126,
+        134
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of my subordinate?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        72
+      ],
+      "retrieved_sids": [
+        72,
+        68,
+        60,
+        10,
+        30,
+        58,
+        46,
+        83,
+        13,
+        111
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Could someone please share the contact number for the boss?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        142
+      ],
+      "retrieved_sids": [
+        72,
+        54,
+        142,
+        143,
+        16,
+        30,
+        123,
+        159,
+        162,
+        160
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my aunt?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        100
+      ],
+      "retrieved_sids": [
+        100,
+        108,
+        4,
+        120,
+        92,
+        66,
+        107,
+        113,
+        9,
+        82
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is the birthday of the subordinate?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        45
+      ],
+      "retrieved_sids": [
+        45,
+        85,
+        146,
+        105,
+        21,
+        65,
+        126,
+        160
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my niece?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        106
+      ],
+      "retrieved_sids": [
+        106,
+        152,
+        94,
+        52,
+        142,
+        103,
+        36,
+        7,
+        107,
+        64
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my female cousin?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        113
+      ],
+      "retrieved_sids": [
+        124,
+        84,
+        113,
+        4,
+        5,
+        23,
+        63,
+        117,
+        102,
+        118
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my aunt's birthday?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        119
+      ],
+      "retrieved_sids": [
+        119,
+        145,
+        102,
+        125,
+        23,
+        3,
+        47,
+        97,
+        134,
+        69
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What position does my uncle hold?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        7
+      ],
+      "retrieved_sids": [
+        152,
+        7,
+        59,
+        87,
+        153,
+        142,
+        45,
+        0,
+        15,
+        67
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my aunt?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        130
+      ],
+      "retrieved_sids": [
+        130,
+        137,
+        114,
+        13,
+        41,
+        141,
+        126,
+        123,
+        0,
+        66
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my uncle?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        34
+      ],
+      "retrieved_sids": [
+        34,
+        20,
+        84,
+        1,
+        14,
+        3,
+        158,
+        111,
+        118,
+        27
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my brother?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        55
+      ],
+      "retrieved_sids": [
+        55,
+        59,
+        41,
+        144,
+        104,
+        0,
+        20,
+        123,
+        61,
+        83
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my male cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        53
+      ],
+      "retrieved_sids": [
+        53,
+        41,
+        157,
+        101,
+        141,
+        81,
+        145,
+        22,
+        60,
+        121
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my brother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        103
+      ],
+      "retrieved_sids": [
+        103,
+        96,
+        148,
+        26,
+        81,
+        113,
+        131,
+        65,
+        83,
+        93
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the coworker?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        26
+      ],
+      "retrieved_sids": [
+        26,
+        127,
+        69,
+        39,
+        115,
+        35,
+        37,
+        44,
+        5,
+        149
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of that coworker?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        92
+      ],
+      "retrieved_sids": [
+        92,
+        96,
+        99,
+        91,
+        9,
+        82,
+        48,
+        148,
+        137,
+        37
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of that subordinate?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        111
+      ],
+      "retrieved_sids": [
+        111,
+        103,
+        3,
+        83,
+        66,
+        2,
+        143
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my brother?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        58
+      ],
+      "retrieved_sids": [
+        58,
+        42,
+        86,
+        22,
+        1,
+        148,
+        107,
+        33,
+        125,
+        36
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the age of that coworker?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        4
+      ],
+      "retrieved_sids": [
+        4,
+        101,
+        40,
+        21,
+        17,
+        0,
+        6,
+        43,
+        103,
+        122
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my male cousin?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        86
+      ],
+      "retrieved_sids": [
+        58,
+        65,
+        88,
+        86,
+        95,
+        131,
+        125,
+        44,
+        109,
+        47
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my nephew?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        103
+      ],
+      "retrieved_sids": [
+        103,
+        157,
+        73,
+        56,
+        102,
+        95,
+        11,
+        82,
+        3,
+        135
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my boss?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        131
+      ],
+      "retrieved_sids": [
+        131,
+        122,
+        21,
+        1,
+        41,
+        144,
+        102,
+        62,
+        33,
+        129
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the birthday of my uncle?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        4
+      ],
+      "retrieved_sids": [
+        4,
+        67,
+        0,
+        81,
+        134,
+        84,
+        65,
+        23,
+        105,
+        44
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my aunt?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        117
+      ],
+      "retrieved_sids": [
+        117,
+        105,
+        109,
+        1,
+        126,
+        64,
+        42,
+        85,
+        147,
+        66
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for the subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        9
+      ],
+      "retrieved_sids": [
+        9,
+        100,
+        80,
+        32,
+        154,
+        0,
+        155
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my sister do for a living?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        119
+      ],
+      "retrieved_sids": [
+        119,
+        4,
+        148,
+        66,
+        122,
+        142,
+        135,
+        105,
+        110,
+        70
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my niece?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        128
+      ],
+      "retrieved_sids": [
+        128,
+        124,
+        142,
+        143,
+        103,
+        65,
+        0,
+        22,
+        145,
+        42
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my female cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        85
+      ],
+      "retrieved_sids": [
+        85,
+        67,
+        125,
+        57,
+        59,
+        81,
+        41,
+        47,
+        95,
+        38
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the age of the coworker?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        3
+      ],
+      "retrieved_sids": [
+        3,
+        148,
+        5,
+        102,
+        48,
+        83,
+        82,
+        7,
+        22,
+        15
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my mother?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        21
+      ],
+      "retrieved_sids": [
+        21,
+        135,
+        22,
+        154,
+        17
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the education level of my aunt?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        142
+      ],
+      "retrieved_sids": [
+        142,
+        65,
+        48,
+        143,
+        125,
+        131,
+        66,
+        99,
+        76,
+        72
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the boss?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        100
+      ],
+      "retrieved_sids": [
+        100,
+        64,
+        26,
+        8,
+        92,
+        154,
+        44,
+        94,
+        160,
+        126
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the subordinate?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        7
+      ],
+      "retrieved_sids": [
+        7,
+        0
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my coworker?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        72
+      ],
+      "retrieved_sids": [
+        72,
+        102,
+        151,
+        1,
+        77,
+        62,
+        122,
+        43,
+        22,
+        71
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my female cousin?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        100
+      ],
+      "retrieved_sids": [
+        8,
+        6,
+        82,
+        100,
+        98,
+        59,
+        46,
+        108,
+        58,
+        92
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What kind of education has my boss completed?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        150
+      ],
+      "retrieved_sids": [
+        127,
+        29,
+        53,
+        150,
+        141,
+        94,
+        158,
+        56,
+        24,
+        51
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of the subordinate?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        8
+      ],
+      "retrieved_sids": [
+        8,
+        0,
+        41,
+        142,
+        62,
+        102,
+        122,
+        82
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the company where the coworker works?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        75
+      ],
+      "retrieved_sids": [
+        75,
+        29,
+        22,
+        13,
+        130,
+        81,
+        44,
+        23,
+        139,
+        62
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobbies does the niece have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        35
+      ],
+      "retrieved_sids": [
+        35,
+        6,
+        64,
+        20,
+        109,
+        34,
+        146,
+        153,
+        91,
+        161
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my male cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        77
+      ],
+      "retrieved_sids": [
+        77,
+        139,
+        111,
+        161,
+        112,
+        99,
+        60,
+        14,
+        41,
+        62
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the coworker?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        55
+      ],
+      "retrieved_sids": [
+        55,
+        40,
+        47,
+        5,
+        26,
+        156,
+        57,
+        3,
+        48,
+        100
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for the coworker?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        93
+      ],
+      "retrieved_sids": [
+        93,
+        159,
+        134,
+        9,
+        78,
+        52,
+        37,
+        116,
+        88,
+        101
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my father?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        113
+      ],
+      "retrieved_sids": [
+        49,
+        113,
+        102,
+        24,
+        127,
+        86,
+        106,
+        134,
+        44,
+        153
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my aunt do for a living?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        88
+      ],
+      "retrieved_sids": [
+        100,
+        88,
+        128,
+        80,
+        42,
+        127,
+        48,
+        49,
+        56,
+        86
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my male cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        131
+      ],
+      "retrieved_sids": [
+        3,
+        65,
+        131,
+        45,
+        148,
+        109,
+        115,
+        122,
+        103,
+        123
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the educational background of my niece?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        159
+      ],
+      "retrieved_sids": [
+        159,
+        26,
+        132,
+        6,
+        141,
+        85,
+        34,
+        91,
+        99,
+        152
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is my male cousin's contact number?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        26
+      ],
+      "retrieved_sids": [
+        75,
+        76,
+        51,
+        161,
+        26,
+        98,
+        92,
+        21,
+        81,
+        100
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my brother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        97
+      ],
+      "retrieved_sids": [
+        97,
+        82,
+        153,
+        100,
+        99,
+        85,
+        135,
+        63,
+        91,
+        74
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my aunt's company?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        67
+      ],
+      "retrieved_sids": [
+        67,
+        60,
+        102,
+        46,
+        100,
+        83,
+        51,
+        76,
+        107,
+        123
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the education level of my nephew?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        87
+      ],
+      "retrieved_sids": [
+        148,
+        29,
+        126,
+        1,
+        47,
+        65,
+        73,
+        82,
+        87,
+        48
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my cousin?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        158
+      ],
+      "retrieved_sids": [
+        116,
+        137,
+        37,
+        75,
+        158,
+        13,
+        97,
+        99,
+        162,
+        50
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of the subordinate?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        134
+      ],
+      "retrieved_sids": [
+        134,
+        157,
+        76,
+        95,
+        38,
+        122,
+        93,
+        110
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of that coworker?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        7
+      ],
+      "retrieved_sids": [
+        7,
+        0,
+        43,
+        45,
+        68,
+        70,
+        42,
+        1,
+        105,
+        164
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What kind of work does the boss do?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        25
+      ],
+      "retrieved_sids": [
+        36,
+        87,
+        21,
+        39,
+        25,
+        92,
+        34,
+        40,
+        145,
+        94
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the subordinate?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        105
+      ],
+      "retrieved_sids": [
+        105,
+        102
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the education background of the subordinate?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        49
+      ],
+      "retrieved_sids": [
+        49,
+        87,
+        106,
+        127,
+        63,
+        153,
+        40,
+        149,
+        4,
+        156
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hobby of my father?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        61
+      ],
+      "retrieved_sids": [
+        9,
+        61,
+        10,
+        62,
+        52,
+        152,
+        108,
+        29,
+        130,
+        155
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my sister enjoy?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        78
+      ],
+      "retrieved_sids": [
+        51,
+        27,
+        130,
+        105,
+        78,
+        81,
+        149,
+        82,
+        106,
+        96
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my aunt?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        140
+      ],
+      "retrieved_sids": [
+        140,
+        65,
+        123,
+        134,
+        103,
+        21,
+        145,
+        1,
+        144,
+        142
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is my niece's position?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        41
+      ],
+      "retrieved_sids": [
+        41,
+        65,
+        153,
+        54,
+        42,
+        109,
+        48,
+        25,
+        49,
+        24
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my father?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        78
+      ],
+      "retrieved_sids": [
+        58,
+        78,
+        28,
+        1,
+        40,
+        121,
+        99,
+        41,
+        81,
+        140
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is the birthday of my male cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        108
+      ],
+      "retrieved_sids": [
+        108,
+        45,
+        116,
+        96,
+        82,
+        101,
+        144,
+        2,
+        81,
+        123
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my niece's company?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        12
+      ],
+      "retrieved_sids": [
+        12,
+        67,
+        159,
+        0,
+        115,
+        116,
+        97,
+        13,
+        81,
+        133
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is your sister's educational background?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        46
+      ],
+      "retrieved_sids": [
+        10,
+        46,
+        148,
+        86,
+        41,
+        59,
+        135,
+        30,
+        67,
+        72
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my father?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        49
+      ],
+      "retrieved_sids": [
+        59,
+        49,
+        39,
+        148,
+        159,
+        162,
+        27,
+        51,
+        60,
+        86
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my father?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        117
+      ],
+      "retrieved_sids": [
+        117,
+        113,
+        100,
+        1,
+        142,
+        121,
+        21,
+        42
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my niece?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        101
+      ],
+      "retrieved_sids": [
+        101,
+        40,
+        74,
+        84,
+        165,
+        75,
+        18,
+        58,
+        17,
+        1
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What kind of education does the boss have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        55
+      ],
+      "retrieved_sids": [
+        131,
+        60,
+        35,
+        9,
+        23,
+        55,
+        132,
+        42,
+        18,
+        73
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my male cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        1
+      ],
+      "retrieved_sids": [
+        1,
+        111,
+        78,
+        5,
+        133,
+        128,
+        123,
+        0,
+        19,
+        138
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my male cousin have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        30
+      ],
+      "retrieved_sids": [
+        89,
+        69,
+        7,
+        43,
+        30,
+        106,
+        147,
+        144,
+        70,
+        35
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of Aunt?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        117
+      ],
+      "retrieved_sids": [
+        117,
+        100,
+        127,
+        8,
+        121,
+        23,
+        147,
+        118,
+        88,
+        89
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Could someone share my aunt's contact number?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        35
+      ],
+      "retrieved_sids": [
+        35,
+        55,
+        127,
+        72,
+        100,
+        15,
+        20,
+        99,
+        73,
+        78
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the date of my niece's birthday?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        48
+      ],
+      "retrieved_sids": [
+        48,
+        57,
+        40,
+        122,
+        3,
+        32,
+        22,
+        102,
+        143,
+        64
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my nephew?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        112
+      ],
+      "retrieved_sids": [
+        112,
+        52,
+        27,
+        99,
+        160,
+        98,
+        117,
+        103,
+        10,
+        73
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Where does my niece work?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        97
+      ],
+      "retrieved_sids": [
+        97,
+        96,
+        81,
+        89,
+        72,
+        45,
+        7,
+        65,
+        104,
+        125
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my uncle?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        91
+      ],
+      "retrieved_sids": [
+        91,
+        65,
+        15,
+        154,
+        139,
+        39,
+        100,
+        82,
+        55,
+        56
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my male cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        33
+      ],
+      "retrieved_sids": [
+        137,
+        33,
+        57,
+        37,
+        95,
+        51,
+        87,
+        67,
+        144,
+        41
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my niece's birthday?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        155
+      ],
+      "retrieved_sids": [
+        155,
+        141,
+        96,
+        137,
+        4,
+        40,
+        124,
+        22,
+        113,
+        154
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my mother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        107
+      ],
+      "retrieved_sids": [
+        107,
+        102
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What position does my sister hold?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        14
+      ],
+      "retrieved_sids": [
+        146,
+        14,
+        107,
+        26,
+        30,
+        20,
+        0,
+        99,
+        49,
+        118
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What's my sister's email address?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        117
+      ],
+      "retrieved_sids": [
+        99,
+        156,
+        117,
+        79,
+        56,
+        55,
+        102,
+        121,
+        103,
+        138
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my mother?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        7
+      ],
+      "retrieved_sids": [
+        26,
+        147,
+        7,
+        25,
+        110,
+        56,
+        0,
+        67,
+        62,
+        87
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the coworker?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        51
+      ],
+      "retrieved_sids": [
+        51,
+        41,
+        70,
+        43,
+        42
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my uncle?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        143
+      ],
+      "retrieved_sids": [
+        143,
+        119,
+        81,
+        85,
+        60,
+        114,
+        142,
+        137,
+        126,
+        162
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for the coworker?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        99
+      ],
+      "retrieved_sids": [
+        99,
+        72,
+        108,
+        55,
+        30,
+        139,
+        16,
+        101,
+        83,
+        96
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my brother do for a living?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        144
+      ],
+      "retrieved_sids": [
+        145,
+        126,
+        89,
+        144,
+        19,
+        93,
+        8,
+        50,
+        65,
+        9
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my brother?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        60
+      ],
+      "retrieved_sids": [
+        151,
+        60,
+        28,
+        12,
+        138,
+        59,
+        55,
+        76,
+        133,
+        125
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my subordinate?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        43
+      ],
+      "retrieved_sids": [
+        43,
+        42,
+        13,
+        5,
+        150,
+        24,
+        81,
+        115,
+        28,
+        160
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my father?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        132
+      ],
+      "retrieved_sids": [
+        77,
+        132,
+        95,
+        155,
+        50,
+        116,
+        123,
+        51,
+        140,
+        52
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of the subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        51
+      ],
+      "retrieved_sids": [
+        51,
+        130,
+        112,
+        129,
+        40,
+        18,
+        12,
+        11,
+        93,
+        142
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my mother?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        0
+      ],
+      "retrieved_sids": [
+        0,
+        19,
+        1,
+        42,
+        84,
+        105,
+        30,
+        63,
+        31,
+        139
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my brother?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        141
+      ],
+      "retrieved_sids": [
+        141,
+        20,
+        122,
+        41,
+        115,
+        95,
+        142,
+        73,
+        19,
+        14
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of the subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        116
+      ],
+      "retrieved_sids": [
+        116,
+        4,
+        23,
+        104,
+        5,
+        149,
+        44,
+        108,
+        24,
+        3
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the coworker?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        10
+      ],
+      "retrieved_sids": [
+        10,
+        18,
+        12,
+        95,
+        0,
+        78,
+        44,
+        21,
+        85,
+        37
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What kind of education does the boss have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        17
+      ],
+      "retrieved_sids": [
+        17,
+        112,
+        48,
+        27,
+        110,
+        49,
+        1,
+        15,
+        19,
+        0
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the educational background of my male cousin?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        158
+      ],
+      "retrieved_sids": [
+        112,
+        158,
+        71,
+        136,
+        25,
+        113,
+        47,
+        145,
+        89,
+        6
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my female cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        15
+      ],
+      "retrieved_sids": [
+        15,
+        86,
+        74,
+        53,
+        162,
+        122,
+        140,
+        21,
+        22,
+        0
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my brother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        39
+      ],
+      "retrieved_sids": [
+        39,
+        79,
+        100,
+        139,
+        57,
+        21,
+        58,
+        128,
+        117,
+        6
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my cousin's company?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        102
+      ],
+      "retrieved_sids": [
+        102,
+        46,
+        78,
+        101,
+        121,
+        73,
+        149,
+        145,
+        18,
+        109
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the company that belongs to my niece?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        69
+      ],
+      "retrieved_sids": [
+        69,
+        119,
+        18,
+        110,
+        61,
+        163,
+        37,
+        16,
+        4,
+        10
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the subordinate?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        80
+      ],
+      "retrieved_sids": [
+        80
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my sister?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        99
+      ],
+      "retrieved_sids": [
+        99,
+        43,
+        110,
+        67,
+        32,
+        93,
+        81,
+        15,
+        11,
+        125
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my brother?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        143
+      ],
+      "retrieved_sids": [
+        143,
+        118,
+        19,
+        94,
+        40,
+        95,
+        124,
+        70,
+        69,
+        149
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Could someone please share my boss's contact number?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        79
+      ],
+      "retrieved_sids": [
+        79,
+        120,
+        132,
+        58,
+        10,
+        97,
+        59,
+        67,
+        160,
+        50
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of the boss?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        52
+      ],
+      "retrieved_sids": [
+        52,
+        60,
+        41,
+        34,
+        145,
+        105,
+        2,
+        62,
+        85,
+        26
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        44
+      ],
+      "retrieved_sids": [
+        44,
+        41,
+        147,
+        87,
+        111,
+        6,
+        99,
+        47,
+        151,
+        4
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What position does the coworker hold?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        71
+      ],
+      "retrieved_sids": [
+        142,
+        71,
+        62,
+        16,
+        113,
+        54,
+        133,
+        91,
+        31,
+        148
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of the subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        26
+      ],
+      "retrieved_sids": [
+        26,
+        143,
+        21,
+        141,
+        53,
+        46,
+        154,
+        3,
+        54,
+        118
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my aunt?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        92
+      ],
+      "retrieved_sids": [
+        92,
+        21,
+        91,
+        79,
+        147,
+        119,
+        42,
+        20,
+        100,
+        61
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my uncle?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        121
+      ],
+      "retrieved_sids": [
+        121,
+        146,
+        2,
+        123,
+        51,
+        44,
+        66,
+        38,
+        135,
+        122
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What kind of education does the boss have?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        111
+      ],
+      "retrieved_sids": [
+        111,
+        46,
+        21,
+        66,
+        86,
+        148,
+        103,
+        78,
+        14,
+        22
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Could anyone share my Aunt's contact number?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        106
+      ],
+      "retrieved_sids": [
+        106,
+        72,
+        94,
+        136,
+        101,
+        95,
+        157,
+        119,
+        1,
+        92
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of that coworker?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        157
+      ],
+      "retrieved_sids": [
+        157,
+        160,
+        142,
+        156,
+        2,
+        42,
+        30,
+        32,
+        123,
+        22
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my subordinate?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        119
+      ],
+      "retrieved_sids": [
+        119,
+        49,
+        96,
+        103,
+        67,
+        6,
+        108,
+        116,
+        117,
+        89
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my nephew?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        39
+      ],
+      "retrieved_sids": [
+        39,
+        91,
+        134,
+        17,
+        38,
+        21,
+        31,
+        18,
+        61,
+        158
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What position does my subordinate hold?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        31
+      ],
+      "retrieved_sids": [
+        31,
+        109,
+        87,
+        20,
+        27,
+        43,
+        3,
+        44,
+        54,
+        21
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of my cousin who is female?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        151
+      ],
+      "retrieved_sids": [
+        151,
+        125,
+        147,
+        116,
+        100,
+        141,
+        37,
+        65,
+        123,
+        148
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my father?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        73
+      ],
+      "retrieved_sids": [
+        91,
+        35,
+        44,
+        4,
+        106,
+        146,
+        73,
+        60,
+        80,
+        90
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my female cousin?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        164
+      ],
+      "retrieved_sids": [
+        164,
+        144,
+        104,
+        135,
+        45,
+        89,
+        22,
+        52,
+        123,
+        26
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my female cousin?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        106
+      ],
+      "retrieved_sids": [
+        106,
+        118,
+        7,
+        101,
+        145,
+        119,
+        37,
+        23,
+        131,
+        3
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my sister do for a living?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        29
+      ],
+      "retrieved_sids": [
+        89,
+        4,
+        29,
+        30,
+        132,
+        100,
+        21,
+        56,
+        87,
+        91
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of my female cousin?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        142
+      ],
+      "retrieved_sids": [
+        142,
+        94,
+        132,
+        107,
+        138,
+        123,
+        68,
+        73,
+        80,
+        76
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my male cousin?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        57
+      ],
+      "retrieved_sids": [
+        57,
+        3,
+        89,
+        123,
+        8,
+        143,
+        17,
+        52,
+        0,
+        40
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of the boss?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        90
+      ],
+      "retrieved_sids": [
+        4,
+        90,
+        88,
+        101,
+        95,
+        82,
+        48,
+        99,
+        26,
+        47
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my uncle?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        24
+      ],
+      "retrieved_sids": [
+        24,
+        21,
+        41,
+        60,
+        154,
+        14,
+        3,
+        28,
+        148,
+        12
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my female cousin?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        126
+      ],
+      "retrieved_sids": [
+        126,
+        33,
+        55,
+        78,
+        120,
+        76,
+        12,
+        123,
+        79,
+        119
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for the coworker?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        149
+      ],
+      "retrieved_sids": [
+        149,
+        15,
+        141,
+        78,
+        99,
+        55,
+        98,
+        36,
+        147,
+        140
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my aunt?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        86
+      ],
+      "retrieved_sids": [
+        86,
+        83,
+        153,
+        128,
+        116,
+        82,
+        84,
+        24,
+        101,
+        55
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the age of my aunt?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        101
+      ],
+      "retrieved_sids": [
+        101,
+        1,
+        163,
+        42,
+        83,
+        127,
+        144,
+        21,
+        70,
+        142
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my father?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        135
+      ],
+      "retrieved_sids": [
+        135,
+        122,
+        0,
+        8
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the company my sister runs?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        50
+      ],
+      "retrieved_sids": [
+        110,
+        69,
+        60,
+        55,
+        50,
+        41,
+        129,
+        70,
+        19,
+        62
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does the subordinate have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        71
+      ],
+      "retrieved_sids": [
+        127,
+        71,
+        9,
+        86,
+        149,
+        59,
+        91,
+        31,
+        30,
+        75
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my sister's company?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        61
+      ],
+      "retrieved_sids": [
+        61,
+        60,
+        110,
+        74,
+        159,
+        59,
+        58,
+        41,
+        32,
+        148
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my nephew?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        62
+      ],
+      "retrieved_sids": [
+        62,
+        93,
+        37,
+        74,
+        63,
+        70,
+        14,
+        94,
+        78,
+        97
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my sister have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        142
+      ],
+      "retrieved_sids": [
+        69,
+        11,
+        142,
+        122,
+        24,
+        149,
+        112,
+        138,
+        66,
+        125
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of the boss?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        2
+      ],
+      "retrieved_sids": [
+        2,
+        19,
+        7,
+        0,
+        41,
+        72,
+        103,
+        82,
+        143,
+        22
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my aunt?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        144
+      ],
+      "retrieved_sids": [
+        144,
+        56,
+        32,
+        77,
+        15,
+        89,
+        117,
+        141,
+        118,
+        155
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the age of the subordinate?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        51
+      ],
+      "retrieved_sids": [
+        51,
+        60,
+        40,
+        110,
+        50,
+        59,
+        92,
+        124,
+        143,
+        141
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the boss?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        105
+      ],
+      "retrieved_sids": [
+        132,
+        105,
+        101,
+        119,
+        16,
+        75,
+        15,
+        103
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my male cousin?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        26
+      ],
+      "retrieved_sids": [
+        26,
+        20,
+        0,
+        82,
+        21,
+        159,
+        39,
+        98,
+        100,
+        60
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Where does my cousin work?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        138
+      ],
+      "retrieved_sids": [
+        138,
+        104,
+        118,
+        140,
+        122,
+        136,
+        102,
+        123,
+        142,
+        137
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the niece?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        49
+      ],
+      "retrieved_sids": [
+        49,
+        42,
+        46,
+        125,
+        9,
+        103,
+        121,
+        60,
+        122,
+        105
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of a coworker?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        33
+      ],
+      "retrieved_sids": [
+        17,
+        134,
+        80,
+        39,
+        33,
+        20,
+        117,
+        54
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my mother?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        42
+      ],
+      "retrieved_sids": [
+        42,
+        11,
+        128,
+        92,
+        77,
+        115,
+        41,
+        93
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the educational background of my female cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        129
+      ],
+      "retrieved_sids": [
+        1,
+        29,
+        129,
+        108,
+        88,
+        51,
+        50,
+        30,
+        32,
+        33
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the age of my boss?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        28
+      ],
+      "retrieved_sids": [
+        28,
+        13,
+        69,
+        45,
+        22,
+        20,
+        63,
+        141,
+        0,
+        60
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the educational background of the boss?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        78
+      ],
+      "retrieved_sids": [
+        24,
+        131,
+        91,
+        111,
+        78,
+        60,
+        8,
+        76,
+        33,
+        113
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my father?",
+      "ground_truth": "C",
+      "hit": false,
+      "target_sids": [
+        146
+      ],
+      "retrieved_sids": [
+        164,
+        147,
+        70,
+        158,
+        159,
+        166,
+        88,
+        45,
+        30,
+        77
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for the boss?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        137
+      ],
+      "retrieved_sids": [
+        13,
+        70,
+        118,
+        146,
+        137,
+        34,
+        128,
+        141,
+        121,
+        94
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of the aunt?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        63
+      ],
+      "retrieved_sids": [
+        63,
+        123,
+        29,
+        61,
+        3,
+        57,
+        22,
+        89,
+        160,
+        51
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my niece?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        81
+      ],
+      "retrieved_sids": [
+        81,
+        105,
+        82,
+        125,
+        2,
+        24,
+        126,
+        159,
+        40,
+        68
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for the boss?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        118
+      ],
+      "retrieved_sids": [
+        118,
+        36,
+        12,
+        133,
+        160,
+        61,
+        79,
+        98,
+        37,
+        60
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of that subordinate?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        135
+      ],
+      "retrieved_sids": [
+        89,
+        135,
+        142,
+        92,
+        46,
+        111,
+        20,
+        26,
+        91,
+        124
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my subordinate's company?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        34
+      ],
+      "retrieved_sids": [
+        34,
+        49,
+        21,
+        35,
+        109,
+        137,
+        8,
+        24,
+        67,
+        59
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my female cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        18
+      ],
+      "retrieved_sids": [
+        18,
+        15,
+        147,
+        135,
+        93,
+        92,
+        67,
+        0,
+        73,
+        66
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of the boss?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        37
+      ],
+      "retrieved_sids": [
+        37,
+        7,
+        25,
+        26,
+        21,
+        130,
+        150,
+        77,
+        15,
+        131
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does Aunt have?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        31
+      ],
+      "retrieved_sids": [
+        31,
+        21,
+        111,
+        48,
+        69,
+        152,
+        97,
+        153,
+        7,
+        98
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of the boss?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        85
+      ],
+      "retrieved_sids": [
+        100,
+        85,
+        151,
+        102,
+        83,
+        131,
+        15,
+        130,
+        105,
+        134
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my uncle?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        75
+      ],
+      "retrieved_sids": [
+        75,
+        60,
+        41,
+        147,
+        101,
+        40,
+        0,
+        122,
+        20,
+        80
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my Aunt's birthday?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        113
+      ],
+      "retrieved_sids": [
+        113,
+        101,
+        161,
+        23,
+        43,
+        63,
+        129,
+        84,
+        1,
+        138
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the nephew?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        155
+      ],
+      "retrieved_sids": [
+        155,
+        52,
+        142,
+        21,
+        124,
+        96,
+        130,
+        12,
+        99,
+        145
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of the coworker?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        64
+      ],
+      "retrieved_sids": [
+        134,
+        55,
+        14,
+        114,
+        64,
+        94,
+        61,
+        63,
+        80,
+        79
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my mother?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        16
+      ],
+      "retrieved_sids": [
+        16,
+        0
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What's the date of my coworker's birthday?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        131
+      ],
+      "retrieved_sids": [
+        131,
+        142,
+        125,
+        38,
+        103,
+        6,
+        86,
+        45,
+        108,
+        90
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of the coworker?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        109
+      ],
+      "retrieved_sids": [
+        109,
+        103,
+        43,
+        126,
+        153,
+        1,
+        84,
+        64,
+        53,
+        144
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my coworker?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        11
+      ],
+      "retrieved_sids": [
+        115,
+        112,
+        11,
+        19,
+        23,
+        43,
+        18,
+        0,
+        69,
+        114
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my niece?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        145
+      ],
+      "retrieved_sids": [
+        145,
+        122,
+        139,
+        52,
+        100,
+        79,
+        2,
+        21,
+        80,
+        59
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my father do for a living?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        58
+      ],
+      "retrieved_sids": [
+        41,
+        58,
+        88,
+        150,
+        155,
+        49,
+        48,
+        114,
+        67,
+        131
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hobby of my male cousin?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        155
+      ],
+      "retrieved_sids": [
+        4,
+        47,
+        155,
+        94,
+        65,
+        148,
+        36,
+        69,
+        54,
+        92
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my mother do for a living?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        40
+      ],
+      "retrieved_sids": [
+        107,
+        40,
+        21,
+        71,
+        133,
+        153,
+        74,
+        97,
+        87,
+        161
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my boss?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        115
+      ],
+      "retrieved_sids": [
+        115,
+        122,
+        103,
+        128,
+        99,
+        41,
+        62,
+        21,
+        145,
+        0
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my niece's company?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        155
+      ],
+      "retrieved_sids": [
+        155,
+        101,
+        135,
+        143,
+        9,
+        156,
+        93,
+        39,
+        88,
+        96
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the niece?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        24
+      ],
+      "retrieved_sids": [
+        24,
+        124,
+        28,
+        145,
+        49,
+        76,
+        104,
+        95,
+        20,
+        84
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does the coworker enjoy?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        123
+      ],
+      "retrieved_sids": [
+        154,
+        49,
+        123,
+        29,
+        88,
+        11,
+        38,
+        103,
+        117,
+        157
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of that coworker?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        43
+      ],
+      "retrieved_sids": [
+        43,
+        41,
+        130,
+        153,
+        58,
+        28,
+        113,
+        7,
+        51,
+        76
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my female cousin?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        71
+      ],
+      "retrieved_sids": [
+        71,
+        55,
+        57,
+        32,
+        40,
+        75,
+        41,
+        61,
+        60,
+        117
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Where does my niece work?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        74
+      ],
+      "retrieved_sids": [
+        74,
+        55,
+        60,
+        96,
+        76,
+        97,
+        139,
+        63,
+        81,
+        107
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the education level of the nephew?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        18
+      ],
+      "retrieved_sids": [
+        18,
+        72,
+        71,
+        50,
+        88,
+        20,
+        108,
+        0,
+        40,
+        121
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the boss?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        157
+      ],
+      "retrieved_sids": [
+        108,
+        157,
+        91,
+        127,
+        7,
+        54,
+        143,
+        41,
+        17,
+        19
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my aunt?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        126
+      ],
+      "retrieved_sids": [
+        94,
+        50,
+        33,
+        126,
+        133,
+        121,
+        18,
+        158,
+        134,
+        143
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my boss's birthday?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        40
+      ],
+      "retrieved_sids": [
+        40,
+        41,
+        21,
+        147,
+        135,
+        85,
+        1,
+        44,
+        15,
+        0
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is the birthday of the subordinate?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        130
+      ],
+      "retrieved_sids": [
+        130,
+        42,
+        103,
+        145,
+        61,
+        80,
+        11,
+        104,
+        43,
+        20
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my mother do for a living?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        129
+      ],
+      "retrieved_sids": [
+        24,
+        129,
+        153,
+        137,
+        87,
+        136,
+        10,
+        123,
+        17,
+        132
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my brother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        161
+      ],
+      "retrieved_sids": [
+        161,
+        159,
+        146,
+        162,
+        144,
+        40,
+        103,
+        22,
+        0,
+        123
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is my father's email address?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        154
+      ],
+      "retrieved_sids": [
+        154,
+        118,
+        97,
+        145,
+        160,
+        13,
+        137,
+        146,
+        157,
+        57
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address for my aunt?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        32
+      ],
+      "retrieved_sids": [
+        32,
+        156,
+        75,
+        21,
+        91,
+        105,
+        20,
+        160,
+        139,
+        42
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my niece?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        12
+      ],
+      "retrieved_sids": [
+        12,
+        104,
+        0,
+        23,
+        45,
+        124,
+        141,
+        142,
+        44,
+        80
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the age of the boss?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        120
+      ],
+      "retrieved_sids": [
+        120,
+        0,
+        147,
+        21,
+        117,
+        104,
+        121,
+        111,
+        149,
+        105
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my uncle have?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        66
+      ],
+      "retrieved_sids": [
+        66,
+        151,
+        81,
+        28,
+        90,
+        110,
+        32,
+        31,
+        52,
+        108
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my nephew?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        1
+      ],
+      "retrieved_sids": [
+        1,
+        119,
+        54,
+        71,
+        133,
+        96,
+        162,
+        0,
+        134,
+        147
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my nephew?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        150
+      ],
+      "retrieved_sids": [
+        150,
+        160,
+        141,
+        16,
+        125,
+        82,
+        158,
+        115,
+        4,
+        3
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does the coworker have?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        94
+      ],
+      "retrieved_sids": [
+        47,
+        94,
+        110,
+        70,
+        11,
+        152,
+        112,
+        3,
+        32,
+        98
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the birthday of my male cousin?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        129
+      ],
+      "retrieved_sids": [
+        129,
+        134,
+        127,
+        139,
+        115,
+        106,
+        64,
+        87,
+        43,
+        5
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my brother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        148
+      ],
+      "retrieved_sids": [
+        148,
+        142,
+        155,
+        61,
+        21,
+        41,
+        81,
+        0,
+        122,
+        102
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the nephew?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        22
+      ],
+      "retrieved_sids": [
+        22,
+        21,
+        54,
+        53,
+        62
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for Father?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        97
+      ],
+      "retrieved_sids": [
+        97,
+        54,
+        154,
+        77,
+        82,
+        101,
+        116
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the subordinate?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        102
+      ],
+      "retrieved_sids": [
+        102,
+        15,
+        25,
+        70,
+        123,
+        23,
+        100,
+        96,
+        46,
+        114
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my uncle's hometown?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        76
+      ],
+      "retrieved_sids": [
+        76,
+        144,
+        84,
+        124,
+        121,
+        68,
+        26,
+        150,
+        61,
+        5
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my sister's company?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        110
+      ],
+      "retrieved_sids": [
+        110,
+        100,
+        139,
+        103,
+        115,
+        119,
+        65,
+        86,
+        23,
+        74
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What position does my nephew hold?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        84
+      ],
+      "retrieved_sids": [
+        84,
+        33,
+        149,
+        81,
+        7,
+        16,
+        56,
+        35,
+        150,
+        111
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the birthday of my uncle?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        28
+      ],
+      "retrieved_sids": [
+        28,
+        123,
+        35,
+        37,
+        155,
+        21,
+        142,
+        104,
+        44,
+        69
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my aunt?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        98
+      ],
+      "retrieved_sids": [
+        98,
+        109,
+        33,
+        111,
+        12,
+        128,
+        97,
+        82,
+        31,
+        41
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my mother?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        9
+      ],
+      "retrieved_sids": [
+        9,
+        0,
+        20
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number of my niece?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        141
+      ],
+      "retrieved_sids": [
+        141,
+        75,
+        152,
+        109,
+        96,
+        52,
+        122,
+        41,
+        125,
+        160
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the education background of my uncle?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        145
+      ],
+      "retrieved_sids": [
+        145,
+        67,
+        85,
+        59,
+        6,
+        46,
+        161,
+        60,
+        157,
+        142
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the educational background of my uncle?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        61
+      ],
+      "retrieved_sids": [
+        78,
+        61,
+        94,
+        113,
+        8,
+        135,
+        114,
+        43,
+        27,
+        134
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for the boss?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        50
+      ],
+      "retrieved_sids": [
+        118,
+        12,
+        50,
+        132,
+        161,
+        60,
+        40,
+        25,
+        119,
+        107
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Where does my male cousin work?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        44
+      ],
+      "retrieved_sids": [
+        17,
+        44,
+        59,
+        16,
+        41,
+        42,
+        0,
+        89,
+        64,
+        68
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the nephew?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        114
+      ],
+      "retrieved_sids": [
+        28,
+        129,
+        93,
+        114,
+        105,
+        138,
+        69,
+        86,
+        127,
+        41
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number of the coworker?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        46
+      ],
+      "retrieved_sids": [
+        118,
+        37,
+        46,
+        36,
+        77,
+        56,
+        61,
+        57,
+        41,
+        89
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my nephew?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        148
+      ],
+      "retrieved_sids": [
+        148,
+        106,
+        135,
+        11,
+        81,
+        55,
+        144,
+        84,
+        10,
+        3
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my sister?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        50
+      ],
+      "retrieved_sids": [
+        50,
+        38,
+        155,
+        79,
+        96,
+        41,
+        16,
+        57,
+        120,
+        8
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my boss enjoy?",
+      "ground_truth": "A",
+      "hit": false,
+      "target_sids": [
+        152
+      ],
+      "retrieved_sids": [
+        9,
+        23,
+        68,
+        109,
+        141,
+        8,
+        52,
+        47,
+        5,
+        128
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my sister's birthday?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        12
+      ],
+      "retrieved_sids": [
+        12,
+        124,
+        139,
+        0,
+        19,
+        83,
+        143,
+        42,
+        66,
+        24
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my male cousin?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        152
+      ],
+      "retrieved_sids": [
+        152,
+        142,
+        144,
+        107,
+        121,
+        24,
+        160,
+        102,
+        120,
+        159
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of the subordinate?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        69
+      ],
+      "retrieved_sids": [
+        69,
+        116,
+        58,
+        83,
+        102,
+        129,
+        110,
+        24,
+        103,
+        6
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my male cousin?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        62
+      ],
+      "retrieved_sids": [
+        62,
+        151,
+        158,
+        61,
+        143,
+        73,
+        114,
+        78,
+        80,
+        115
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of the coworker?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        72
+      ],
+      "retrieved_sids": [
+        72,
+        61,
+        145,
+        53,
+        124,
+        47,
+        85,
+        13,
+        25,
+        7
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What kind of education does my cousin have?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        154
+      ],
+      "retrieved_sids": [
+        110,
+        154,
+        137,
+        77,
+        6,
+        87,
+        161,
+        149,
+        94,
+        138
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobbies does my male cousin enjoy?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        62
+      ],
+      "retrieved_sids": [
+        6,
+        62,
+        8,
+        132,
+        148,
+        28,
+        14,
+        104,
+        7,
+        0
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What age is my niece?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        92
+      ],
+      "retrieved_sids": [
+        92,
+        0,
+        83,
+        103,
+        62,
+        145,
+        119,
+        12,
+        63,
+        84
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my aunt?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        138
+      ],
+      "retrieved_sids": [
+        138,
+        114,
+        137,
+        125,
+        93,
+        122,
+        147,
+        81,
+        34,
+        159
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of my boss?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        62
+      ],
+      "retrieved_sids": [
+        73,
+        82,
+        62,
+        43,
+        108,
+        121,
+        75,
+        31,
+        63,
+        76
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my male cousin's birthday?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        86
+      ],
+      "retrieved_sids": [
+        86,
+        101,
+        93,
+        82,
+        125,
+        42,
+        107,
+        7,
+        65,
+        23
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        46
+      ],
+      "retrieved_sids": [
+        46,
+        40
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the position of the subordinate?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        60
+      ],
+      "retrieved_sids": [
+        60,
+        42,
+        30,
+        157,
+        38,
+        151,
+        65,
+        47,
+        134,
+        119
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does the subordinate have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        133
+      ],
+      "retrieved_sids": [
+        133,
+        114,
+        9,
+        70,
+        149,
+        121,
+        83,
+        56,
+        43,
+        31
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my sister?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        21
+      ],
+      "retrieved_sids": [
+        21,
+        107,
+        4,
+        67,
+        41,
+        18,
+        20,
+        36,
+        66,
+        144
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does the coworker enjoy?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        90
+      ],
+      "retrieved_sids": [
+        10,
+        90,
+        70,
+        54,
+        27,
+        152,
+        156,
+        58,
+        86,
+        131
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is my male cousin's position?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        87
+      ],
+      "retrieved_sids": [
+        87,
+        148,
+        158,
+        99,
+        7,
+        79,
+        5,
+        74,
+        43,
+        68
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my sister have?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        124
+      ],
+      "retrieved_sids": [
+        124,
+        146,
+        106,
+        50,
+        47,
+        30,
+        89,
+        121,
+        72,
+        136
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for the coworker?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        42
+      ],
+      "retrieved_sids": [
+        42,
+        35,
+        151,
+        115,
+        77,
+        57,
+        50,
+        40,
+        46,
+        59
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my aunt?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        142
+      ],
+      "retrieved_sids": [
+        142,
+        135,
+        155,
+        51,
+        89,
+        4,
+        94,
+        3,
+        22,
+        66
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the educational background of the subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        31
+      ],
+      "retrieved_sids": [
+        50,
+        31,
+        127,
+        67,
+        108,
+        6,
+        21
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hobby of the niece?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        57
+      ],
+      "retrieved_sids": [
+        57,
+        89,
+        62,
+        114,
+        13,
+        5,
+        49,
+        42,
+        67,
+        153
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is my mother's email address?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        156
+      ],
+      "retrieved_sids": [
+        156,
+        135,
+        93,
+        78,
+        56,
+        143,
+        122,
+        38
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my sister?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        146
+      ],
+      "retrieved_sids": [
+        146,
+        0,
+        144,
+        41,
+        61,
+        82,
+        123,
+        103,
+        20,
+        125
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my brother's company?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        64
+      ],
+      "retrieved_sids": [
+        64,
+        62,
+        120,
+        65,
+        148,
+        6,
+        17,
+        119,
+        99
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my nephew?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        16
+      ],
+      "retrieved_sids": [
+        16,
+        152,
+        33,
+        141,
+        94,
+        0,
+        52,
+        151,
+        114,
+        161
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my mother do for a living?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        165
+      ],
+      "retrieved_sids": [
+        146,
+        163,
+        164,
+        136,
+        68,
+        165,
+        3,
+        32,
+        7,
+        27
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of the boss?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        108
+      ],
+      "retrieved_sids": [
+        108,
+        8,
+        136,
+        30,
+        155,
+        95,
+        117,
+        121,
+        102,
+        42
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my male cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        90
+      ],
+      "retrieved_sids": [
+        60,
+        90,
+        80,
+        125,
+        75,
+        40,
+        0,
+        20,
+        102,
+        81
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Where does my nephew work?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        83
+      ],
+      "retrieved_sids": [
+        83,
+        77,
+        158,
+        124,
+        107,
+        48,
+        92,
+        35,
+        28,
+        8
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hometown does that coworker come from?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        40
+      ],
+      "retrieved_sids": [
+        10,
+        40,
+        147,
+        0,
+        20,
+        95,
+        89,
+        105,
+        65,
+        129
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my female cousin?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        30
+      ],
+      "retrieved_sids": [
+        105,
+        30,
+        46,
+        47,
+        29,
+        4,
+        25,
+        92,
+        6,
+        35
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        0
+      ],
+      "retrieved_sids": [
+        0,
+        1,
+        122,
+        41,
+        142,
+        81,
+        61,
+        108
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the education background of that coworker?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        80
+      ],
+      "retrieved_sids": [
+        80,
+        46,
+        108,
+        93,
+        161,
+        76,
+        3,
+        125,
+        77,
+        62
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my mother's company?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        125
+      ],
+      "retrieved_sids": [
+        125,
+        94,
+        119,
+        112,
+        64,
+        145,
+        153,
+        33,
+        113,
+        51
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Where does my female cousin work?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        21
+      ],
+      "retrieved_sids": [
+        21,
+        59,
+        42,
+        22,
+        160,
+        13,
+        19,
+        40,
+        45,
+        146
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does that coworker of mine have?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        116
+      ],
+      "retrieved_sids": [
+        126,
+        46,
+        116,
+        7,
+        67,
+        28,
+        91,
+        105,
+        100,
+        114
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my mother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        159
+      ],
+      "retrieved_sids": [
+        159,
+        115,
+        35,
+        134,
+        34,
+        56,
+        146,
+        104,
+        36,
+        40
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is my male cousin's position?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        97
+      ],
+      "retrieved_sids": [
+        148,
+        150,
+        100,
+        2,
+        68,
+        97,
+        82,
+        60,
+        120,
+        45
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of the subordinate?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        124
+      ],
+      "retrieved_sids": [
+        124,
+        121,
+        143,
+        11,
+        66,
+        82
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my nephew?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        146
+      ],
+      "retrieved_sids": [
+        146,
+        144,
+        21,
+        81,
+        102,
+        40,
+        123,
+        0,
+        61,
+        104
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the occupation of my boss?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        151
+      ],
+      "retrieved_sids": [
+        151,
+        160,
+        149,
+        141,
+        150,
+        68,
+        95,
+        125,
+        47,
+        94
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the company where the boss works?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        133
+      ],
+      "retrieved_sids": [
+        89,
+        133,
+        4,
+        122,
+        46,
+        148,
+        35,
+        140,
+        29,
+        52
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my sister?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        1
+      ],
+      "retrieved_sids": [
+        1,
+        22,
+        43,
+        0,
+        51,
+        153,
+        145,
+        77,
+        17,
+        146
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my niece?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        114
+      ],
+      "retrieved_sids": [
+        49,
+        114,
+        118,
+        68,
+        3,
+        1,
+        22,
+        105,
+        89,
+        138
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the level of education achieved by my father?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        40
+      ],
+      "retrieved_sids": [
+        7,
+        66,
+        110,
+        128,
+        156,
+        21,
+        40,
+        85,
+        8,
+        48
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What level of education has my aunt completed?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        59
+      ],
+      "retrieved_sids": [
+        59,
+        133,
+        110,
+        36,
+        1,
+        42,
+        91,
+        27,
+        12,
+        34
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my mother's company?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        150
+      ],
+      "retrieved_sids": [
+        150,
+        143,
+        46,
+        158,
+        77,
+        66,
+        50,
+        124
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my father?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        60
+      ],
+      "retrieved_sids": [
+        87,
+        60,
+        44,
+        41,
+        27,
+        67,
+        36,
+        15,
+        14,
+        12
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my aunt's company?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        68
+      ],
+      "retrieved_sids": [
+        107,
+        68,
+        0,
+        6,
+        82,
+        63,
+        2,
+        13,
+        59,
+        108
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is my mother's email address?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        94
+      ],
+      "retrieved_sids": [
+        94,
+        134,
+        12,
+        32,
+        118,
+        83,
+        96,
+        76,
+        56,
+        13
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my brother?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        21
+      ],
+      "retrieved_sids": [
+        76,
+        21,
+        86,
+        33,
+        45,
+        153,
+        88,
+        94,
+        40,
+        22
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does the nephew have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        31
+      ],
+      "retrieved_sids": [
+        31,
+        45,
+        70,
+        152,
+        22,
+        110,
+        96,
+        21,
+        155,
+        97
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my father?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        83
+      ],
+      "retrieved_sids": [
+        83,
+        103,
+        129,
+        51,
+        81,
+        17,
+        77,
+        76
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my nephew do for a living?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        56
+      ],
+      "retrieved_sids": [
+        85,
+        30,
+        32,
+        42,
+        56,
+        50,
+        5,
+        107,
+        131,
+        24
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of the boss?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        105
+      ],
+      "retrieved_sids": [
+        105,
+        66,
+        78,
+        153,
+        102,
+        67,
+        127,
+        53,
+        83,
+        4
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my boss?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        59
+      ],
+      "retrieved_sids": [
+        59,
+        41,
+        124,
+        141,
+        27,
+        53,
+        25,
+        125,
+        113,
+        146
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my uncle have?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        14
+      ],
+      "retrieved_sids": [
+        27,
+        14,
+        47,
+        68,
+        66,
+        134,
+        91,
+        151,
+        109,
+        0
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Could someone share my coworker's contact number?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        55
+      ],
+      "retrieved_sids": [
+        55,
+        33,
+        120,
+        70,
+        60,
+        15,
+        14,
+        40,
+        54,
+        133
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        99
+      ],
+      "retrieved_sids": [
+        99,
+        81,
+        21,
+        61,
+        122,
+        101,
+        143,
+        41
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my niece?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        141
+      ],
+      "retrieved_sids": [
+        141,
+        71,
+        15,
+        55,
+        33,
+        111,
+        156,
+        138,
+        1,
+        149
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the email address of my sister?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        126
+      ],
+      "retrieved_sids": [
+        126,
+        13,
+        91,
+        137,
+        122,
+        95,
+        138,
+        92,
+        41,
+        119
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my sister?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        88
+      ],
+      "retrieved_sids": [
+        15,
+        88,
+        114,
+        160,
+        73,
+        133,
+        84,
+        102,
+        83,
+        161
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "When is my brother's birthday?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        48
+      ],
+      "retrieved_sids": [
+        48,
+        85,
+        61,
+        42,
+        45,
+        158,
+        64,
+        26,
+        146,
+        105
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the hometown of that aunt?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        148
+      ],
+      "retrieved_sids": [
+        148,
+        127,
+        156,
+        155,
+        24,
+        145,
+        56,
+        146,
+        3,
+        57
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my subordinate's company?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        118
+      ],
+      "retrieved_sids": [
+        118,
+        150,
+        102,
+        34,
+        47,
+        50,
+        29
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my subordinate?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        83
+      ],
+      "retrieved_sids": [
+        83,
+        4,
+        82,
+        94,
+        7,
+        149,
+        147,
+        28,
+        90,
+        109
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my mother?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        75
+      ],
+      "retrieved_sids": [
+        105,
+        75,
+        82,
+        147,
+        62,
+        0,
+        88,
+        26,
+        104,
+        125
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What kind of education does the coworker have?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        144
+      ],
+      "retrieved_sids": [
+        144,
+        161,
+        23,
+        108,
+        96,
+        114,
+        145,
+        68,
+        79,
+        6
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Could someone please share my coworker's contact number?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        14
+      ],
+      "retrieved_sids": [
+        14,
+        18,
+        115,
+        72,
+        32,
+        56,
+        153,
+        0,
+        136,
+        12
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the company where the coworker works?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        9
+      ],
+      "retrieved_sids": [
+        9,
+        66,
+        27,
+        3,
+        157,
+        162,
+        38,
+        159,
+        0,
+        88
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "How old is my brother?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        148
+      ],
+      "retrieved_sids": [
+        148,
+        146,
+        81,
+        19,
+        62,
+        125,
+        21,
+        97,
+        0,
+        14
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the level of education that Mother has completed?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        124
+      ],
+      "retrieved_sids": [
+        47,
+        12,
+        14,
+        40,
+        71,
+        89,
+        136,
+        124,
+        142,
+        123
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "Could someone share my boss's contact number?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        158
+      ],
+      "retrieved_sids": [
+        158,
+        69,
+        29,
+        18,
+        54,
+        139,
+        71,
+        164,
+        93,
+        94
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the age of my aunt?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        75
+      ],
+      "retrieved_sids": [
+        75,
+        62,
+        120,
+        101,
+        141,
+        41,
+        82,
+        20,
+        139,
+        0
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the contact number for my male cousin?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        85
+      ],
+      "retrieved_sids": [
+        29,
+        85,
+        160,
+        72,
+        14,
+        128,
+        55,
+        125,
+        83,
+        124
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the work location of my male cousin?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        13
+      ],
+      "retrieved_sids": [
+        123,
+        13,
+        159,
+        24,
+        0,
+        152,
+        65,
+        67,
+        86,
+        22
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the boss?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        133
+      ],
+      "retrieved_sids": [
+        133,
+        122,
+        135,
+        136,
+        97,
+        72,
+        96,
+        76,
+        137,
+        131
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of the subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        137
+      ],
+      "retrieved_sids": [
+        137,
+        123,
+        145,
+        110,
+        1,
+        48,
+        21,
+        83,
+        2,
+        71
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my sister?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        50
+      ],
+      "retrieved_sids": [
+        50,
+        127,
+        40,
+        64,
+        62,
+        43,
+        145,
+        79,
+        18,
+        54
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my niece?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        161
+      ],
+      "retrieved_sids": [
+        161,
+        143,
+        104,
+        64,
+        23,
+        22,
+        1,
+        42,
+        45,
+        126
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What hobby does my male cousin have?",
+      "ground_truth": "C",
+      "hit": true,
+      "target_sids": [
+        59
+      ],
+      "retrieved_sids": [
+        92,
+        59,
+        131,
+        114,
+        81,
+        9,
+        147,
+        32,
+        41,
+        80
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of my male cousin?",
+      "ground_truth": "D",
+      "hit": true,
+      "target_sids": [
+        71
+      ],
+      "retrieved_sids": [
+        71,
+        87,
+        61,
+        88,
+        126,
+        39,
+        37,
+        92,
+        117,
+        86
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the height of my mother?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        142
+      ],
+      "retrieved_sids": [
+        142,
+        123,
+        21,
+        105,
+        41,
+        145,
+        1
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the hometown of my uncle?",
+      "ground_truth": "B",
+      "hit": true,
+      "target_sids": [
+        24
+      ],
+      "retrieved_sids": [
+        24,
+        93,
+        63,
+        62,
+        143,
+        20,
+        77,
+        126,
+        65,
+        52
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What does my coworker do for a living?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        135
+      ],
+      "retrieved_sids": [
+        155,
+        21,
+        120,
+        135,
+        134,
+        23,
+        22,
+        154,
+        42,
+        110
+      ]
+    },
+    {
+      "category": "simple",
+      "topic": "roles",
+      "question": "What is the name of the subordinate?",
+      "ground_truth": "A",
+      "hit": true,
+      "target_sids": [
+        137
+      ],
+      "retrieved_sids": [
+        137,
+        27,
+        133
+      ]
+    }
+  ]
+}
