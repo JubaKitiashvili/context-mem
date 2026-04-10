@@ -1,6 +1,7 @@
 import type { SearchPlugin, SearchResult, SearchOpts, SearchOrchestrator, SearchIntent, SearchWeights, ObservationType } from '../../core/types.js';
 import { DEFAULT_SEARCH_WEIGHTS } from '../../core/types.js';
 import { IntentClassifier } from './intent.js';
+import { extractKeywords, EXPANSIONS } from './query-builder.js';
 
 const HALF_LIFE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const SEARCH_WINDOW_MS = 60_000;       // 60-second sliding window
@@ -225,30 +226,58 @@ export function rerank(results: SearchResult[], intentType: SearchIntent['intent
     }
   }
 
-  // Keyword density boost from query terms matching snippet content
-  const queryTerms = query
-    ? query.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3)
-    : [];
-  // Build bigrams for phrase matching
+  // IDF-weighted content matching with synonym awareness
+  const queryTerms = query ? extractKeywords(query) : [];
   const queryBigrams: string[] = [];
   for (let i = 0; i < queryTerms.length - 1; i++) {
     queryBigrams.push(queryTerms[i] + ' ' + queryTerms[i + 1]);
   }
+
+  // Build synonym lookup
+  const synonymMap = new Map<string, string[]>();
+  for (const w of queryTerms) {
+    synonymMap.set(w, EXPANSIONS[w] || []);
+  }
+
+  // Compute IDF across result set
+  const docFreq = new Map<string, number>();
+  if (queryTerms.length > 0) {
+    for (const w of queryTerms) {
+      let count = 0;
+      for (const r of results) {
+        const text = (r.snippet || r.title || '').toLowerCase();
+        if (text.includes(w)) count++;
+      }
+      docFreq.set(w, count);
+    }
+  }
+  const N = results.length || 1;
 
   return results.map(r => {
     const age = now - (r.timestamp || now);
     const recencyBoost = Math.pow(0.5, age / HALF_LIFE_MS);
     const accessBoost = Math.log2((r.access_count || 0) + 2) / 10;
 
-    // Content-based relevance boost
+    // IDF-weighted content boost (single authoritative reranker)
     let contentBoost = 0;
     if (queryTerms.length > 0 && r.snippet) {
-      const snippetLower = r.snippet.toLowerCase();
-      const keywordHits = queryTerms.filter(w => snippetLower.includes(w)).length;
-      const density = keywordHits / queryTerms.length;
-      const bigramHits = queryBigrams.filter(bg => snippetLower.includes(bg)).length;
+      const text = r.snippet.toLowerCase();
+      let weightedHits = 0;
+      for (const w of queryTerms) {
+        const df = docFreq.get(w) || 0;
+        const idf = Math.log((N + 1) / (df + 1));
+        if (text.includes(w)) {
+          weightedHits += idf;
+        } else {
+          const syns = synonymMap.get(w) || [];
+          if (syns.some(s => text.includes(s))) weightedHits += idf * 0.7;
+        }
+      }
+      const maxIdf = queryTerms.reduce((sum, w) => sum + Math.log((N + 1) / ((docFreq.get(w) || 0) + 1)), 0);
+      const idfDensity = maxIdf > 0 ? weightedHits / maxIdf : 0;
+      const bigramHits = queryBigrams.filter(bg => text.includes(bg)).length;
       const bigramScore = queryBigrams.length > 0 ? bigramHits / queryBigrams.length : 0;
-      contentBoost = density * 0.3 + bigramScore * 0.2;
+      contentBoost = idfDensity * 0.5 + bigramScore * 0.3;
     }
 
     return {

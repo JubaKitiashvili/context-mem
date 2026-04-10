@@ -2,7 +2,7 @@ import type { SearchPlugin, PluginConfig, SearchResult, SearchOpts } from '../..
 import type { BetterSqlite3Storage } from '../storage/better-sqlite3.js';
 import { sanitizeFTS5Query } from './fts5-utils.js';
 import { extractBestSnippet } from './snippet-extractor.js';
-import { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, resolveTemporalKeywords, EXPANSIONS } from './query-builder.js';
+import { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, resolveTemporalKeywords } from './query-builder.js';
 
 export class BM25Search implements SearchPlugin {
   name = 'bm25-search';
@@ -95,54 +95,8 @@ export class BM25Search implements SearchPlugin {
       }
     }
 
-    // Content-based reranking on full content (not just snippet)
-    const queryWords = extractKeywords(query);
-    const queryBigrams: string[] = [];
-    for (let i = 0; i < queryWords.length - 1; i++) {
-      queryBigrams.push(queryWords[i] + ' ' + queryWords[i + 1]);
-    }
-    if (queryWords.length > 0 && seen.size > 0) {
-      // Build synonym lookup
-      const synonymMap = new Map<string, string[]>();
-      for (const w of queryWords) {
-        synonymMap.set(w, EXPANSIONS[w] || []);
-      }
-
-      // Compute IDF: words appearing in fewer documents get higher weight
-      const docFreq = new Map<string, number>();
-      for (const w of queryWords) {
-        let count = 0;
-        for (const [, entry] of seen) {
-          const content = (entry.row.content || entry.row.summary || '').toLowerCase();
-          if (content.includes(w)) count++;
-        }
-        docFreq.set(w, count);
-      }
-      const N = seen.size || 1;
-
-      for (const [, entry] of seen) {
-        const content = (entry.row.content || entry.row.summary || '').toLowerCase();
-        let weightedHits = 0;
-        for (const w of queryWords) {
-          const df = docFreq.get(w) || 0;
-          const idf = Math.log((N + 1) / (df + 1));
-          if (content.includes(w)) {
-            weightedHits += idf;
-          } else {
-            const syns = synonymMap.get(w) || [];
-            if (syns.some(s => content.includes(s))) weightedHits += idf * 0.7;
-          }
-        }
-        const maxIdf = queryWords.reduce((sum, w) => sum + Math.log((N + 1) / ((docFreq.get(w) || 0) + 1)), 0);
-        const idfDensity = maxIdf > 0 ? weightedHits / maxIdf : 0;
-        const bigramHits = queryBigrams.filter(bg => content.includes(bg)).length;
-        const bigramScore = queryBigrams.length > 0 ? bigramHits / queryBigrams.length : 0;
-        const boost = idfDensity * 0.5 + bigramScore * 0.3;
-        entry.score *= (1 + boost);
-      }
-    }
-
-    // Convert to results, sorted by score
+    // Convert to results, sorted by raw BM25 score (reranking happens in fusion layer)
+    // Note: snippet includes full content reference for fusion's IDF reranker
     const results = [...seen.values()]
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
