@@ -3,14 +3,14 @@
 > Your AI forgets everything. Every decision, every debug session, every architecture choice — gone when the session ends. **context-mem remembers.**
 
 [![npm version](https://img.shields.io/npm/v/context-mem)](https://www.npmjs.com/package/context-mem)
-[![tests](https://img.shields.io/badge/tests-1116%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-1130%20passing-brightgreen)]()
 [![tools](https://img.shields.io/badge/MCP%20tools-44-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-green)]()
 
 **context-mem** is a dual-mode AI memory system: real-time context optimization (99% token savings) AND long-term institutional memory. It captures tool outputs via hooks, compresses them with 14 content-aware summarizers, stores everything in local SQLite with full-text search, and serves it back through [MCP](https://modelcontextprotocol.io). Fully deterministic and free by default. Optional LLM enhancement (Ollama, OpenRouter, Claude API) when you want it.
 
-**v3.0 "Total Recall"** adds importance scoring, verbatim recall, entity intelligence, adaptive compression, decision trails, session narratives, and 12 more features that make AI assistants genuinely remember.
+**v3.1 "Total Recall"** adds importance scoring, verbatim recall, entity intelligence, adaptive compression, decision trails, session narratives, and 12 more features that make AI assistants genuinely remember. v3.1 brings a refactored search architecture with hybrid parallel retrieval (BM25 + nomic-embed-text-v1.5 768-dim vectors).
 
 ## Real-World Examples
 
@@ -54,7 +54,7 @@ MemPalace claims 100% on LME/LoCoMo, but [those scores require paid LLM API call
 
 ## How It Compares
 
-| | context-mem v3.0 | MemPalace | claude-mem |
+| | context-mem v3.1 | MemPalace | claude-mem |
 |---|---|---|---|
 | **Retrieval Accuracy** | 98%+ (4 benchmarks) | 96.6% raw, 100% with LLM | Not benchmarked |
 | **Token Savings** | 99% (benchmarked) | 0% (stores everything) | ~95% (claimed) |
@@ -181,7 +181,7 @@ Full coding session (50 tool outputs): **365 KB → 3.2 KB** (99% savings). See 
 
 **14 Content Summarizers** — Auto-detect content type and apply optimal compression: shell output, JSON, errors, test results, TypeScript errors, build output, git logs, CSV, markdown, HTML, network, code, logs, binary.
 
-**4-Layer Hybrid Search** — BM25 full-text → trigram fuzzy → Levenshtein typo-tolerant → optional vector/semantic. Sub-millisecond with intent classification. Adaptive reranking and block-level memory attention.
+**Hybrid Parallel Search** — BM25 (4 strategies: AND-mode, entity-focused, sanitized FTS5, OR-mode with expansion) + nomic-embed-text-v1.5 vector (768-dim) run independently in parallel, then fuse via intent-adaptive weights with IDF-weighted content reranking. Trigram fuzzy + Levenshtein typo-tolerant as fallback layers. Sub-millisecond with intent classification.
 
 **Knowledge Base** — 5 categories (pattern, decision, error, api, component). 14-day half-life decay, semantic contradiction detection, authority scoring via softmax attention, auto-extraction from observations.
 
@@ -286,7 +286,7 @@ context-mem plugin add|remove|list  # Manage summarizer plugins
     "search": ["bm25", "trigram", "vector"],
     "runtimes": ["javascript", "python"]
   },
-  "search_weights": { "bm25": 0.5, "trigram": 0.3, "levenshtein": 0.15, "vector": 0.05 },
+  "search_weights": { "bm25": 0.45, "trigram": 0.15, "levenshtein": 0.05, "vector": 0.35 },
   "privacy": { "strip_tags": true, "redact_patterns": [] },
   "lifecycle": { "ttl_days": 30, "max_db_size_mb": 500, "max_observations": 50000 },
   "ai_curation": { "enabled": false, "provider": "auto" }
@@ -321,6 +321,6 @@ MIT
 ---
 
 <p align="center">
-  <b>context-mem v3.0 "Total Recall" — your AI never forgets</b><br/>
+  <b>context-mem v3.1 "Total Recall" — your AI never forgets</b><br/>
   <a href="https://github.com/JubaKitiashvili/context-mem">Star</a> · <a href="https://github.com/JubaKitiashvili/context-mem/fork">Fork</a> · <a href="https://github.com/JubaKitiashvili/context-mem/issues">Issues</a>
 </p>

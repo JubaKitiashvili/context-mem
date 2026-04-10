@@ -1,7 +1,7 @@
 {
   "name": "context-mem",
-  "version": "2.5.0",
-  "description": "Context optimization for AI coding assistants — 99% token savings via 14 content-aware summarizers, 4-layer search, and progressive disclosure. Zero LLM calls, zero cloud, zero cost.",
+  "version": "3.1.0",
+  "description": "Dual-mode AI memory: real-time context optimization (99% token savings) AND long-term institutional memory. 14 content-aware summarizers, hybrid parallel search (BM25 + vector), entity intelligence, decision trails. Fully local, zero cost.",
   "author": "JubaKitiashvili",
   "repository": "https://github.com/JubaKitiashvili/context-mem",
   "npm": "https://www.npmjs.com/package/context-mem",

@@ -9,3 +9,8 @@ dist/
 *.tgz
 .mcp.json
 .gstack/
+.cursor/
+.windsurf/
+Transcript
+honcho-analysis.md
+docs/superpowers/

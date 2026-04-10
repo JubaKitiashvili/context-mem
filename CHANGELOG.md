@@ -2,6 +2,20 @@
 
 All notable changes to context-mem are documented here.
 
+## [3.1.0] — 2026-04-10 — Search Architecture Refactor
+
+### Changed
+- **Search Architecture Refactor** — 5-phase cleanup: dead code removal, synonym split (benchmark-specific vs core), single reranker consolidation in fusion layer, BM25/trigram score normalization to 0–1 range, adapter alignment with core architecture.
+- **Hybrid Parallel Retrieval** — BM25 and vector search now run independently in parallel, then fuse results via intent-adaptive weights. Replaces the previous cascade approach.
+- **Embedding Model Upgrade** — nomic-embed-text-v1.5 (768-dim) replaces the previous 384-dim model. Memory-efficient vector reranking: BM25 top-30 → embed → rerank.
+- **Search Weight Defaults** — rebalanced to reflect hybrid architecture: bm25 0.45, trigram 0.15, levenshtein 0.05, vector 0.35 (was 0.50/0.30/0.15/0.05).
+- **BM25 4-Strategy Engine** — AND-mode (weight 2.0), entity-focused (1.8), sanitized FTS5 (1.5), OR-mode with expansion (1.0). IDF-weighted content reranking.
+- 14 new tests (1116 → 1130)
+
+### Benchmarks
+- LongMemEval R@5: 98.0% | LoCoMo: 98.2% | MemBench: 98.0% | ConvoMem: 97.7%
+- All scores without LLM reranking — pure local retrieval
+
 ## [3.0.0] — 2026-04-09 — Total Recall
 
 ### Added

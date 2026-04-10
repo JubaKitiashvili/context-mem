@@ -9,7 +9,7 @@ git clone https://github.com/JubaKitiashvili/context-mem.git
 cd context-mem
 npm install
 npm run build
-npm test          # Should pass 1116+ tests
+npm test          # Should pass 1130+ tests
 ```
 
 ## Project Structure
@@ -36,7 +36,7 @@ src/
   core/conversation-parsers/  # 5 format parsers
   plugins/
     summarizers/              # 14 content-type summarizers
-    search/                   # BM25, trigram, levenshtein, vector
+    search/                   # BM25 (4 strategies), trigram, levenshtein, vector (nomic-embed 768-dim), fusion
     storage/                  # SQLite with migrations (v1-v16)
     knowledge/                # Knowledge base with authority scoring
     privacy/                  # 9 secret detectors
@@ -45,7 +45,7 @@ src/
     server.ts                 # MCP protocol dispatch
   cli/
     commands/                 # CLI command implementations
-  tests/                      # 1116+ tests (node:test)
+  tests/                      # 1130+ tests (node:test)
 hooks/                        # Claude Code hooks (JS)
 dashboard/
   server.js                   # Dashboard web UI (self-contained)
@@ -58,7 +58,7 @@ dashboard/
 1. Create a feature branch: `git checkout -b feat/your-feature`
 2. Make changes
 3. Build: `npm run build`
-4. Test: `npm test` — all 1116+ tests must pass
+4. Test: `npm test` — all 1130+ tests must pass
 5. Commit with descriptive message
 6. Push and create PR
 
