@@ -36,25 +36,38 @@ You: "What are we about to forget?"
     never accessed. Pin the critical ones before they decay.
 ```
 
+## Retrieval Benchmarks
+
+Tested on 4 academic benchmarks. All scores are **without LLM reranking** — pure local retrieval.
+
+| Benchmark | context-mem | MemPalace | Notes |
+|---|---|---|---|
+| **LongMemEval R@5** | **98.0%** | 96.6% | 500 questions, session retrieval |
+| **LongMemEval R@10** | **99.4%** | 98.2% | |
+| **LoCoMo** (top-10) | **98.2%** | 60.3% | 1,977 multi-hop QA pairs |
+| **ConvoMem** | **97.7%** | 92.9% | 250 items, 5 categories |
+| **MemBench** | **98.0%** | 80.3% | 500 person-attribute queries |
+
+MemPalace claims 100% on LME/LoCoMo, but [those scores require paid LLM API calls and top-50 retrieval](https://github.com/milla-jovovich/mempalace/issues/29) that bypasses the retrieval system entirely. Their honest no-LLM scores are shown above.
+
+**Search architecture:** 8 BM25 strategies + nomic-embed-text-v1.5 vector (768-dim) + IDF-weighted reranking + hybrid parallel fusion. Fully local, zero API calls.
+
 ## How It Compares
 
-| | context-mem v3.0 | MemPalace | claude-mem | Context7 |
-|---|---|---|---|---|
-| **Approach** | 14 summarizers + importance scoring | Verbatim storage | LLM compression | External docs |
-| **Token Savings** | 99% (benchmarked) | 0% (stores everything) | ~95% (claimed) | N/A |
-| **Long-Term Recall** | Verbatim + adaptive compression | Verbatim only | LLM summaries | No |
-| **Search** | BM25 + Trigram + Fuzzy + Vector + reranking | Basic search | Basic recall | Doc lookup |
-| **Entity Intelligence** | Auto-detect + 100 aliases + graph | No | No | No |
-| **Importance Scoring** | 0.0-1.0 with 6 significance flags | No | No | No |
-| **Decision Trails** | Evidence chain reconstruction | No | No | No |
-| **Temporal Facts** | Valid-from/to + supersession chains | No | No | No |
-| **Session Narratives** | PR/Standup/ADR/Onboarding generation | No | No | No |
-| **Conversation Import** | ChatGPT, Claude, Slack, plaintext | No | No | No |
-| **Cross-Project Memory** | Global store + topic tunnels | No | No | No |
-| **Background Agent** | Dreamer: validates, compresses, consolidates | No | No | No |
-| **LLM Dependency** | Optional (free by default) | None | Required (~$57/mo) | None |
-| **Privacy** | Fully local, 9 secret detectors | Local | Local | Cloud |
-| **License** | MIT | Proprietary | AGPL-3.0 | Open |
+| | context-mem v3.0 | MemPalace | claude-mem |
+|---|---|---|---|
+| **Retrieval Accuracy** | 98%+ (4 benchmarks) | 96.6% raw, 100% with LLM | Not benchmarked |
+| **Token Savings** | 99% (benchmarked) | 0% (stores everything) | ~95% (claimed) |
+| **Search** | BM25 + Vector + IDF reranking | ChromaDB | Basic recall |
+| **Entity Intelligence** | Auto-detect + 100 aliases + graph | No | No |
+| **Importance Scoring** | 0.0-1.0 with 6 significance flags | No | No |
+| **Decision Trails** | Evidence chain reconstruction | No | No |
+| **Session Narratives** | PR/Standup/ADR/Onboarding | No | No |
+| **Conversation Import** | ChatGPT, Claude, Slack, plaintext | No | No |
+| **Cross-Project Memory** | Global store + topic tunnels | No | No |
+| **LLM Dependency** | Optional (free by default) | None (100% needs API) | Required (~$57/mo) |
+| **Privacy** | Fully local, 9 secret detectors | Local | Local |
+| **License** | MIT | Proprietary | AGPL-3.0 |
 
 ## Quick Start
 
