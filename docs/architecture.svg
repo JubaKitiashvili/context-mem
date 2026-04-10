@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="960" height="600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#080816"/>
+      <stop offset="100%" stop-color="#0e0c20"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <linearGradient id="cyan-b" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="indigo-b" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="purple-b" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c084fc" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="green-b" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#34d399" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="rose-b" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f472b6" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ec4899" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="arrow-g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="960" height="600" rx="12" fill="url(#bg)"/>
+
+  <!-- Subtle grid -->
+  <g opacity="0.03" stroke="#818cf8" stroke-width="0.5">
+    <line x1="0" y1="100" x2="960" y2="100"/>
+    <line x1="0" y1="200" x2="960" y2="200"/>
+    <line x1="0" y1="300" x2="960" y2="300"/>
+    <line x1="0" y1="400" x2="960" y2="400"/>
+    <line x1="0" y1="500" x2="960" y2="500"/>
+  </g>
+
+  <!-- Title -->
+  <text x="480" y="40" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="17" font-weight="700" fill="#e2e8f0" letter-spacing="2">OBSERVATION PIPELINE</text>
+  <rect x="370" y="48" width="220" height="2" rx="1" fill="url(#accent)" opacity="0.5"/>
+
+  <!-- === ROW 1: Input === -->
+  <rect x="355" y="64" width="250" height="42" rx="10" fill="#0c0a1a" stroke="url(#cyan-b)" stroke-width="1.5"/>
+  <text x="480" y="90" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#22d3ee">INCOMING CONTENT</text>
+
+  <!-- Arrow 1 -->
+  <line x1="480" y1="106" x2="480" y2="130" stroke="#475569" stroke-width="2"/>
+  <polygon points="474,126 480,136 486,126" fill="#475569"/>
+
+  <!-- === ROW 2: Privacy === -->
+  <rect x="290" y="136" width="380" height="50" rx="10" fill="#0c0a1a" stroke="url(#indigo-b)" stroke-width="1.5"/>
+  <text x="480" y="160" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#e2e8f0">Privacy Engine</text>
+  <text x="480" y="178" text-anchor="middle" font-family="ui-monospace, 'SF Mono', monospace" font-size="10.5" fill="#64748b">9 secret detectors + SHA256 dedup + tag stripping</text>
+
+  <!-- Arrow 2 -->
+  <line x1="480" y1="186" x2="480" y2="208" stroke="#475569" stroke-width="2"/>
+  <polygon points="474,204 480,214 486,204" fill="#475569"/>
+
+  <!-- === ROW 3: Three parallel extractors === -->
+  <!-- Branch lines -->
+  <line x1="480" y1="208" x2="165" y2="220" stroke="#475569" stroke-width="1.2"/>
+  <line x1="480" y1="208" x2="480" y2="220" stroke="#475569" stroke-width="1.2"/>
+  <line x1="480" y1="208" x2="795" y2="220" stroke="#475569" stroke-width="1.2"/>
+
+  <!-- Entity -->
+  <rect x="50" y="220" width="230" height="58" rx="10" fill="#0c0a1a" stroke="url(#cyan-b)" stroke-width="1.5"/>
+  <text x="165" y="246" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#22d3ee">Entity Extractor</text>
+  <text x="165" y="266" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10.5" fill="#64748b">100+ aliases, auto-detect</text>
+
+  <!-- Importance -->
+  <rect x="365" y="220" width="230" height="58" rx="10" fill="#0c0a1a" stroke="url(#indigo-b)" stroke-width="1.5"/>
+  <text x="480" y="246" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#818cf8">Importance Classifier</text>
+  <text x="480" y="266" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10.5" fill="#64748b">0.0–1.0 score, 6 flags</text>
+
+  <!-- Topic -->
+  <rect x="680" y="220" width="230" height="58" rx="10" fill="#0c0a1a" stroke="url(#purple-b)" stroke-width="1.5"/>
+  <text x="795" y="246" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#c084fc">Topic Detector</text>
+  <text x="795" y="266" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10.5" fill="#64748b">13 categories</text>
+
+  <!-- Merge arrows -->
+  <line x1="165" y1="278" x2="480" y2="302" stroke="#475569" stroke-width="1.2"/>
+  <line x1="480" y1="278" x2="480" y2="302" stroke="#475569" stroke-width="1.2"/>
+  <line x1="795" y1="278" x2="480" y2="302" stroke="#475569" stroke-width="1.2"/>
+  <polygon points="474,298 480,308 486,298" fill="#475569"/>
+
+  <!-- === ROW 4: Summarizer === -->
+  <rect x="275" y="308" width="410" height="50" rx="10" fill="#0c0a1a" stroke="url(#indigo-b)" stroke-width="1.5"/>
+  <text x="480" y="332" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#e2e8f0">14 Content Summarizers</text>
+  <text x="480" y="350" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10.5" fill="#64748b">shell, json, error, code, ts-error, git, csv, html, md...</text>
+
+  <!-- Arrow 3 -->
+  <line x1="480" y1="358" x2="480" y2="380" stroke="#475569" stroke-width="2"/>
+  <polygon points="474,376 480,386 486,376" fill="#475569"/>
+
+  <!-- === ROW 5: Three storage targets === -->
+  <line x1="480" y1="380" x2="165" y2="392" stroke="#475569" stroke-width="1.2"/>
+  <line x1="480" y1="380" x2="480" y2="392" stroke="#475569" stroke-width="1.2"/>
+  <line x1="480" y1="380" x2="795" y2="392" stroke="#475569" stroke-width="1.2"/>
+
+  <!-- Verbatim -->
+  <rect x="50" y="392" width="230" height="58" rx="10" fill="#0c0a1a" stroke="url(#green-b)" stroke-width="1.5"/>
+  <text x="165" y="418" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#34d399">Verbatim Archive</text>
+  <text x="165" y="438" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10.5" fill="#64748b">FTS5 indexed, raw content</text>
+
+  <!-- SQLite -->
+  <rect x="365" y="392" width="230" height="58" rx="10" fill="#0c0a1a" stroke="url(#green-b)" stroke-width="1.5"/>
+  <text x="480" y="418" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#34d399">SQLite Store</text>
+  <text x="480" y="438" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10.5" fill="#64748b">summaries + metadata</text>
+
+  <!-- Knowledge Graph -->
+  <rect x="680" y="392" width="230" height="58" rx="10" fill="#0c0a1a" stroke="url(#green-b)" stroke-width="1.5"/>
+  <text x="795" y="418" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#34d399">Knowledge Graph</text>
+  <text x="795" y="438" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10.5" fill="#64748b">entities + relationships</text>
+
+  <!-- Merge arrows -->
+  <line x1="165" y1="450" x2="480" y2="474" stroke="#475569" stroke-width="1.2"/>
+  <line x1="480" y1="450" x2="480" y2="474" stroke="#475569" stroke-width="1.2"/>
+  <line x1="795" y1="450" x2="480" y2="474" stroke="#475569" stroke-width="1.2"/>
+  <polygon points="474,470 480,480 486,470" fill="#475569"/>
+
+  <!-- === ROW 6: Adaptive Compressor === -->
+  <rect x="240" y="480" width="480" height="50" rx="10" fill="#0c0a1a" stroke="url(#rose-b)" stroke-width="1.5"/>
+  <text x="480" y="504" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#e2e8f0">Adaptive Compressor</text>
+  <text x="480" y="522" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10.5" fill="#64748b">verbatim (0-7d) → light (7-30d) → medium (30-90d) → distilled (90d+)</text>
+
+  <!-- Arrow to outputs -->
+  <line x1="480" y1="530" x2="480" y2="548" stroke="#475569" stroke-width="2"/>
+  <line x1="480" y1="542" x2="165" y2="556" stroke="#475569" stroke-width="1.2"/>
+  <line x1="480" y1="542" x2="480" y2="556" stroke="#475569" stroke-width="1.2"/>
+  <line x1="480" y1="542" x2="795" y2="556" stroke="#475569" stroke-width="1.2"/>
+
+  <!-- === ROW 7: Outputs === -->
+  <rect x="55" y="556" width="220" height="34" rx="8" fill="#0c0a1a" stroke="#334155" stroke-width="1"/>
+  <text x="165" y="578" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#94a3b8">MCP Server — 44 tools</text>
+
+  <rect x="370" y="556" width="220" height="34" rx="8" fill="#0c0a1a" stroke="#334155" stroke-width="1"/>
+  <text x="480" y="578" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#94a3b8">Dashboard — 6 pages</text>
+
+  <rect x="685" y="556" width="220" height="34" rx="8" fill="#0c0a1a" stroke="#334155" stroke-width="1"/>
+  <text x="795" y="578" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#94a3b8">CLI — why, story, import</text>
+</svg>

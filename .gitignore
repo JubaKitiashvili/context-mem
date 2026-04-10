@@ -14,3 +14,4 @@ dist/
 Transcript
 honcho-analysis.md
 docs/superpowers/
+.playwright-mcp/

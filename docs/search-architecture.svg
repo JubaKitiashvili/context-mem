@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" width="960" height="460">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#080816"/>
+      <stop offset="100%" stop-color="#0e0c20"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <linearGradient id="cyan-b" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="indigo-b" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="purple-b" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c084fc" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="green-b" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#34d399" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0.35"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="460" rx="12" fill="url(#bg)"/>
+
+  <!-- Subtle grid -->
+  <g opacity="0.03" stroke="#818cf8" stroke-width="0.5">
+    <line x1="0" y1="115" x2="960" y2="115"/>
+    <line x1="0" y1="230" x2="960" y2="230"/>
+    <line x1="0" y1="345" x2="960" y2="345"/>
+  </g>
+
+  <!-- Title -->
+  <text x="480" y="38" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="17" font-weight="700" fill="#e2e8f0" letter-spacing="2">HYBRID PARALLEL SEARCH</text>
+  <rect x="365" y="46" width="230" height="2" rx="1" fill="url(#accent)" opacity="0.5"/>
+
+  <!-- === ROW 1: Query Input === -->
+  <rect x="355" y="62" width="250" height="42" rx="10" fill="#0c0a1a" stroke="url(#cyan-b)" stroke-width="1.5"/>
+  <text x="480" y="88" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#22d3ee">USER QUERY</text>
+
+  <!-- Arrow -->
+  <line x1="480" y1="104" x2="480" y2="126" stroke="#475569" stroke-width="2"/>
+  <polygon points="474,122 480,132 486,122" fill="#475569"/>
+
+  <!-- === ROW 2: Intent Classifier === -->
+  <rect x="300" y="132" width="360" height="50" rx="10" fill="#0c0a1a" stroke="url(#indigo-b)" stroke-width="1.5"/>
+  <text x="480" y="156" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#e2e8f0">Intent Classifier</text>
+  <text x="480" y="174" text-anchor="middle" font-family="ui-monospace, 'SF Mono', monospace" font-size="10.5" fill="#64748b">causal | temporal | lookup | general</text>
+
+  <!-- Branch to parallel -->
+  <line x1="480" y1="182" x2="480" y2="198" stroke="#475569" stroke-width="2"/>
+
+  <!-- PARALLEL label with dashed lines -->
+  <line x1="100" y1="206" x2="410" y2="206" stroke="#475569" stroke-width="0.8" stroke-dasharray="4,3"/>
+  <text x="480" y="210" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" font-weight="700" fill="#64748b" letter-spacing="2">PARALLEL</text>
+  <line x1="550" y1="206" x2="860" y2="206" stroke="#475569" stroke-width="0.8" stroke-dasharray="4,3"/>
+
+  <!-- Branch arrows -->
+  <line x1="480" y1="198" x2="240" y2="224" stroke="#475569" stroke-width="1.5"/>
+  <line x1="480" y1="198" x2="720" y2="224" stroke="#475569" stroke-width="1.5"/>
+
+  <!-- === ROW 3: BM25 (left) === -->
+  <rect x="50" y="224" width="380" height="140" rx="10" fill="#0c0a1a" stroke="url(#cyan-b)" stroke-width="1.5"/>
+  <text x="240" y="252" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#22d3ee">BM25 Engine</text>
+  <text x="240" y="272" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#94a3b8">4 strategies, run in parallel</text>
+
+  <!-- BM25 strategy rows -->
+  <g font-family="ui-monospace, 'SF Mono', monospace" font-size="11">
+    <text x="82" y="300" fill="#94a3b8">AND-mode</text>
+    <text x="210" y="300" fill="#475569">weight 2.0</text>
+    <text x="310" y="300" fill="#22d3ee">high precision</text>
+
+    <text x="82" y="320" fill="#94a3b8">Entity</text>
+    <text x="210" y="320" fill="#475569">weight 1.8</text>
+    <text x="310" y="320" fill="#22d3ee">proper nouns</text>
+
+    <text x="82" y="340" fill="#94a3b8">FTS5</text>
+    <text x="210" y="340" fill="#475569">weight 1.5</text>
+    <text x="310" y="340" fill="#22d3ee">tokenized</text>
+
+    <text x="82" y="360" fill="#94a3b8">OR-expand</text>
+    <text x="210" y="360" fill="#475569">weight 1.0</text>
+    <text x="310" y="360" fill="#22d3ee">broad recall</text>
+  </g>
+
+  <!-- === ROW 3: Vector (right) === -->
+  <rect x="530" y="224" width="380" height="140" rx="10" fill="#0c0a1a" stroke="url(#purple-b)" stroke-width="1.5"/>
+  <text x="720" y="252" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#c084fc">Vector Engine</text>
+  <text x="720" y="272" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#94a3b8">nomic-embed-text-v1.5</text>
+
+  <g font-family="ui-monospace, 'SF Mono', monospace" font-size="11" fill="#94a3b8">
+    <text x="562" y="302">768-dim embeddings</text>
+    <text x="562" y="326">BM25 top-30 candidates</text>
+    <text x="562" y="350">Cosine similarity rerank</text>
+  </g>
+
+  <!-- Merge arrows -->
+  <line x1="240" y1="364" x2="480" y2="396" stroke="#475569" stroke-width="1.5"/>
+  <line x1="720" y1="364" x2="480" y2="396" stroke="#475569" stroke-width="1.5"/>
+  <polygon points="474,392 480,402 486,392" fill="#475569"/>
+
+  <!-- === ROW 4: Fusion === -->
+  <rect x="240" y="402" width="480" height="50" rx="10" fill="#0c0a1a" stroke="url(#green-b)" stroke-width="1.5"/>
+  <text x="480" y="426" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#34d399">Fusion + IDF Reranker</text>
+  <text x="480" y="444" text-anchor="middle" font-family="ui-monospace, 'SF Mono', monospace" font-size="10.5" fill="#64748b">intent-adaptive weights | keyword density + bigrams | score normalization</text>
+</svg>
