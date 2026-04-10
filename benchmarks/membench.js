@@ -86,6 +86,7 @@ const TOP_K = parseInt(getArg('top-k', '5'), 10);
 const LIMIT = parseInt(getArg('limit', '0'), 10);
 const MODE = getArg('mode', 'hybrid');
 const OUT_FILE = getArg('out', null);
+const USE_VECTOR = args.includes('--vector');
 
 // ── Load data ───────────────────────────────────────────────────────────────
 function loadItems() {
@@ -154,6 +155,7 @@ const perCategory = {};
 let totalHit = 0;
 const startTime = Date.now();
 
+(async () => {
 for (let idx = 0; idx < items.length; idx++) {
   const item = items[idx];
   const kernel = new BenchKernel().open();
@@ -184,9 +186,19 @@ for (let idx = 0; idx < items.length; idx++) {
 
   if (globalIdx === 0) { kernel.close(); continue; }
 
+  // Embed for hybrid vector search
+  if (USE_VECTOR) {
+    await kernel.embedAll();
+  }
+
   // Retrieve
-  const retrieveCount = MODE === 'hybrid' ? TOP_K * 3 : TOP_K;
-  let results = kernel.search(item.question, Math.min(retrieveCount, globalIdx));
+  let results;
+  if (USE_VECTOR) {
+    results = await kernel.hybridSearch(item.question, MODE === 'hybrid' ? TOP_K * 3 : TOP_K);
+  } else {
+    const retrieveCount = MODE === 'hybrid' ? TOP_K * 3 : TOP_K;
+    results = kernel.search(item.question, Math.min(retrieveCount, globalIdx));
+  }
 
   // Hybrid re-scoring: boost results with keyword overlap
   if (MODE === 'hybrid' && results.length > 0) {
@@ -273,3 +285,4 @@ fs.writeFileSync(outPath, JSON.stringify({
   details: resultsLog,
 }, null, 2));
 console.log(`  Results saved: ${outPath}`);
+})();

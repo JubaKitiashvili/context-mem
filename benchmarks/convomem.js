@@ -181,8 +181,8 @@ async function run() {
     // Embed all documents for vector search
     await kernel.embedAll();
 
-    // Query (hybrid: FTS5 + vector) — search 2x candidates for better recall
-    const results = await kernel.searchAsync(question, TOP_K * 2);
+    // Query (hybrid parallel: BM25 + vector independent retrieval)
+    const results = await kernel.hybridSearch(question, TOP_K * 2);
     const retrievedIndices = results.map(r => parseInt(r.id.replace('msg_', ''), 10));
     const retrievedTexts = retrievedIndices
       .filter(idx => idx < corpusTexts.length)
