@@ -293,6 +293,42 @@ class BenchKernel {
     return this.search(query, limit, opts);
   }
 
+  /**
+   * Vector rerank: embed query + BM25 candidates only (not entire corpus).
+   * Memory-efficient: embeds ~30 docs per query instead of thousands.
+   */
+  async vectorRerank(query, bm25Results, limit = 10) {
+    const embedder = await getEmbedder();
+    if (!embedder) return bm25Results.slice(0, limit);
+
+    try {
+      const queryEmb = await (embedder.embedQuery || embedder.embed).call(embedder, query);
+      if (!queryEmb) return bm25Results.slice(0, limit);
+
+      // Fetch content for BM25 candidates
+      const ids = bm25Results.map(r => r.id);
+      const placeholders = ids.map(() => '?').join(',');
+      const rows = this.db.prepare(`SELECT id, content FROM observations WHERE id IN (${placeholders})`).all(...ids);
+      const contentMap = new Map(rows.map(r => [r.id, r.content]));
+
+      // Embed each candidate and compute similarity
+      const scored = [];
+      for (const r of bm25Results) {
+        const content = contentMap.get(r.id);
+        if (!content) { scored.push({ ...r }); continue; }
+        const docEmb = await embedder.embed(content.slice(0, 2000)); // truncate for speed
+        const sim = docEmb ? cosineSimilarity(queryEmb, docEmb) : 0;
+        // Fuse BM25 score + vector similarity
+        scored.push({ ...r, score: r.score + sim * 3.0 });
+      }
+
+      scored.sort((a, b) => b.score - a.score);
+      return scored.slice(0, limit);
+    } catch {
+      return bm25Results.slice(0, limit);
+    }
+  }
+
   close() {
     if (this.db) { this.db.close(); this.db = null; }
     this._embeddings.clear();

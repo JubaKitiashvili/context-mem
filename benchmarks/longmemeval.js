@@ -124,17 +124,16 @@ for (let qi = 0; qi < entries.length; qi++) {
     }
   }
 
-  // Vector embedding (when enabled)
-  if (USE_VECTOR) {
-    await kernel.embedAll();
-  }
-
-  // Query (hybrid when vector enabled)
+  // Query — BM25 first, then optional vector rerank (memory-efficient)
   const searchOpts = {};
   if (entry.question_date) searchOpts.referenceDate = entry.question_date;
-  const results = USE_VECTOR
-    ? await kernel.searchAsync(question, Math.max(TOP_K, 10), searchOpts)
-    : kernel.search(question, Math.max(TOP_K, 10), searchOpts);
+  const bm25Results = kernel.search(question, USE_VECTOR ? 30 : Math.max(TOP_K, 10), searchOpts);
+
+  let results = bm25Results;
+  if (USE_VECTOR && bm25Results.length > 0) {
+    // Vector rerank: embed only BM25 top-30 candidates + query (not entire corpus)
+    results = await kernel.vectorRerank(question, bm25Results, Math.max(TOP_K, 10));
+  }
   const retrievedIds = results.map(r => kernel.resolveId(r.id));
 
   // For turn granularity, map back to session IDs for scoring

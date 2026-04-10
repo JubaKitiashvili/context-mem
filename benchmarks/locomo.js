@@ -175,11 +175,6 @@ for (let ci = 0; ci < conversations.length; ci++) {
     }
   }
 
-  // Vector embedding (when enabled)
-  if (USE_VECTOR) {
-    await kernel.embedAll();
-  }
-
   // Run each QA pair
   for (const qa of qaPairs) {
     const question = qa.question;
@@ -199,9 +194,13 @@ for (let ci = 0; ci < conversations.length; ci++) {
 
     if (!correctIds.length) continue;
 
-    const results = USE_VECTOR
-      ? await kernel.searchAsync(question, TOP_K)
-      : kernel.search(question, TOP_K);
+    let results;
+    if (USE_VECTOR) {
+      const bm25Results = kernel.search(question, 30);
+      results = await kernel.vectorRerank(question, bm25Results, TOP_K);
+    } else {
+      results = kernel.search(question, TOP_K);
+    }
     const retrievedIds = results.map(r => r.id);
 
     const recall = correctIds.some(cid => retrievedIds.includes(cid)) ? 1.0 : 0.0;
