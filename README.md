@@ -318,20 +318,26 @@ context-mem plugin add|remove|list  # Manage summarizer plugins
 
 ## License
 
-MIT
-
-## Author
-
-[Juba Kitiashvili](https://github.com/JubaKitiashvili)
+MIT — [Juba Kitiashvili](https://github.com/JubaKitiashvili)
 
 ---
 
 <div align="center">
 
-**Context Mem v3.1 "Total Recall"**
+### Get Started
 
-Your AI never forgets.
+```bash
+npm i context-mem && npx context-mem init
+```
 
-[![Star](https://img.shields.io/github/stars/JubaKitiashvili/context-mem?style=social)](https://github.com/JubaKitiashvili/context-mem)
+**[Read the Docs](docs/)** · **[View Benchmarks](docs/benchmarks/results.md)** · **[Report a Bug](https://github.com/JubaKitiashvili/context-mem/issues)** · **[Contributing](CONTRIBUTING.md)**
+
+---
+
+**Context Mem v3.1 "Total Recall"** — your AI never forgets.
+
+[![Star on GitHub](https://img.shields.io/github/stars/JubaKitiashvili/context-mem?style=social)](https://github.com/JubaKitiashvili/context-mem)
+[![npm](https://img.shields.io/npm/dm/context-mem)](https://www.npmjs.com/package/context-mem)
+[![Follow](https://img.shields.io/github/followers/JubaKitiashvili?style=social)](https://github.com/JubaKitiashvili)
 
 </div>
