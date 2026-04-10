@@ -22,7 +22,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { BenchKernel } = require('./lib/kernel-adapter');
+const { BenchKernel } = require('./lib/kernel-adapter'); // Must load first — merges bench expansions
 const { formatPercent, printHeader } = require('./lib/metrics');
 const { EXPANSIONS } = require(path.join(__dirname, '..', 'dist/plugins/search/query-builder.js'));
 

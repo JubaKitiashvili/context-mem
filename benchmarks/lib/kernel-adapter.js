@@ -14,7 +14,11 @@ const Database = require('better-sqlite3');
 const projectRoot = path.resolve(__dirname, '..', '..');
 const { migrations } = require(path.join(projectRoot, 'dist/plugins/storage/migrations.js'));
 const { sanitizeFTS5Query } = require(path.join(projectRoot, 'dist/plugins/search/fts5-utils.js'));
-const { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, resolveTemporalKeywords, EXPANSIONS } = require(path.join(projectRoot, 'dist/plugins/search/query-builder.js'));
+const { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, resolveTemporalKeywords, EXPANSIONS, mergeExpansions } = require(path.join(projectRoot, 'dist/plugins/search/query-builder.js'));
+const { BENCH_EXPANSIONS } = require(path.join(__dirname, 'expansions.js'));
+
+// Merge benchmark-specific synonyms into the active expansion set
+mergeExpansions(BENCH_EXPANSIONS);
 
 // ── Vector search helpers (optional) ────────────────────────────────────────
 let _embedder = null;

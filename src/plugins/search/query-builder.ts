@@ -13,8 +13,13 @@ const STOP_WORDS = new Set([
   'been', 'being', 'also', 'just', 'than', 'then', 'very', 'too',
 ]);
 
-export const EXPANSIONS: Record<string, string[]> = {
-  // Recommendation / preference — targeted for LME preference failures
+/**
+ * General-purpose synonym expansions for OR-mode query broadening.
+ * Keep this focused on universally useful vocabulary — no benchmark-specific patches.
+ * Benchmark-specific expansions go in benchmarks/lib/expansions.js.
+ */
+let _expansions: Record<string, string[]> = {
+  // Recommendation / preference
   recommend: ['suggest', 'prefer', 'favorite', 'enjoy'],
   suggest: ['recommend', 'prefer', 'favorite'],
   tips: ['advice', 'suggest', 'recommend'],
@@ -31,63 +36,46 @@ export const EXPANSIONS: Record<string, string[]> = {
   // Activities
   activity: ['hobby', 'sport', 'exercise', 'game'],
   exercise: ['workout', 'gym', 'fitness', 'sport'],
-  hobby: ['interest', 'activity', 'passion', 'enjoy', 'loves', 'likes', 'free'],
-  hobbies: ['interest', 'activity', 'passion', 'enjoy', 'loves', 'likes'],
+  hobby: ['interest', 'activity', 'passion', 'enjoy'],
   // Work
   tool: ['app', 'software', 'platform', 'service'],
   email: ['message', 'outreach', 'send', 'follow'],
   performance: ['review', 'metrics', 'results', 'goals'],
   schedule: ['time', 'meeting', 'calendar', 'plan'],
   organize: ['manage', 'arrange', 'structure', 'sort'],
-  // Targeted additions for failure patterns
-  accessories: ['gear', 'equipment', 'setup', 'kit'],
-  photography: ['camera', 'photo', 'lens', 'shoot'],
-  battery: ['charge', 'power', 'phone'],
-  cookie: ['bake', 'recipe', 'chocolate', 'dessert'],
-  jewelry: ['ring', 'necklace', 'bracelet', 'gift'],
+  // Common relationships
   sibling: ['brother', 'sister', 'family'],
-  violin: ['practice', 'instrument', 'music', 'play'],
-  conference: ['publication', 'research', 'academic', 'paper'],
-  publication: ['conference', 'research', 'journal', 'paper'],
+  // Commerce
   buy: ['purchase', 'bought', 'order', 'shop'],
   bought: ['purchase', 'buy', 'ordered'],
-  appliance: ['kitchen', 'device', 'bought', 'purchase'],
   travel: ['trip', 'visit', 'vacation', 'went'],
-  race: ['charity', 'run', 'marathon', 'event'],
-  martial: ['karate', 'judo', 'taekwondo', 'fighting'],
-  supervillain: ['villain', 'comic', 'hero', 'fan'],
-  volunteer: ['charity', 'community', 'help', 'service'],
-  sport: ['game', 'play', 'athletic', 'team', 'collectible'],
-  certificate: ['award', 'achievement', 'recognition'],
-  career: ['job', 'work', 'profession', 'pursue'],
-  counseling: ['therapy', 'support', 'help', 'career'],
-  digestive: ['stomach', 'health', 'issue', 'problem'],
-  bookshelf: ['furniture', 'shelf', 'storage', 'living'],
-  journal: ['write', 'diary', 'notebook', 'supplies'],
-  // Person attributes (MemBench patterns)
+  // Person attributes (general vocabulary)
   hometown: ['city', 'town', 'lives', 'born', 'from', 'home'],
-  location: ['city', 'town', 'place', 'address', 'lives', 'area'],
-  education: ['degree', 'university', 'college', 'school', 'studied', 'graduated'],
+  location: ['city', 'town', 'place', 'address', 'lives'],
+  education: ['degree', 'university', 'college', 'school', 'studied'],
   position: ['role', 'title', 'job', 'work', 'occupation'],
-  workplace: ['company', 'office', 'employer', 'firm', 'works'],
-  age: ['years', 'old', 'born', 'birthday'],
-  occupation: ['job', 'work', 'career', 'profession', 'position'],
-  coworker: ['colleague', 'workmate', 'office'],
-  cousin: ['relative', 'family'],
-  mother: ['mom', 'parent', 'mama'],
-  father: ['dad', 'parent', 'papa'],
-  brother: ['sibling', 'family'],
-  sister: ['sibling', 'family'],
-  nephew: ['relative', 'family'],
-  niece: ['relative', 'family'],
-  aunt: ['relative', 'family'],
-  uncle: ['relative', 'family'],
-  boss: ['manager', 'supervisor', 'lead'],
-  living: ['job', 'work', 'career', 'profession'],
+  workplace: ['company', 'office', 'employer', 'firm'],
+  occupation: ['job', 'work', 'career', 'profession'],
+  career: ['job', 'work', 'profession'],
   company: ['firm', 'business', 'organization', 'employer'],
-  background: ['degree', 'studied', 'education', 'school'],
-  level: ['degree', 'completed', 'graduated'],
 };
+
+/** Current active expansions (core + any injected extras). */
+export const EXPANSIONS: Record<string, string[]> = _expansions;
+
+/** Merge additional expansions into the active set. Used by benchmarks to add domain-specific synonyms. */
+export function mergeExpansions(extra: Record<string, string[]>): void {
+  for (const [key, values] of Object.entries(extra)) {
+    if (_expansions[key]) {
+      // Merge unique values
+      const existing = new Set(_expansions[key]);
+      for (const v of values) existing.add(v);
+      _expansions[key] = [...existing];
+    } else {
+      _expansions[key] = [...values];
+    }
+  }
+}
 
 const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 const MONTH_NAMES = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
