@@ -207,7 +207,7 @@ class BenchKernel {
         const simS = docEmb.summary ? cosineSimilarity(this._queryEmbedding, docEmb.summary) : 0;
         const simC = docEmb.content ? cosineSimilarity(this._queryEmbedding, docEmb.content) : 0;
         const sim = Math.max(simS, simC);
-        if (sim >= 0.15) {
+        if (sim >= 0.20) {
           const relevance = sim * 3.0;
           if (!seen.has(docId)) seen.set(docId, relevance);
           else seen.set(docId, seen.get(docId) + relevance);
@@ -215,14 +215,12 @@ class BenchKernel {
       }
     }
 
-    // ── Content-based reranker (same as core fusion.ts rerank) ───────────
-    const queryLower = query.toLowerCase();
+    // ── IDF-weighted content reranker ────────────────────────────────
     const queryWords = extractKeywords(query);
     const queryBigrams = [];
     for (let i = 0; i < queryWords.length - 1; i++) {
       queryBigrams.push(queryWords[i] + ' ' + queryWords[i + 1]);
     }
-
     if (queryWords.length > 0 && seen.size > 0) {
       const ids = [...seen.keys()];
       try {
@@ -230,14 +228,7 @@ class BenchKernel {
         const rows = this.db.prepare(`SELECT id, content FROM observations WHERE id IN (${placeholders})`).all(...ids);
         const contentMap = new Map(rows.map(r => [r.id, r.content.toLowerCase()]));
 
-        // Build synonym lookup for query words
-        const synonymMap = new Map();
-        for (const w of queryWords) {
-          const syns = EXPANSIONS && EXPANSIONS[w] ? EXPANSIONS[w] : [];
-          synonymMap.set(w, syns);
-        }
-
-        // Compute IDF for each query word across all candidate documents
+        // IDF: rare keywords get higher weight
         const docFreq = new Map();
         for (const w of queryWords) {
           let count = 0;
@@ -251,7 +242,6 @@ class BenchKernel {
         for (const [id, baseScore] of seen) {
           const content = contentMap.get(id);
           if (!content) continue;
-          // IDF-weighted keyword matching: rare words count more
           let weightedHits = 0;
           for (const w of queryWords) {
             const df = docFreq.get(w) || 0;
@@ -259,23 +249,16 @@ class BenchKernel {
             if (content.includes(w)) {
               weightedHits += idf;
             } else {
-              // Check synonyms
-              const syns = synonymMap.get(w) || [];
-              if (syns.some(s => content.includes(s))) {
-                weightedHits += idf * 0.7;
-              }
+              const syns = EXPANSIONS && EXPANSIONS[w] ? EXPANSIONS[w] : [];
+              if (syns.some(s => content.includes(s))) weightedHits += idf * 0.7;
             }
           }
-          // Normalize by max possible IDF score
-          const maxIdf = queryWords.reduce((sum, w) => {
-            const df = docFreq.get(w) || 0;
-            return sum + Math.log((N + 1) / (df + 1));
-          }, 0);
+          const maxIdf = queryWords.reduce((sum, w) => sum + Math.log((N + 1) / ((docFreq.get(w) || 0) + 1)), 0);
           const idfDensity = maxIdf > 0 ? weightedHits / maxIdf : 0;
-
           const bigramHits = queryBigrams.filter(bg => content.includes(bg)).length;
           const bigramScore = queryBigrams.length > 0 ? bigramHits / queryBigrams.length : 0;
-          const boost = idfDensity * 4.0 + bigramScore * 2.0;
+          // Moderate IDF boost — same pattern as core fusion reranker but on full content
+          const boost = idfDensity * 3.0 + bigramScore * 1.5;
           seen.set(id, baseScore + boost);
         }
       } catch {}
