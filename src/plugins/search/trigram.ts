@@ -49,11 +49,17 @@ export class TrigramSearch implements SearchPlugin {
         indexed_at: number; access_count: number; relevance: number;
       }>;
 
+      // Normalize scores to 0-1 range
+      const scores = rows.map(r => Math.abs(r.relevance));
+      const maxScore = scores.length > 0 ? Math.max(...scores) : 1;
+      const minScore = scores.length > 1 ? Math.min(...scores) : 0;
+      const range = maxScore - minScore || 1;
+
       return rows.map(row => ({
         id: row.id,
         title: (row.summary || row.content).slice(0, 100),
         snippet: (row.summary || row.content).slice(0, 100),
-        relevance_score: Math.abs(row.relevance),
+        relevance_score: (Math.abs(row.relevance) - minScore) / range,
         type: row.type as SearchResult['type'],
         timestamp: row.indexed_at,
         access_count: row.access_count ?? 0,

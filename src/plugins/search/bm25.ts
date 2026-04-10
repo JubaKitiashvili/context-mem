@@ -95,17 +95,19 @@ export class BM25Search implements SearchPlugin {
       }
     }
 
-    // Convert to results, sorted by raw BM25 score (reranking happens in fusion layer)
-    // Note: snippet includes full content reference for fusion's IDF reranker
-    const results = [...seen.values()]
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
+    // Convert to results, sorted by score
+    const sorted = [...seen.values()].sort((a, b) => b.score - a.score).slice(0, limit);
 
-    return results.map(({ row, score }) => ({
+    // Normalize scores to 0-1 range so they're comparable with vector cosine similarities
+    const maxScore = sorted.length > 0 ? sorted[0].score : 1;
+    const minScore = sorted.length > 1 ? sorted[sorted.length - 1].score : 0;
+    const range = maxScore - minScore || 1;
+
+    return sorted.map(({ row, score }) => ({
       id: row.id,
       title: (row.summary || row.content).slice(0, 100),
       snippet: extractBestSnippet(row.summary || row.content, query, 300),
-      relevance_score: score,
+      relevance_score: (score - minScore) / range,  // normalized to [0, 1]
       type: row.type as SearchResult['type'],
       timestamp: row.indexed_at,
       access_count: row.access_count ?? 0,
