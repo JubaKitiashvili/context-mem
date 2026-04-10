@@ -326,7 +326,12 @@ MIT
 
 ---
 
-<p align="center">
-  <b>Context Mem v3.1 "Total Recall" — your AI never forgets</b><br/>
-  <a href="https://github.com/JubaKitiashvili/context-mem">Star</a> · <a href="https://github.com/JubaKitiashvili/context-mem/fork">Fork</a> · <a href="https://github.com/JubaKitiashvili/context-mem/issues">Issues</a>
-</p>
+<div align="center">
+
+**Context Mem v3.1 "Total Recall"**
+
+Your AI never forgets.
+
+[![Star](https://img.shields.io/github/stars/JubaKitiashvili/context-mem?style=social)](https://github.com/JubaKitiashvili/context-mem)
+
+</div>
