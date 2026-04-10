@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/banner.svg" alt="Context Mem — persistent memory for AI agents" width="100%"/>
+  <img src="https://raw.githubusercontent.com/JubaKitiashvili/context-mem/main/docs/banner.svg" alt="Context Mem — persistent memory for AI agents" width="100%"/>
 </p>
 
 <div align="center">
@@ -45,7 +45,7 @@ One command. `init` auto-detects your editor and creates everything:
 
 ## How It Works
 
-<img src="docs/architecture.svg" alt="Observation Pipeline" width="100%"/>
+<img src="https://raw.githubusercontent.com/JubaKitiashvili/context-mem/main/docs/architecture.svg" alt="Observation Pipeline" width="100%"/>
 
 Every tool output flows through the pipeline: **privacy screening** (9 secret detectors) → **parallel extraction** (entities, importance, topics) → **14 content summarizers** → **triple storage** (verbatim archive, SQLite summaries, knowledge graph) → **adaptive compression** over time.
 
@@ -71,7 +71,7 @@ Tested on 4 academic benchmarks. All scores are **without LLM reranking** — pu
 
 ## Search Architecture
 
-<img src="docs/search-architecture.svg" alt="Hybrid Parallel Search" width="100%"/>
+<img src="https://raw.githubusercontent.com/JubaKitiashvili/context-mem/main/docs/search-architecture.svg" alt="Hybrid Parallel Search" width="100%"/>
 
 BM25 and vector search run **independently in parallel**, then fuse via intent-adaptive weights with IDF-weighted content reranking. Fully local, zero API calls.
 
@@ -131,22 +131,22 @@ You: "What are we about to forget?"
 
 Real-time web UI with 6 pages — `context-mem dashboard` to launch:
 
-<img src="docs/screenshots/dashboard-hero.png" alt="Dashboard — Intelligence Overview" width="100%"/>
+<img src="https://raw.githubusercontent.com/JubaKitiashvili/context-mem/main/docs/screenshots/dashboard-hero.png" alt="Dashboard — Intelligence Overview" width="100%"/>
 
 <details>
 <summary>More dashboard pages</summary>
 
 **Knowledge Graph** — force-directed entity visualization with type filtering and depth control:
 
-<img src="docs/screenshots/dashboard-graph-page.png" alt="Dashboard — Knowledge Graph" width="100%"/>
+<img src="https://raw.githubusercontent.com/JubaKitiashvili/context-mem/main/docs/screenshots/dashboard-graph-page.png" alt="Dashboard — Knowledge Graph" width="100%"/>
 
 **Topics** — topic cloud with observation counts and cross-project tunnels:
 
-<img src="docs/screenshots/dashboard-topics.png" alt="Dashboard — Topics" width="100%"/>
+<img src="https://raw.githubusercontent.com/JubaKitiashvili/context-mem/main/docs/screenshots/dashboard-topics.png" alt="Dashboard — Topics" width="100%"/>
 
 **Timeline** — chronological observations with importance badges, flags, and verbatim mode:
 
-<img src="docs/screenshots/dashboard-timeline.png" alt="Dashboard — Timeline" width="100%"/>
+<img src="https://raw.githubusercontent.com/JubaKitiashvili/context-mem/main/docs/screenshots/dashboard-timeline.png" alt="Dashboard — Timeline" width="100%"/>
 
 </details>
 
