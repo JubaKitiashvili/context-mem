@@ -35,7 +35,8 @@ let _expansions: Record<string, string[]> = {
   dinner: ['food', 'meal', 'cook', 'recipe', 'restaurant'],
   cook: ['recipe', 'bake', 'kitchen', 'meal'],
   // Activities
-  activity: ['hobby', 'sport', 'exercise', 'game'],
+  activity: ['hobby', 'sport', 'exercise', 'game', 'routine', 'schedule', 'pastime'],
+  evening: ['night', 'routine', 'activity', 'relax', 'leisure', 'schedule'],
   exercise: ['workout', 'gym', 'fitness', 'sport'],
   hobby: ['interest', 'activity', 'passion', 'enjoy'],
   // Work
