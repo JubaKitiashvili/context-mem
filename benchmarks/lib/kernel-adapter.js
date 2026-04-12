@@ -500,21 +500,20 @@ async function rateLimit() {
 
 async function llmScoreCandidates(query, candidates, apiKey, model = 'claude-haiku-4-5-20251001', retries = 3) {
   if (candidates.length === 0) return [];
-  // Full-content scoring: larger snippet window helps LLM catch indirect/inferred matches.
   const numbered = candidates.map((c, i) => `[${i}] ${c.content.slice(0, 1500)}`).join('\n\n');
   const prompt =
-    `A user is asking: "${query}"\n\n` +
-    `To answer this question well, you need to find past sessions where the user expressed preferences, ` +
-    `past activities, interests, or context relevant to the question. Look for INDIRECT evidence:\n\n` +
-    `- A question about "recommend a show/movie" is answered by sessions mentioning any entertainment content the user enjoyed: ` +
-    `movies, TV shows, streaming services, stand-up comedy specials, documentaries, actors, directors, genres, or specific titles they've discussed.\n` +
-    `- A question about "siblings" is answered by sessions mentioning brothers, sisters, family members — even if the word "sibling" isn't used.\n` +
-    `- A question about "cooking for a friend" is answered by sessions about baking, recipes, dinner parties, desserts, meal prep.\n` +
-    `- Sessions where the user asks for craft advice mentioning specific titles/actors/shows ARE relevant because they reveal preferences.\n\n` +
-    `Score each session from 0 (no useful information) to 10 (directly answers the question). ` +
-    `Include ALL ${candidates.length} indices.\n\n` +
+    `Rate each session's usefulness for answering this question. Prioritize sessions that contain the ` +
+    `direct answer, then sessions with indirect clues (preferences, past activities, related entities).\n\n` +
+    `Score 0-10:\n` +
+    `- 10 = directly contains the answer (mentions the fact, entity, or event asked about)\n` +
+    `- 7-9 = strongly relevant (same topic, closely related entities, specific details)\n` +
+    `- 4-6 = indirect clues (user preferences or background info that helps infer the answer)\n` +
+    `- 0-3 = unrelated or only tangentially connected\n\n` +
+    `Consider synonyms and related concepts: "sibling" = brother/sister, "cooking" includes baking/recipes, ` +
+    `"movie/show" includes stand-up specials and streaming content the user mentioned.\n\n` +
+    `Question: "${query}"\n\n` +
     `Sessions:\n${numbered}\n\n` +
-    `Return ONLY a JSON object like {"0": 8, "1": 3, "2": 10, ...}.`;
+    `Return ONLY a JSON object mapping ALL ${candidates.length} indices to scores, like {"0": 8, "1": 3, ...}.`;
 
   for (let attempt = 0; attempt < retries; attempt++) {
     await rateLimit();
@@ -618,13 +617,13 @@ async function llmRerank(kernel, query, results, limit = 10, referenceDate = nul
   const llmScores = await llmScoreCandidates(query, candidates, apiKey);
   if (!llmScores) return poolResults.slice(0, limit);
 
-  // Blend: 30% retrieval + 70% LLM — LLM's semantic judgment dominates
-  // for cases where retrieval missed the lexical-semantic gap
+  // Blend: 50/50 retrieval + LLM. Balanced weights give both signals equal
+  // weight — neither can catastrophically override the other.
   const retrievalMax = Math.max(...pool.map(r => r.score || 0)) || 1;
   const blended = pool.map((r, i) => {
     const retrievalNorm = (r.score || 0) / retrievalMax;
     const llmNorm = (llmScores[i] || 0) / 10;
-    const fused = retrievalNorm * 0.3 + llmNorm * 0.7;
+    const fused = retrievalNorm * 0.5 + llmNorm * 0.5;
     return { ...r, score: fused };
   });
 
