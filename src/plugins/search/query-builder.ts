@@ -47,6 +47,7 @@ let _expansions: Record<string, string[]> = {
   organize: ['manage', 'arrange', 'structure', 'sort'],
   // Common relationships
   sibling: ['brother', 'sister', 'family'],
+  siblings: ['brother', 'sister', 'family', 'sibling'],
   // Commerce
   buy: ['purchase', 'bought', 'order', 'shop'],
   bought: ['purchase', 'buy', 'ordered'],

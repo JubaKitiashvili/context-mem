@@ -178,6 +178,16 @@ class BenchKernel {
       runFTS(`"${kw}"`, 0.5);
     }
 
+    // Strategy 7b: Individual SYNONYM searches — when query uses abstract terms
+    // like "sibling", searching for each synonym ("brother", "sister") individually
+    // catches documents where the synonym appears but the original term doesn't.
+    for (const kw of keywords.slice(0, 5)) {
+      const syns = EXPANSIONS && EXPANSIONS[kw] ? EXPANSIONS[kw] : [];
+      for (const syn of syns.slice(0, 3)) {
+        if (syn.length >= 4) runFTS(`"${syn}"`, 0.6);
+      }
+    }
+
     // Strategy 8: Temporal resolution (relative dates → absolute)
     if (opts.referenceDate) {
       const temporalKws = resolveTemporalKeywords(query, new Date(opts.referenceDate));
@@ -502,18 +512,20 @@ async function llmScoreCandidates(query, candidates, apiKey, model = 'claude-hai
   if (candidates.length === 0) return [];
   const numbered = candidates.map((c, i) => `[${i}] ${c.content.slice(0, 1500)}`).join('\n\n');
   const prompt =
-    `Rate each session's usefulness for answering this question. Prioritize sessions that contain the ` +
-    `direct answer, then sessions with indirect clues (preferences, past activities, related entities).\n\n` +
-    `Score 0-10:\n` +
-    `- 10 = directly contains the answer (mentions the fact, entity, or event asked about)\n` +
-    `- 7-9 = strongly relevant (same topic, closely related entities, specific details)\n` +
-    `- 4-6 = indirect clues (user preferences or background info that helps infer the answer)\n` +
-    `- 0-3 = unrelated or only tangentially connected\n\n` +
-    `Consider synonyms and related concepts: "sibling" = brother/sister, "cooking" includes baking/recipes, ` +
-    `"movie/show" includes stand-up specials and streaming content the user mentioned.\n\n` +
-    `Question: "${query}"\n\n` +
+    `A user is asking: "${query}"\n\n` +
+    `Find sessions that help answer this question. Look for BOTH direct and indirect evidence:\n\n` +
+    `Score 10: directly answers the question.\n` +
+    `Score 7-9: strongly relevant — same topic, related entities, specific details.\n` +
+    `Score 4-6: indirect clues — preferences, past activities, background context.\n` +
+    `Score 0-3: unrelated.\n\n` +
+    `Key rules:\n` +
+    `- "recommend a show/movie" → find sessions about entertainment: stand-up comedy, Netflix, streaming, actors, genres.\n` +
+    `- "siblings" → sessions mentioning brother, sister, family members.\n` +
+    `- "cooking for friend" → sessions about baking, recipes, dinner parties, desserts.\n` +
+    `- "bought X" / "X arrived" → sessions about ANY purchases or deliveries (even different items).\n` +
+    `- Sessions where user discusses specific titles, brands, or preferences ARE highly relevant.\n\n` +
     `Sessions:\n${numbered}\n\n` +
-    `Return ONLY a JSON object mapping ALL ${candidates.length} indices to scores, like {"0": 8, "1": 3, ...}.`;
+    `Return ONLY a JSON object with ALL ${candidates.length} indices: {"0": 8, "1": 3, ...}.`;
 
   for (let attempt = 0; attempt < retries; attempt++) {
     await rateLimit();
@@ -617,13 +629,13 @@ async function llmRerank(kernel, query, results, limit = 10, referenceDate = nul
   const llmScores = await llmScoreCandidates(query, candidates, apiKey);
   if (!llmScores) return poolResults.slice(0, limit);
 
-  // Blend: 50/50 retrieval + LLM. Balanced weights give both signals equal
-  // weight — neither can catastrophically override the other.
+  // Blend: 35% retrieval + 65% LLM — LLM-dominant blend needed
+  // to surface preference/indirect matches that retrieval misses.
   const retrievalMax = Math.max(...pool.map(r => r.score || 0)) || 1;
   const blended = pool.map((r, i) => {
     const retrievalNorm = (r.score || 0) / retrievalMax;
     const llmNorm = (llmScores[i] || 0) / 10;
-    const fused = retrievalNorm * 0.5 + llmNorm * 0.5;
+    const fused = retrievalNorm * 0.35 + llmNorm * 0.65;
     return { ...r, score: fused };
   });
 

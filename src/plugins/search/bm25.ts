@@ -2,7 +2,7 @@ import type { SearchPlugin, PluginConfig, SearchResult, SearchOpts } from '../..
 import type { BetterSqlite3Storage } from '../storage/better-sqlite3.js';
 import { sanitizeFTS5Query } from './fts5-utils.js';
 import { extractBestSnippet } from './snippet-extractor.js';
-import { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, resolveTemporalKeywords } from './query-builder.js';
+import { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, resolveTemporalKeywords, EXPANSIONS } from './query-builder.js';
 
 export class BM25Search implements SearchPlugin {
   name = 'bm25-search';
@@ -84,6 +84,17 @@ export class BM25Search implements SearchPlugin {
     const keywords = extractKeywords(query).filter(w => w.length >= 4);
     for (const kw of keywords.slice(0, 5)) {
       runQuery(`"${kw}"`, 0.5);
+    }
+
+    // Strategy 7b: Individual synonym searches — catches documents where
+    // the synonym appears but the original abstract term doesn't.
+    // E.g., query "siblings" → also search for "brother", "sister" individually.
+    for (const kw of keywords.slice(0, 5)) {
+      const syns = EXPANSIONS[kw];
+      if (!syns) continue;
+      for (const syn of syns.slice(0, 3)) {
+        if (syn.length >= 4) runQuery(`"${syn}"`, 0.6);
+      }
     }
 
     // Strategy 8: Temporal resolution (relative dates → absolute date keywords)
