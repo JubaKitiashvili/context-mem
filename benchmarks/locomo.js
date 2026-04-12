@@ -27,7 +27,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { BenchKernel } = require('./lib/kernel-adapter');
+const { BenchKernel, llmRerank } = require('./lib/kernel-adapter');
 const { formatPercent, printHeader } = require('./lib/metrics');
 
 const CATEGORY_NAMES = { 1: 'single-hop', 2: 'multi-hop', 3: 'temporal', 4: 'open-domain', 5: 'adversarial' };
@@ -53,6 +53,8 @@ const GRANULARITY = getArg('granularity', 'session');
 const TOP_K = parseInt(getArg('top-k', '10'), 10);
 const OUT_FILE = getArg('out', null);
 const USE_VECTOR = args.includes('--vector');
+const USE_LLM = args.includes('--llm');
+const DUMP_FAILURES = args.includes('--dump-failures');
 
 // ── Load data ───────────────────────────────────────────────────────────────
 printHeader('context-mem × LoCoMo Benchmark');
@@ -200,15 +202,32 @@ for (let ci = 0; ci < conversations.length; ci++) {
     if (!correctIds.length) continue;
 
     let results;
+    const diagnosticLimit = DUMP_FAILURES ? 100 : (USE_LLM ? 50 : TOP_K);
     if (USE_VECTOR) {
-      results = await kernel.hybridSearch(question, TOP_K);
+      results = await kernel.hybridSearch(question, diagnosticLimit);
     } else {
-      results = kernel.search(question, TOP_K);
+      results = kernel.search(question, diagnosticLimit);
+    }
+    const widePool = DUMP_FAILURES ? results.map((r, i) => ({ id: r.id, rank: i + 1, score: r.score })) : null;
+    if (DUMP_FAILURES && results.length > TOP_K) results = results.slice(0, TOP_K);
+    if (USE_LLM) {
+      results = await llmRerank(kernel, question, results, TOP_K);
     }
     const retrievedIds = results.map(r => r.id);
 
     const recall = correctIds.some(cid => retrievedIds.includes(cid)) ? 1.0 : 0.0;
     allRecall.push(recall);
+
+    // Failure diagnostics
+    let diagnostics = null;
+    if (DUMP_FAILURES && recall === 0 && widePool) {
+      const correctInPool = widePool.filter(r => correctIds.includes(r.id));
+      diagnostics = {
+        failure_type: correctInPool.length === 0 ? 'retrieval_miss' : 'rank_miss',
+        correct_doc_ranks: correctInPool.map(r => ({ id: r.id, rank: r.rank, score: r.score })),
+        top_5_retrieved: retrievedIds.slice(0, 5),
+      };
+    }
 
     const catName = CATEGORY_NAMES[qa.category] || `cat_${qa.category}`;
     if (!perCategory[catName]) perCategory[catName] = { hits: 0, total: 0 };
@@ -223,6 +242,7 @@ for (let ci = 0; ci < conversations.length; ci++) {
       correct: correctIds,
       retrieved: retrievedIds.slice(0, TOP_K),
       recall,
+      diagnostics,
     });
   }
 
@@ -272,4 +292,20 @@ fs.writeFileSync(outPath, JSON.stringify({
   details: resultsLog,
 }, null, 2));
 console.log(`  Results saved: ${outPath}`);
+
+if (DUMP_FAILURES) {
+  const failures = resultsLog.filter(r => r.recall === 0);
+  const retrievalMisses = failures.filter(r => r.diagnostics?.failure_type === 'retrieval_miss');
+  const rankMisses = failures.filter(r => r.diagnostics?.failure_type === 'rank_miss');
+  const failuresFile = 'benchmarks/results/locomo-failures.json';
+  fs.writeFileSync(failuresFile, JSON.stringify({
+    total_questions: totalQuestions,
+    total_failures: failures.length,
+    retrieval_misses: retrievalMisses.length,
+    rank_misses: rankMisses.length,
+    failures,
+  }, null, 2));
+  console.log(`\n  Failure analysis: ${failuresFile}`);
+  console.log(`  ${failures.length} failures: ${retrievalMisses.length} retrieval misses, ${rankMisses.length} rank misses`);
+}
 })();

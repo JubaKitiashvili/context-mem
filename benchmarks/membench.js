@@ -22,7 +22,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { BenchKernel } = require('./lib/kernel-adapter'); // Must load first — merges bench expansions
+const { BenchKernel, llmRerank } = require('./lib/kernel-adapter'); // Must load first — merges bench expansions
 const { formatPercent, printHeader } = require('./lib/metrics');
 const { EXPANSIONS } = require(path.join(__dirname, '..', 'dist/plugins/search/query-builder.js'));
 
@@ -87,6 +87,8 @@ const LIMIT = parseInt(getArg('limit', '0'), 10);
 const MODE = getArg('mode', 'hybrid');
 const OUT_FILE = getArg('out', null);
 const USE_VECTOR = args.includes('--vector');
+const USE_LLM = args.includes('--llm');
+const DUMP_FAILURES = args.includes('--dump-failures');
 
 // ── Load data ───────────────────────────────────────────────────────────────
 function loadItems() {
@@ -193,12 +195,22 @@ for (let idx = 0; idx < items.length; idx++) {
 
   // Retrieve
   let results;
+  const llmMultiplier = USE_LLM ? 3 : 1;
+  const baseCount = (MODE === 'hybrid' ? TOP_K * 3 : TOP_K) * llmMultiplier;
+  const diagnosticLimit = DUMP_FAILURES ? Math.max(100, baseCount) : baseCount;
   if (USE_VECTOR) {
-    results = await kernel.hybridSearch(item.question, MODE === 'hybrid' ? TOP_K * 3 : TOP_K);
+    results = await kernel.hybridSearch(item.question, diagnosticLimit);
   } else {
-    const retrieveCount = MODE === 'hybrid' ? TOP_K * 3 : TOP_K;
-    results = kernel.search(item.question, Math.min(retrieveCount, globalIdx));
+    results = kernel.search(item.question, Math.min(diagnosticLimit, globalIdx));
   }
+  // Keep wide pool for diagnostics before re-scoring/trimming
+  const widePool = DUMP_FAILURES ? results.map((r, i) => {
+    const gidx = parseInt(r.id.replace('t_', ''), 10);
+    const info = turnMap.get(gidx);
+    return { id: r.id, gidx, sid: info?.sid, rank: i + 1, score: r.score };
+  }) : null;
+  // Trim to base retrieval count before hybrid re-scoring
+  if (DUMP_FAILURES && results.length > baseCount) results = results.slice(0, baseCount);
 
   // Hybrid re-scoring: boost results with keyword overlap
   if (MODE === 'hybrid' && results.length > 0) {
@@ -214,6 +226,11 @@ for (let idx = 0; idx < items.length; idx++) {
     results = scored.slice(0, TOP_K);
   } else {
     results = results.slice(0, TOP_K);
+  }
+
+  // LLM reranking
+  if (USE_LLM) {
+    results = await llmRerank(kernel, item.question, results, TOP_K);
   }
 
   // Extract retrieved SIDs and global indices
@@ -242,11 +259,23 @@ for (let idx = 0; idx < items.length; idx++) {
   perCategory[cat].total++;
   if (hit) perCategory[cat].hits++;
 
+  // Failure diagnostics
+  let diagnostics = null;
+  if (DUMP_FAILURES && !hit && widePool) {
+    const correctInPool = widePool.filter(r => targetSids.has(r.sid) || targetSids.has(r.gidx));
+    diagnostics = {
+      failure_type: correctInPool.length === 0 ? 'retrieval_miss' : 'rank_miss',
+      correct_doc_ranks: correctInPool.map(r => ({ id: r.id, sid: r.sid, rank: r.rank, score: r.score })),
+      top_5_retrieved: results.slice(0, 5).map(r => r.id),
+    };
+  }
+
   resultsLog.push({
     category: cat, topic: item.topic, question: item.question,
     ground_truth: item.ground_truth, hit,
     target_sids: [...targetSids],
     retrieved_sids: [...retrievedSids],
+    diagnostics,
   });
 
   kernel.close();
@@ -285,4 +314,20 @@ fs.writeFileSync(outPath, JSON.stringify({
   details: resultsLog,
 }, null, 2));
 console.log(`  Results saved: ${outPath}`);
+
+if (DUMP_FAILURES) {
+  const failures = resultsLog.filter(r => !r.hit);
+  const retrievalMisses = failures.filter(r => r.diagnostics?.failure_type === 'retrieval_miss');
+  const rankMisses = failures.filter(r => r.diagnostics?.failure_type === 'rank_miss');
+  const failuresFile = 'benchmarks/results/membench-failures.json';
+  fs.writeFileSync(failuresFile, JSON.stringify({
+    total_questions: items.length,
+    total_failures: failures.length,
+    retrieval_misses: retrievalMisses.length,
+    rank_misses: rankMisses.length,
+    failures,
+  }, null, 2));
+  console.log(`\n  Failure analysis: ${failuresFile}`);
+  console.log(`  ${failures.length} failures: ${retrievalMisses.length} retrieval misses, ${rankMisses.length} rank misses`);
+}
 })();

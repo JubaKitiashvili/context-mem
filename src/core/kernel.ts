@@ -241,6 +241,36 @@ export class Kernel {
     if (vectorPlugin) searchPlugins.push(vectorPlugin);
     this.searchFusion = new SearchFusion(searchPlugins, this.config.search_weights);
 
+    // Optional LLM judge: activated only when ai_curation.enabled AND an
+    // LLM provider is available. Uses the shared LLMService provider.
+    if (this.llmService && this.config.ai_curation?.enabled) {
+      try {
+        const { LLMJudge } = await import('../plugins/search/llm-judge.js');
+        const provider = this.llmService.getProvider();
+        if (provider) {
+          const judge = new LLMJudge(provider, {
+            contentSnippetChars: 800,
+            maxCandidates: 20,
+            retrievalWeight: 0.6,
+            llmWeight: 0.4,
+          });
+          // Content lookup: fetch full observation content by id from storage
+          const contentStmt = this.storage.prepare('SELECT content FROM observations WHERE id = ?');
+          const lookupContent = (id: string): string | undefined => {
+            try {
+              const row = contentStmt.get(id) as { content?: string } | undefined;
+              return row?.content;
+            } catch {
+              return undefined;
+            }
+          };
+          this.searchFusion.attachLLMJudge(judge, lookupContent);
+        }
+      } catch {
+        // LLM judge is optional — ignore errors loading it
+      }
+    }
+
     // 7. Runtime plugins
     const runtimes = [
       new JavaScriptRuntime(),

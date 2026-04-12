@@ -20,7 +20,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const https = require('https');
-const { BenchKernel, getEmbedder } = require('./lib/kernel-adapter');
+const { BenchKernel, getEmbedder, llmRerank } = require('./lib/kernel-adapter');
 const { formatPercent, printHeader } = require('./lib/metrics');
 
 // ── Constants ───────────────────────────────────────────────────────────────
@@ -48,6 +48,8 @@ const LIMIT = parseInt(getArg('limit', '50'), 10);
 const CATEGORY = getArg('category', 'all');
 const TOP_K = parseInt(getArg('top-k', '10'), 10);
 const OUT_FILE = getArg('out', null);
+const USE_LLM = args.includes('--llm');
+const DUMP_FAILURES = args.includes('--dump-failures');
 
 const targetCategories = CATEGORY === 'all' ? Object.keys(CATEGORIES) : [CATEGORY];
 
@@ -182,7 +184,13 @@ async function run() {
     await kernel.embedAll();
 
     // Query (hybrid parallel: BM25 + vector independent retrieval)
-    const results = await kernel.hybridSearch(question, TOP_K * 2);
+    const fetchLimit = USE_LLM ? TOP_K * 2 * 3 : TOP_K * 2;
+    const diagnosticLimit = DUMP_FAILURES ? Math.max(100, fetchLimit) : fetchLimit;
+    let results = await kernel.hybridSearch(question, diagnosticLimit);
+    // Keep wide pool for diagnostics before trimming
+    const widePool = DUMP_FAILURES ? results.map((r, i) => ({ id: r.id, rank: i + 1, score: r.score })) : null;
+    if (DUMP_FAILURES && results.length > fetchLimit) results = results.slice(0, fetchLimit);
+    if (USE_LLM) results = await llmRerank(kernel, question, results, TOP_K);
     const retrievedIndices = results.map(r => parseInt(r.id.replace('msg_', ''), 10));
     const retrievedTexts = retrievedIndices
       .filter(idx => idx < corpusTexts.length)
@@ -220,7 +228,32 @@ async function run() {
     perCategory[cat].total++;
     if (recall >= 1.0) perCategory[cat].perfect++;
 
-    resultsLog.push({ question, category: cat, recall, found, evidence_count: evidenceTexts.length });
+    // Failure diagnostics: check if evidence texts appear anywhere in the wide pool
+    let diagnostics = null;
+    if (DUMP_FAILURES && recall < 1.0 && widePool) {
+      const wideIndices = widePool.map(r => parseInt(r.id.replace('msg_', ''), 10));
+      const wideTexts = wideIndices.filter(idx => idx < corpusTexts.length).map(idx => corpusTexts[idx]);
+      // Check which evidence texts are present in the wide pool
+      const evidenceInPool = evidenceTexts.map((evText, ei) => {
+        for (let wi = 0; wi < wideTexts.length; wi++) {
+          const retText = wideTexts[wi];
+          if (evText.includes(retText) || retText.includes(evText)) return { evidence_idx: ei, pool_rank: wi + 1 };
+          const evWords = evText.split(/\s+/).filter(w => w.length > 3);
+          if (evWords.length >= 3) {
+            const hits = evWords.filter(w => retText.includes(w)).length;
+            if (hits / evWords.length >= 0.6) return { evidence_idx: ei, pool_rank: wi + 1 };
+          }
+        }
+        return null;
+      }).filter(Boolean);
+      diagnostics = {
+        failure_type: evidenceInPool.length === 0 ? 'retrieval_miss' : 'rank_miss',
+        evidence_in_pool: evidenceInPool,
+        top_5_retrieved: retrievedIndices.slice(0, 5).map(idx => `msg_${idx}`),
+      };
+    }
+
+    resultsLog.push({ question, category: cat, recall, found, evidence_count: evidenceTexts.length, diagnostics });
     kernel.close();
 
     if ((i + 1) % 20 === 0 || i === items.length - 1) {
@@ -278,6 +311,22 @@ async function run() {
     details: resultsLog,
   }, null, 2));
   console.log(`  Results saved: ${outPath}`);
+
+  if (DUMP_FAILURES) {
+    const failures = resultsLog.filter(r => r.recall < 1.0);
+    const retrievalMisses = failures.filter(r => r.diagnostics?.failure_type === 'retrieval_miss');
+    const rankMisses = failures.filter(r => r.diagnostics?.failure_type === 'rank_miss');
+    const failuresFile = 'benchmarks/results/convomem-failures.json';
+    fs.writeFileSync(failuresFile, JSON.stringify({
+      total_questions: items.length,
+      total_failures: failures.length,
+      retrieval_misses: retrievalMisses.length,
+      rank_misses: rankMisses.length,
+      failures,
+    }, null, 2));
+    console.log(`\n  Failure analysis: ${failuresFile}`);
+    console.log(`  ${failures.length} failures: ${retrievalMisses.length} retrieval misses, ${rankMisses.length} rank misses`);
+  }
 }
 
 run().catch(e => { console.error(e); process.exit(1); });

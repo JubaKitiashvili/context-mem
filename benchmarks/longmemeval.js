@@ -22,7 +22,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { BenchKernel } = require('./lib/kernel-adapter');
+const { BenchKernel, llmRerank } = require('./lib/kernel-adapter');
 const { recallAtK, ndcg, formatPercent, printHeader, printResults } = require('./lib/metrics');
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
@@ -46,8 +46,11 @@ function getArg(name, defaultVal) {
 const LIMIT = parseInt(getArg('limit', '0'), 10);
 const GRANULARITY = getArg('granularity', 'session');
 const USE_VECTOR = args.includes('--vector');
+const USE_LLM = args.includes('--llm');
+const DUMP_FAILURES = args.includes('--dump-failures');
 const TOP_K = parseInt(getArg('top-k', '10'), 10);
 const OUT_FILE = getArg('out', null);
+const FAILURES_FILE = getArg('failures-out', 'benchmarks/results/lme-failures.json');
 
 // ── Load data ───────────────────────────────────────────────────────────────
 printHeader('context-mem × LongMemEval Benchmark');
@@ -102,12 +105,11 @@ for (let qi = 0; qi < entries.length; qi++) {
           parts.push(t.content);
         }
       }
-      // NOTE: Session dates are available in entry.haystack_dates[si] but adding them
-      // to content creates noise (common month names match too many sessions).
-      // Temporal matching is handled by the temporal resolver in search instead.
+      // Pass session date as metadata so temporal filtering works against indexed_at.
+      const sessionDate = entry.haystack_dates?.[si] || null;
       if (parts.length > 0) {
         const doc = parts.join('\n');
-        kernel.ingest(sessId, doc, { session_index: si });
+        kernel.ingest(sessId, doc, { session_index: si, date: sessionDate });
         corpusIds.push(sessId);
       }
     } else {
@@ -134,11 +136,22 @@ for (let qi = 0; qi < entries.length; qi++) {
   if (entry.question_date) searchOpts.referenceDate = entry.question_date;
 
   let results;
+  const fetchLimit = USE_LLM ? 15 : Math.max(TOP_K, 10);
+  // For failure dumps, also fetch a wider pool (top-100) to diagnose retrieval vs rank miss
+  const diagnosticLimit = DUMP_FAILURES ? 100 : fetchLimit;
   if (USE_VECTOR) {
     // Hybrid parallel: BM25 and vector find candidates independently, then merge
-    results = await kernel.hybridSearch(question, Math.max(TOP_K, 10), searchOpts);
+    results = await kernel.hybridSearch(question, diagnosticLimit, searchOpts);
   } else {
-    results = kernel.search(question, Math.max(TOP_K, 10), searchOpts);
+    results = kernel.search(question, diagnosticLimit, searchOpts);
+  }
+  // Keep the wide pool for diagnostics before any rerank/trimming
+  const widePool = DUMP_FAILURES ? results.map((r, i) => ({ id: kernel.resolveId(r.id), rank: i + 1, score: r.score })) : null;
+  // Trim to actual retrieval limit for scoring
+  if (DUMP_FAILURES && results.length > fetchLimit) results = results.slice(0, fetchLimit);
+  // LLM rerank: blend Claude scores with retrieval scores
+  if (USE_LLM) {
+    results = await llmRerank(kernel, question, results, Math.max(TOP_K, 10), entry.question_date || null);
   }
   const retrievedIds = results.map(r => kernel.resolveId(r.id));
 
@@ -162,11 +175,23 @@ for (let qi = 0; qi < entries.length; qi++) {
   perType[qType].n10.push(n10);
   perType[qType].count++;
 
+  // For failure diagnostics: check where the correct doc sits in the wide pool
+  let diagnostics = null;
+  if (DUMP_FAILURES && r5 === 0 && widePool) {
+    const correctInPool = widePool.filter(r => correctSessionIds.includes(r.id));
+    diagnostics = {
+      failure_type: correctInPool.length === 0 ? 'retrieval_miss' : 'rank_miss',
+      correct_doc_ranks: correctInPool.map(r => ({ id: r.id, rank: r.rank, score: r.score })),
+      top_5_retrieved: retrievedSessionIds.slice(0, 5),
+    };
+  }
+
   resultsLog.push({
     question, type: qType,
     correct: correctSessionIds,
     retrieved: retrievedSessionIds.slice(0, TOP_K),
     recall_5: r5, recall_10: r10, ndcg_10: n10,
+    diagnostics,
   });
 
   kernel.close();
@@ -229,5 +254,26 @@ fs.writeFileSync(outPath, JSON.stringify({
   details: resultsLog,
 }, null, 2));
 console.log(`  Results saved: ${outPath}`);
+
+// Dump failures separately for analysis
+if (DUMP_FAILURES) {
+  const failures = resultsLog.filter(r => r.recall_5 === 0);
+  const retrievalMisses = failures.filter(r => r.diagnostics?.failure_type === 'retrieval_miss');
+  const rankMisses = failures.filter(r => r.diagnostics?.failure_type === 'rank_miss');
+  const failuresOut = {
+    total_questions: entries.length,
+    total_failures: failures.length,
+    retrieval_misses: retrievalMisses.length,
+    rank_misses: rankMisses.length,
+    by_type: Object.fromEntries(Object.entries(perType).map(([k, v]) => [k, {
+      failures: v.r5.filter(r => r === 0).length,
+      total: v.count,
+    }])),
+    failures,
+  };
+  fs.writeFileSync(FAILURES_FILE, JSON.stringify(failuresOut, null, 2));
+  console.log(`\n  Failure analysis: ${FAILURES_FILE}`);
+  console.log(`  ${failures.length} failures: ${retrievalMisses.length} retrieval misses (correct doc NOT in top 100), ${rankMisses.length} rank misses (in top 100 but not top 5)`);
+}
 
 })().catch(e => { console.error(e); process.exit(1); });

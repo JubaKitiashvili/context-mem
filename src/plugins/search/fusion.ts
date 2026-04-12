@@ -2,6 +2,8 @@ import type { SearchPlugin, SearchResult, SearchOpts, SearchOrchestrator, Search
 import { DEFAULT_SEARCH_WEIGHTS } from '../../core/types.js';
 import { IntentClassifier } from './intent.js';
 import { extractKeywords, EXPANSIONS } from './query-builder.js';
+import { resolveTemporalRange, inTemporalRange, type TemporalRange } from './temporal-resolver.js';
+import type { LLMJudge } from './llm-judge.js';
 
 const HALF_LIFE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const SEARCH_WINDOW_MS = 60_000;       // 60-second sliding window
@@ -15,6 +17,8 @@ export class SearchFusion implements SearchOrchestrator {
   private searchCallCount = 0;
   private searchWindowStart = Date.now();
   private weights: Required<SearchWeights>;
+  private llmJudge?: LLMJudge;
+  private contentLookup?: (id: string) => string | undefined;
 
   private searchCache = new Map<string, { results: SearchResult[]; timestamp: number }>();
   private readonly CACHE_TTL_MS = 30_000; // 30 seconds
@@ -66,6 +70,20 @@ export class SearchFusion implements SearchOrchestrator {
     this.weights = { ...DEFAULT_SEARCH_WEIGHTS, ...weights };
   }
 
+  /**
+   * Attach an optional LLM judge that reranks results using semantic scoring.
+   * Only activates when a non-null judge is attached (i.e. ai_curation.enabled).
+   */
+  attachLLMJudge(judge: LLMJudge, contentLookup: (id: string) => string | undefined): void {
+    this.llmJudge = judge;
+    this.contentLookup = contentLookup;
+  }
+
+  detachLLMJudge(): void {
+    this.llmJudge = undefined;
+    this.contentLookup = undefined;
+  }
+
   classify(query: string): SearchIntent {
     return this.classifier.classify(query);
   }
@@ -110,6 +128,13 @@ export class SearchFusion implements SearchOrchestrator {
       ...opts,
       type_boosts: { ...opts.type_boosts, ...intent.type_boosts },
     };
+
+    // Resolve temporal expressions to absolute date ranges for optional filtering.
+    // Requires a referenceDate (typically session timestamp).
+    let temporalRange: TemporalRange | null = null;
+    if (opts.referenceDate) {
+      temporalRange = resolveTemporalRange(query, opts.referenceDate);
+    }
 
     // Intent-adaptive weights: shift emphasis based on query type
     const dynamicWeights = { ...this.weights };
@@ -161,8 +186,38 @@ export class SearchFusion implements SearchOrchestrator {
       if (count >= 2) r.relevance_score *= (1 + 0.15 * (count - 1));
     }
 
-    const reranked = rerank(allResults, intent.intent_type, query);
-    const finalResults = reranked.slice(0, opts.limit || 5);
+    // Apply temporal filter: boost candidates whose timestamps fall inside the
+    // resolved range. High-confidence ranges can completely filter out non-matching
+    // results when enough in-range candidates exist.
+    let temporalFiltered = allResults;
+    if (temporalRange) {
+      const inRange = allResults.filter(r => inTemporalRange(r.timestamp, temporalRange!));
+      if (temporalRange.confidence === 'high' && inRange.length >= Math.min(5, allResults.length)) {
+        temporalFiltered = inRange;
+      } else if (inRange.length > 0) {
+        // Soft boost for in-range candidates (1.5x score)
+        temporalFiltered = allResults.map(r =>
+          inTemporalRange(r.timestamp, temporalRange!)
+            ? { ...r, relevance_score: r.relevance_score * 1.5 }
+            : r
+        );
+      }
+    }
+
+    const reranked = rerank(temporalFiltered, intent.intent_type, query);
+
+    // Optional LLM judge: rerank top-N semantically using an LLM
+    let judged = reranked;
+    if (this.llmJudge && this.contentLookup && reranked.length > 1) {
+      try {
+        judged = await this.llmJudge.rerank(query, reranked, this.contentLookup, reranked.length);
+      } catch {
+        // fall back to non-judged results on any error
+        judged = reranked;
+      }
+    }
+
+    const finalResults = judged.slice(0, opts.limit || 5);
 
     if (this.searchCallCount > SEARCH_MAX_FULL && finalResults.length > 0) {
       const limited = finalResults.slice(0, 1);

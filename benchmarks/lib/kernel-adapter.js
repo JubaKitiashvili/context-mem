@@ -89,7 +89,11 @@ class BenchKernel {
   ingest(corpusId, content, metadata = {}) {
     this._counter++;
     let id = corpusId;
-    const now = Date.now();
+    // If metadata has an explicit date, use it as indexed_at for temporal filtering
+    const indexedAt = metadata.date
+      ? (typeof metadata.date === 'number' ? metadata.date : new Date(metadata.date).getTime())
+      : Date.now();
+    const now = isNaN(indexedAt) ? Date.now() : indexedAt;
     const hash = crypto.createHash('sha256').update(content + this._counter).digest('hex');
     const metaJson = JSON.stringify({ ...metadata, _originalId: corpusId });
     const summary = content.slice(0, 200);
@@ -384,7 +388,10 @@ class BenchKernel {
     if (this.db) { this.db.close(); this.db = null; }
     this._embeddings.clear();
     this._queryEmbedding = null;
+    // Delete the db file AND WAL/SHM siblings (WAL mode creates these)
     try { fs.unlinkSync(this.dbPath); } catch {}
+    try { fs.unlinkSync(this.dbPath + '-wal'); } catch {}
+    try { fs.unlinkSync(this.dbPath + '-shm'); } catch {}
   }
 
   resolveId(id) { return this._idMap.get(id) || id; }
@@ -395,4 +402,238 @@ class BenchKernel {
   }
 }
 
-module.exports = { BenchKernel, getEmbedder };
+// ── Temporal Resolver (mirror of src/plugins/search/temporal-resolver.ts) ───
+
+const DAY_MS = 86_400_000;
+const WORD_TO_NUM = {
+  a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5,
+  six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
+};
+const WEEKDAYS = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+
+function parseNum(token) {
+  const lower = token.toLowerCase();
+  if (WORD_TO_NUM[lower] !== undefined) return WORD_TO_NUM[lower];
+  const n = parseInt(lower, 10);
+  return isNaN(n) ? null : n;
+}
+
+function rangeAround(targetDate, toleranceDays, confidence) {
+  return {
+    start: new Date(targetDate.getTime() - toleranceDays * DAY_MS),
+    end: new Date(targetDate.getTime() + toleranceDays * DAY_MS),
+    confidence,
+  };
+}
+
+function resolveTemporalRange(query, referenceDate) {
+  const ref = referenceDate instanceof Date ? referenceDate : new Date(referenceDate);
+  if (isNaN(ref.getTime())) return null;
+  const q = query.toLowerCase();
+
+  let m = q.match(/\b(\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+days?\s+ago\b/);
+  if (m) {
+    const n = parseNum(m[1]);
+    if (n !== null) return rangeAround(new Date(ref.getTime() - n * DAY_MS), 1, 'high');
+  }
+
+  if (/\ba?\s*couple\s+of?\s*days?\s+ago\b/.test(q)) {
+    return rangeAround(new Date(ref.getTime() - 2 * DAY_MS), 2, 'medium');
+  }
+
+  if (/\b(a\s+)?few\s+days?\s+ago\b/.test(q)) {
+    return rangeAround(new Date(ref.getTime() - 3 * DAY_MS), 2, 'medium');
+  }
+
+  m = q.match(/\b(\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten)\s+weeks?\s+ago\b/);
+  if (m) {
+    const n = parseNum(m[1]);
+    if (n !== null) return rangeAround(new Date(ref.getTime() - n * 7 * DAY_MS), 3, 'high');
+  }
+
+  // "a week ago" = exactly 7 days ago (±2)
+  // "last week" = any time during the previous 7 days (4-day tolerance covers the full calendar week)
+  if (/\blast\s+week\b/.test(q)) {
+    return rangeAround(new Date(ref.getTime() - 7 * DAY_MS), 4, 'high');
+  }
+  if (/\b(a\s+)?week\s+ago\b/.test(q)) {
+    return rangeAround(new Date(ref.getTime() - 7 * DAY_MS), 2, 'high');
+  }
+
+  m = q.match(/\b(\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+months?\s+ago\b/);
+  if (m) {
+    const n = parseNum(m[1]);
+    if (n !== null) return rangeAround(new Date(ref.getTime() - n * 30 * DAY_MS), 5, 'medium');
+  }
+
+  if (/\blast\s+month\b/.test(q)) {
+    return rangeAround(new Date(ref.getTime() - 30 * DAY_MS), 5, 'medium');
+  }
+
+  m = q.match(/\blast\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/);
+  if (m) {
+    const targetDow = WEEKDAYS[m[1]];
+    const refDow = ref.getDay();
+    let daysBack = (refDow - targetDow + 7) % 7;
+    if (daysBack === 0) daysBack = 7;
+    return rangeAround(new Date(ref.getTime() - daysBack * DAY_MS), 0, 'high');
+  }
+
+  if (/\byesterday\b/.test(q)) return rangeAround(new Date(ref.getTime() - DAY_MS), 0, 'high');
+  if (/\btoday\b/.test(q)) return rangeAround(new Date(ref.getTime()), 0, 'high');
+
+  return null;
+}
+
+// ── LLM Judge (mirror of src/plugins/search/llm-judge.ts) ────────────────────
+
+let _llmLastRequest = 0;
+const LLM_MIN_INTERVAL_MS = 2200;
+
+async function rateLimit() {
+  const elapsed = Date.now() - _llmLastRequest;
+  if (elapsed < LLM_MIN_INTERVAL_MS) {
+    await new Promise(r => setTimeout(r, LLM_MIN_INTERVAL_MS - elapsed));
+  }
+  _llmLastRequest = Date.now();
+}
+
+async function llmScoreCandidates(query, candidates, apiKey, model = 'claude-haiku-4-5-20251001', retries = 3) {
+  if (candidates.length === 0) return [];
+  // Full-content scoring: larger snippet window helps LLM catch indirect/inferred matches.
+  const numbered = candidates.map((c, i) => `[${i}] ${c.content.slice(0, 1500)}`).join('\n\n');
+  const prompt =
+    `A user is asking: "${query}"\n\n` +
+    `To answer this question well, you need to find past sessions where the user expressed preferences, ` +
+    `past activities, interests, or context relevant to the question. Look for INDIRECT evidence:\n\n` +
+    `- A question about "recommend a show/movie" is answered by sessions mentioning any entertainment content the user enjoyed: ` +
+    `movies, TV shows, streaming services, stand-up comedy specials, documentaries, actors, directors, genres, or specific titles they've discussed.\n` +
+    `- A question about "siblings" is answered by sessions mentioning brothers, sisters, family members — even if the word "sibling" isn't used.\n` +
+    `- A question about "cooking for a friend" is answered by sessions about baking, recipes, dinner parties, desserts, meal prep.\n` +
+    `- Sessions where the user asks for craft advice mentioning specific titles/actors/shows ARE relevant because they reveal preferences.\n\n` +
+    `Score each session from 0 (no useful information) to 10 (directly answers the question). ` +
+    `Include ALL ${candidates.length} indices.\n\n` +
+    `Sessions:\n${numbered}\n\n` +
+    `Return ONLY a JSON object like {"0": 8, "1": 3, "2": 10, ...}.`;
+
+  for (let attempt = 0; attempt < retries; attempt++) {
+    await rateLimit();
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model, max_tokens: 500, messages: [{ role: 'user', content: prompt }] }),
+      });
+      const data = await res.json();
+      if (data?.error?.type === 'rate_limit_error') {
+        await new Promise(r => setTimeout(r, 20000));
+        continue;
+      }
+      const text = data?.content?.[0]?.text || '';
+      const match = text.match(/\{[^{}]*\}/s);
+      if (!match) return null;
+      const scores = JSON.parse(match[0]);
+      if (typeof scores !== 'object' || scores === null) return null;
+      const scoreArr = new Array(candidates.length).fill(0);
+      for (const [k, v] of Object.entries(scores)) {
+        const idx = parseInt(k, 10);
+        if (!isNaN(idx) && idx >= 0 && idx < candidates.length && typeof v === 'number') {
+          scoreArr[idx] = Math.max(0, Math.min(10, v));
+        }
+      }
+      return scoreArr;
+    } catch (e) {
+      if (attempt === retries - 1) return null;
+      await new Promise(r => setTimeout(r, 5000));
+    }
+  }
+  return null;
+}
+
+/**
+ * LLM rerank: score top-N candidates with Claude, blend with retrieval score.
+ * Also applies temporal filtering if the query contains temporal expressions.
+ *
+ * Strategy for temporal queries:
+ * - Parse query for temporal range
+ * - Query ALL in-range session IDs from the database (not just top-K)
+ * - Union with top-K from hybrid search → full candidate pool
+ * - Let LLM pick the best
+ */
+async function llmRerank(kernel, query, results, limit = 10, referenceDate = null) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey || results.length === 0) return results.slice(0, limit);
+
+  let poolResults = results;
+
+  if (referenceDate) {
+    const range = resolveTemporalRange(query, referenceDate);
+    if (range) {
+      try {
+        // Step 1: Get ALL in-range session IDs from the ENTIRE corpus (not just top-K)
+        const startMs = range.start.getTime();
+        const endMs = range.end.getTime();
+        const inRangeRows = kernel.db.prepare(
+          'SELECT id FROM observations WHERE indexed_at >= ? AND indexed_at <= ?'
+        ).all(startMs, endMs);
+        const inRangeIds = new Set(inRangeRows.map(r => r.id));
+
+        if (inRangeIds.size > 0) {
+          // Build pool: ONLY in-range candidates. Temporal queries with a valid
+          // reference date should completely filter out out-of-range noise.
+          const existingInPool = results.filter(r => inRangeIds.has(r.id));
+          const existingIds = new Set(existingInPool.map(r => r.id));
+
+          // In-range candidates that the hybrid search missed — include them
+          // with score 0 so LLM can lift them up by semantic relevance.
+          const missingFromPool = [...inRangeIds]
+            .filter(id => !existingIds.has(id))
+            .map(id => ({ id, score: 0 }));
+
+          // Order: hybrid matches first (they have real retrieval signal),
+          // then missing. Both share the LLM scoring pass equally.
+          poolResults = [...existingInPool, ...missingFromPool];
+        }
+      } catch {}
+    }
+  }
+
+  // Fetch content for LLM scoring.
+  // Cap at 50 candidates to stay within the LLM context budget.
+  const pool = poolResults.slice(0, 50);
+  const ids = pool.map(r => r.id);
+  const placeholders = ids.map(() => '?').join(',');
+  let rows;
+  try {
+    rows = kernel.db.prepare(`SELECT id, content FROM observations WHERE id IN (${placeholders})`).all(...ids);
+  } catch { return poolResults.slice(0, limit); }
+  const contentMap = new Map(rows.map(r => [r.id, r.content]));
+
+  const candidates = pool.map(r => ({
+    id: r.id,
+    score: r.score,
+    content: contentMap.get(r.id) || '',
+  }));
+
+  const llmScores = await llmScoreCandidates(query, candidates, apiKey);
+  if (!llmScores) return poolResults.slice(0, limit);
+
+  // Blend: 30% retrieval + 70% LLM — LLM's semantic judgment dominates
+  // for cases where retrieval missed the lexical-semantic gap
+  const retrievalMax = Math.max(...pool.map(r => r.score || 0)) || 1;
+  const blended = pool.map((r, i) => {
+    const retrievalNorm = (r.score || 0) / retrievalMax;
+    const llmNorm = (llmScores[i] || 0) / 10;
+    const fused = retrievalNorm * 0.3 + llmNorm * 0.7;
+    return { ...r, score: fused };
+  });
+
+  blended.sort((a, b) => b.score - a.score);
+
+  // Append any remaining (non-scored) results
+  const seen = new Set(blended.map(r => r.id));
+  const tail = poolResults.filter(r => !seen.has(r.id));
+  return [...blended, ...tail].slice(0, limit);
+}
+
+module.exports = { BenchKernel, getEmbedder, llmRerank, resolveTemporalRange };

@@ -17,6 +17,11 @@ export class LLMService {
     this.provider = provider;
   }
 
+  /** Returns the underlying provider for advanced use (e.g. LLMJudge reranker). */
+  getProvider(): LLMProvider | null {
+    return this.provider;
+  }
+
   private async call(templateName: keyof typeof PROMPT_TEMPLATES, ...args: string[]): Promise<unknown | null> {
     if (!this.provider) return null;
     const template = PROMPT_TEMPLATES[templateName];
