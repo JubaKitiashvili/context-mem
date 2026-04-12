@@ -25,9 +25,10 @@ let _expansions: Record<string, string[]> = {
   tips: ['advice', 'suggest', 'recommend'],
   advice: ['tips', 'suggest', 'recommend'],
   // Entertainment
-  movie: ['film', 'show', 'series', 'watch'],
-  show: ['movie', 'series', 'watch', 'program'],
-  watch: ['movie', 'show', 'film', 'series'],
+  movie: ['film', 'show', 'series', 'watch', 'special', 'comedy', 'documentary', 'netflix', 'streaming'],
+  show: ['movie', 'series', 'watch', 'program', 'special', 'comedy', 'stand-up', 'netflix', 'streaming'],
+  watch: ['movie', 'show', 'film', 'series', 'streaming', 'netflix'],
+  comedy: ['stand-up', 'comedian', 'funny', 'humor', 'show', 'special'],
   book: ['read', 'novel', 'author'],
   music: ['song', 'listen', 'playlist'],
   // Food
