@@ -88,15 +88,24 @@ function main() {
 
 function getStdinInput() {
   try {
-    // In hook context, the user's message is passed as an environment variable or arg
-    if (process.env.CLAUDE_USER_PROMPT) {
-      return process.env.CLAUDE_USER_PROMPT;
+    // Claude Code hooks receive JSON on stdin with the hook payload
+    const raw = fs.readFileSync('/dev/stdin', 'utf8').trim();
+    if (!raw) return '';
+    const payload = JSON.parse(raw);
+    // UserPromptSubmit hook: payload has { message: { role, content } } or { query }
+    if (payload.message?.content) {
+      const content = payload.message.content;
+      if (typeof content === 'string') return content;
+      if (Array.isArray(content)) {
+        return content
+          .filter(b => b.type === 'text')
+          .map(b => b.text)
+          .join(' ');
+      }
     }
-    // Fallback: try to read from argv
-    if (process.argv.length > 2) {
-      return process.argv.slice(2).join(' ');
-    }
-    return '';
+    if (payload.query) return payload.query;
+    // Fallback: stringify the whole payload
+    return typeof payload === 'string' ? payload : JSON.stringify(payload).slice(0, 500);
   } catch {
     return '';
   }
@@ -138,12 +147,13 @@ function searchMemories(db, terms) {
 
   // Search knowledge base
   try {
-    const query = terms.map(t => `"${t.replace(/"/g, '""')}"`).join(' ');
+    const query = terms.map(t => `"${t.replace(/"/g, '""')}"`).join(' OR ');
     const rows = db.prepare(`
       SELECT k.title, k.content, k.relevance_score
-      FROM knowledge_fts kf
-      JOIN knowledge k ON k.rowid = kf.rowid
-      WHERE knowledge_fts MATCH ?
+      FROM knowledge k
+      WHERE k.rowid IN (
+        SELECT rowid FROM knowledge_fts WHERE knowledge_fts MATCH ?
+      )
         AND k.archived = 0
         AND k.valid_to IS NULL
       ORDER BY k.relevance_score DESC
@@ -163,12 +173,13 @@ function searchMemories(db, terms) {
   // Search recent observations
   if (memories.length < 3) {
     try {
-      const query = terms.map(t => `"${t.replace(/"/g, '""')}"`).join(' ');
+      const query = terms.map(t => `"${t.replace(/"/g, '""')}"`).join(' OR ');
       const rows = db.prepare(`
         SELECT o.type, o.summary, o.content, o.importance_score
-        FROM obs_fts of2
-        JOIN observations o ON o.rowid = of2.rowid
-        WHERE obs_fts MATCH ?
+        FROM observations o
+        WHERE o.rowid IN (
+          SELECT rowid FROM obs_fts WHERE obs_fts MATCH ?
+        )
         ORDER BY o.importance_score DESC, o.indexed_at DESC
         LIMIT ?
       `).all(query, 3 - memories.length);

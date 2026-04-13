@@ -86,14 +86,14 @@ export class BM25Search implements SearchPlugin {
       runQuery(`"${kw}"`, 0.5);
     }
 
-    // Strategy 7b: Individual synonym searches — catches documents where
-    // the synonym appears but the original abstract term doesn't.
-    // E.g., query "siblings" → also search for "brother", "sister" individually.
+    // Strategy 7b: Individual synonym searches — low weight (0.2) so docs
+    // enter the candidate pool but don't override main search ranking.
+    // Essential for semantic-gap cases like "siblings" → "brother".
     for (const kw of keywords.slice(0, 5)) {
       const syns = EXPANSIONS[kw];
       if (!syns) continue;
       for (const syn of syns.slice(0, 3)) {
-        if (syn.length >= 4) runQuery(`"${syn}"`, 0.6);
+        if (syn.length >= 4) runQuery(`"${syn}"`, 0.2);
       }
     }
 

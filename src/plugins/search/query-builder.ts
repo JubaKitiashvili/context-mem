@@ -24,10 +24,10 @@ let _expansions: Record<string, string[]> = {
   suggest: ['recommend', 'prefer', 'favorite'],
   tips: ['advice', 'suggest', 'recommend'],
   advice: ['tips', 'suggest', 'recommend'],
-  // Entertainment
-  movie: ['film', 'show', 'series', 'watch', 'special', 'comedy', 'documentary', 'netflix', 'streaming'],
-  show: ['movie', 'series', 'watch', 'program', 'special', 'comedy', 'stand-up', 'netflix', 'streaming'],
-  watch: ['movie', 'show', 'film', 'series', 'streaming', 'netflix'],
+  // Entertainment — content-type synonyms only (no platform names)
+  movie: ['film', 'show', 'series', 'watch', 'special', 'comedy'],
+  show: ['movie', 'series', 'watch', 'program', 'special', 'comedy', 'stand-up'],
+  watch: ['movie', 'show', 'film', 'series'],
   comedy: ['stand-up', 'comedian', 'funny', 'humor', 'show', 'special'],
   book: ['read', 'novel', 'author'],
   music: ['song', 'listen', 'playlist'],

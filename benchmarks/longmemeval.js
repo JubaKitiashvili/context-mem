@@ -136,7 +136,7 @@ for (let qi = 0; qi < entries.length; qi++) {
   if (entry.question_date) searchOpts.referenceDate = entry.question_date;
 
   let results;
-  const fetchLimit = USE_LLM ? 15 : Math.max(TOP_K, 10);
+  const fetchLimit = USE_LLM ? 30 : Math.max(TOP_K, 10);
   // For failure dumps, also fetch a wider pool (top-100) to diagnose retrieval vs rank miss
   const diagnosticLimit = DUMP_FAILURES ? 100 : fetchLimit;
   if (USE_VECTOR) {

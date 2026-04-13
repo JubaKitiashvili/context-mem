@@ -178,13 +178,13 @@ class BenchKernel {
       runFTS(`"${kw}"`, 0.5);
     }
 
-    // Strategy 7b: Individual SYNONYM searches — when query uses abstract terms
-    // like "sibling", searching for each synonym ("brother", "sister") individually
-    // catches documents where the synonym appears but the original term doesn't.
+    // Strategy 7b: Individual SYNONYM searches — low weight (0.2) so docs
+    // enter the candidate pool but don't override main search ranking.
+    // Essential for semantic-gap cases like "siblings" → "brother".
     for (const kw of keywords.slice(0, 5)) {
       const syns = EXPANSIONS && EXPANSIONS[kw] ? EXPANSIONS[kw] : [];
       for (const syn of syns.slice(0, 3)) {
-        if (syn.length >= 4) runFTS(`"${syn}"`, 0.6);
+        if (syn.length >= 4) runFTS(`"${syn}"`, 0.2);
       }
     }
 
