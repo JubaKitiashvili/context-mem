@@ -82,7 +82,9 @@ export class BetterSqlite3Storage implements StoragePlugin {
   exec(sql: string, params?: unknown[]): void {
     const db = this.getDb();
     if (params && params.length > 0) {
-      db.prepare(sql).run(...(params as unknown[]));
+      // Use statement cache to avoid leaking prepared statements
+      const stmt = this.prepare(sql);
+      stmt.run(...(params as unknown[]));
     } else {
       db.exec(sql);
     }

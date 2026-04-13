@@ -319,7 +319,7 @@ export interface TokenEconomics {
   total_summary_bytes: number;
   searches_performed: number;
   discovery_tokens: number;
-  read_tokens: number;
+  stored_tokens: number;
   tokens_saved: number;
   savings_percentage: number;
 }
@@ -337,7 +337,7 @@ export interface SessionChain {
   session_id: string;
   parent_session: string | null;
   project_path: string;
-  created_at: string;
+  created_at: number; // unixepoch seconds
   handoff_reason: 'auto' | 'manual' | 'compaction' | 'session_end';
   summary: string | null;
   token_estimate: number;

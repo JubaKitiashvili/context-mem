@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 16;
+export const LATEST_SCHEMA_VERSION = 17;
 
 export const migrations: Migration[] = [
   {
@@ -531,6 +531,26 @@ export const migrations: Migration[] = [
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (16, unixepoch(), 'Total Recall Phase 4: decision trails and working fingerprints');
+    `,
+  },
+  {
+    version: 17,
+    description: 'Add importance_score index + fix FTS trigger on embedding-only updates',
+    up: `
+      CREATE INDEX IF NOT EXISTS idx_obs_importance ON observations(importance_score);
+      CREATE INDEX IF NOT EXISTS idx_obs_pinned_importance ON observations(pinned, importance_score);
+
+      -- Recreate obs_au trigger to skip FTS rebuild when only embeddings change
+      DROP TRIGGER IF EXISTS obs_au;
+      CREATE TRIGGER obs_au AFTER UPDATE OF summary, content, type ON observations BEGIN
+        DELETE FROM obs_fts WHERE rowid = old.rowid;
+        INSERT INTO obs_fts(rowid, summary, content, type) VALUES (new.rowid, new.summary, new.content, new.type);
+        DELETE FROM obs_content_fts WHERE rowid = old.rowid;
+        INSERT INTO obs_content_fts(rowid, content) VALUES (new.rowid, new.content);
+      END;
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (17, unixepoch(), 'Add importance_score index + fix FTS trigger on embedding-only updates');
     `,
   },
 ];

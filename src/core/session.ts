@@ -354,11 +354,11 @@ export class SessionManager {
       chainId = ulid();
     }
 
-    const now = new Date().toISOString();
+    const nowEpoch = Math.floor(Date.now() / 1000); // unixepoch seconds, matching schema
     this.storage.exec(
       `INSERT OR IGNORE INTO session_chains (chain_id, session_id, parent_session, project_path, created_at, handoff_reason, summary, token_estimate)
        VALUES (?, ?, ?, ?, ?, ?, NULL, 0)`,
-      [chainId, sessionId, parentSession, projectPath, now, reason],
+      [chainId, sessionId, parentSession, projectPath, nowEpoch, reason],
     );
 
     return {
@@ -366,7 +366,7 @@ export class SessionManager {
       session_id: sessionId,
       parent_session: parentSession,
       project_path: projectPath,
-      created_at: now,
+      created_at: nowEpoch,
       handoff_reason: reason,
       summary: null,
       token_estimate: 0,
@@ -483,7 +483,7 @@ export class SessionManager {
       session_id: row.session_id as string,
       parent_session: (row.parent_session as string) || null,
       project_path: row.project_path as string,
-      created_at: row.created_at as string,
+      created_at: row.created_at as number,
       handoff_reason: row.handoff_reason as SessionChain['handoff_reason'],
       summary: (row.summary as string) || null,
       token_estimate: (row.token_estimate as number) || 0,

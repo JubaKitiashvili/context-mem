@@ -72,7 +72,7 @@ describe('SessionManager — chain operations', () => {
       total_summary_bytes: 500,
       searches_performed: 3,
       discovery_tokens: 100,
-      read_tokens: 200,
+      stored_tokens: 200,
       tokens_saved: 4300,
       savings_percentage: 86,
     });

@@ -453,7 +453,7 @@ export class Kernel {
       total_summary_bytes: summaryBytesV,
       searches_performed: searchesV,
       discovery_tokens: discoveryV,
-      read_tokens: readsV,
+      stored_tokens: readsV,
       tokens_saved: Math.max(0, saved),
       savings_percentage: contentBytesV > 0 ? Math.round((saved / contentBytesV) * 100) : 0,
     };

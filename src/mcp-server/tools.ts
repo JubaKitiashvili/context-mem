@@ -1,3 +1,4 @@
+import { basename } from 'node:path';
 import type { Pipeline } from '../core/pipeline.js';
 import type { SearchFusion } from '../plugins/search/fusion.js';
 import { sanitizeFTS5Query } from '../plugins/search/fts5-utils.js';
@@ -1078,7 +1079,7 @@ export async function handleStats(
     total_summary_bytes: sizeRow.total_summary,
     searches_performed: searchRow.n,
     discovery_tokens: tokenRow.tokens_out || 0,
-    read_tokens: tokensIn,
+    stored_tokens: tokensIn,
     tokens_saved: tokensSaved,
     savings_percentage: savingsPct,
   };
@@ -1322,19 +1323,20 @@ export async function handleSearchKnowledge(
 
   // Filter out superseded entries unless explicitly requested
   let filteredResults = results;
-  if (!params.include_superseded) {
-    const activeIds = new Set<string>();
-    for (const r of results) {
-      try {
-        const row = kernel.storage.prepare('SELECT valid_to FROM knowledge WHERE id = ?').get(r.id) as { valid_to: number | null } | undefined;
-        if (!row || row.valid_to === null) {
-          activeIds.add(r.id);
-        }
-      } catch {
-        activeIds.add(r.id); // include on error
-      }
+  if (!params.include_superseded && results.length > 0) {
+    // Single query instead of N+1 per-result lookups
+    const ids = results.map(r => r.id);
+    const placeholders = ids.map(() => '?').join(',');
+    try {
+      const superseded = new Set(
+        (kernel.storage.prepare(
+          `SELECT id FROM knowledge WHERE id IN (${placeholders}) AND valid_to IS NOT NULL`
+        ).all(...ids) as Array<{ id: string }>).map(r => r.id)
+      );
+      filteredResults = results.filter(r => !superseded.has(r.id)).slice(0, limit);
+    } catch {
+      filteredResults = results.slice(0, limit); // include all on error
     }
-    filteredResults = results.filter(r => activeIds.has(r.id)).slice(0, limit);
   }
 
   const mapped = filteredResults.map(r => ({
@@ -1403,7 +1405,7 @@ export async function handlePromoteKnowledge(
   }
 
   // Determine project name from working directory
-  const projectName = require('node:path').basename(process.cwd()) || 'unknown';
+  const projectName = basename(process.cwd()) || 'unknown';
 
   try {
     const globalEntry = kernel.globalStore.promote(entry, projectName);
@@ -2428,7 +2430,7 @@ export async function handleHandoffSession(
     total_summary_bytes: 0,
     searches_performed: 0,
     discovery_tokens: 0,
-    read_tokens: 0,
+    stored_tokens: 0,
     tokens_saved: 0,
     savings_percentage: 0,
   };

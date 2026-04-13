@@ -282,7 +282,7 @@ export class Pipeline {
           total_summary_bytes: row.t_out,
           searches_performed: 0,
           discovery_tokens: 0,
-          read_tokens: 0,
+          stored_tokens: 0,
           tokens_saved: Math.max(0, row.t_in - row.t_out),
           savings_percentage: row.t_in > 0 ? Math.round(((row.t_in - row.t_out) / row.t_in) * 100) : 0,
         };

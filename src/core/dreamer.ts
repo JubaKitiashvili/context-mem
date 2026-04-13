@@ -277,7 +277,7 @@ export class Dreamer {
   async progressiveCompress(): Promise<number> {
     try {
       const rows = this.storage.prepare(
-        'SELECT id, content, summary, indexed_at, importance_score, pinned, compression_tier FROM observations WHERE pinned = 0'
+        'SELECT id, content, summary, indexed_at, importance_score, pinned, compression_tier FROM observations WHERE pinned = 0 ORDER BY indexed_at ASC LIMIT 500'
       ).all() as Array<{
         id: string; content: string; summary: string | null;
         indexed_at: number; importance_score: number; pinned: number; compression_tier: string;
@@ -443,7 +443,7 @@ export class Dreamer {
           'SELECT relevance_score FROM knowledge WHERE id = ?'
         ).get(row.knowledge_id) as { relevance_score: number } | undefined;
 
-        if (!entry || entry.relevance_score >= 3.0) continue; // cap boost
+        if (!entry || entry.relevance_score >= 5.0) continue; // cap matches SQL MAX of 5.0
 
         this.storage.exec(
           'UPDATE knowledge SET relevance_score = MIN(relevance_score * 1.15, 5.0) WHERE id = ?',

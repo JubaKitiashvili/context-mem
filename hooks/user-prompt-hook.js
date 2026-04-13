@@ -89,7 +89,7 @@ function main() {
 function getStdinInput() {
   try {
     // Claude Code hooks receive JSON on stdin with the hook payload
-    const raw = fs.readFileSync('/dev/stdin', 'utf8').trim();
+    const raw = fs.readFileSync(0, 'utf8').trim(); // fd 0 = stdin, portable across platforms
     if (!raw) return '';
     const payload = JSON.parse(raw);
     // UserPromptSubmit hook: payload has { message: { role, content } } or { query }

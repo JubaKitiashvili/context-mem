@@ -224,10 +224,10 @@ describe('Final Validation', () => {
     assert.ok(full, 'Should retrieve full observation');
 
     const statsAfterGet = await kernel.stats();
-    assert.ok(statsAfterGet.read_tokens > 0, 'Read tokens should be tracked after get()');
+    assert.ok(statsAfterGet.stored_tokens > 0, 'Read tokens should be tracked after get()');
 
     // Verify the savings formula: tokens_saved = content_bytes - (discovery + read)
-    const expectedSaved = statsAfterGet.total_content_bytes - (statsAfterGet.discovery_tokens + statsAfterGet.read_tokens);
+    const expectedSaved = statsAfterGet.total_content_bytes - (statsAfterGet.discovery_tokens + statsAfterGet.stored_tokens);
     assert.equal(
       statsAfterGet.tokens_saved,
       Math.max(0, expectedSaved),
