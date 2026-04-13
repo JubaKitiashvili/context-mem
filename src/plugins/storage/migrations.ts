@@ -540,12 +540,15 @@ export const migrations: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_obs_importance ON observations(importance_score);
       CREATE INDEX IF NOT EXISTS idx_obs_pinned_importance ON observations(pinned, importance_score);
 
-      -- Recreate obs_au trigger to skip FTS rebuild when only embeddings change
+      -- Recreate obs_au trigger: only fire on text column changes (summary, content, type),
+      -- NOT on embedding-only updates. obs_fts columns: (summary, content). No 'type' column.
       DROP TRIGGER IF EXISTS obs_au;
       CREATE TRIGGER obs_au AFTER UPDATE OF summary, content, type ON observations BEGIN
-        DELETE FROM obs_fts WHERE rowid = old.rowid;
-        INSERT INTO obs_fts(rowid, summary, content, type) VALUES (new.rowid, new.summary, new.content, new.type);
-        DELETE FROM obs_content_fts WHERE rowid = old.rowid;
+        INSERT INTO obs_fts(obs_fts, rowid, summary, content) VALUES ('delete', old.rowid, old.summary, old.content);
+        INSERT INTO obs_fts(rowid, summary, content) VALUES (new.rowid, new.summary, new.content);
+        INSERT INTO obs_trigram(obs_trigram, rowid, summary) VALUES ('delete', old.rowid, old.summary);
+        INSERT INTO obs_trigram(rowid, summary) VALUES (new.rowid, new.summary);
+        INSERT INTO obs_content_fts(obs_content_fts, rowid, content) VALUES ('delete', old.rowid, old.content);
         INSERT INTO obs_content_fts(rowid, content) VALUES (new.rowid, new.content);
       END;
 

@@ -112,13 +112,15 @@ export class BM25Search implements SearchPlugin {
     // Normalize scores to 0-1 range so they're comparable with vector cosine similarities
     const maxScore = sorted.length > 0 ? sorted[0].score : 1;
     const minScore = sorted.length > 1 ? sorted[sorted.length - 1].score : 0;
-    const range = maxScore - minScore || 1;
+    const range = maxScore - minScore;
+    // When all scores are equal (range=0), normalize to 1.0 (equally good), not 0.0
+    const useRange = range > 0 ? range : maxScore || 1;
 
     return sorted.map(({ row, score }) => ({
       id: row.id,
       title: (row.summary || row.content).slice(0, 100),
       snippet: extractBestSnippet(row.summary || row.content, query, 300),
-      relevance_score: (score - minScore) / range,  // normalized to [0, 1]
+      relevance_score: range > 0 ? (score - minScore) / useRange : 1.0,  // equal scores → 1.0
       type: row.type as SearchResult['type'],
       timestamp: row.indexed_at,
       access_count: row.access_count ?? 0,

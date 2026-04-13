@@ -398,7 +398,7 @@ try {
   const { execSync } = require('child_process');
   const updateScript = path.join(__dirname, '..', 'bin', 'update-check.js');
   const updateResult = execSync(`node "${updateScript}" 2>/dev/null`, {
-    timeout: 6000,
+    timeout: 2000,
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe'],
   }).trim();

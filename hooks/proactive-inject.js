@@ -379,7 +379,7 @@ function searchRelevantContext(db, query, filePath, globalDbPath) {
           SELECT metadata FROM observations
           WHERE metadata LIKE ? AND importance_score >= 0.6
           ORDER BY importance_score DESC LIMIT 5
-        `).all('%' + (filePath || '').replace(/'/g, '') + '%');
+        `).all('%' + (filePath || '').replace(/[%_]/g, '').replace(/'/g, '') + '%');
         for (const obs of relatedObs) {
           try {
             const meta = JSON.parse(obs.metadata);

@@ -272,12 +272,12 @@ export function rerank(results: SearchResult[], intentType: SearchIntent['intent
 
     if (variance < 0.01) {
       // Scores too close — recency becomes the differentiator
-      weights = { ...weights, recency: weights.recency + 0.15, relevance: weights.relevance - 0.15 };
+      weights = { ...weights, recency: weights.recency + 0.15, relevance: Math.max(0, weights.relevance - 0.15) };
     }
 
     if (timeSpread < 0.1) {
       // All results are recent — relevance becomes the differentiator
-      weights = { ...weights, relevance: weights.relevance + 0.15, recency: weights.recency - 0.15 };
+      weights = { ...weights, relevance: weights.relevance + 0.15, recency: Math.max(0, weights.recency - 0.15) };
     }
   }
 

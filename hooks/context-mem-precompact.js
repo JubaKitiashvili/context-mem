@@ -37,6 +37,7 @@ function main() {
 
     const db = new Database(dbPath, { readonly: false });
     db.pragma('journal_mode = WAL');
+    db.pragma('busy_timeout = 3000');
 
     // Find current session (most recent in session_chains)
     const latestChain = db.prepare(
