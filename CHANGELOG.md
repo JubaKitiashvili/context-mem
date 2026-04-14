@@ -2,6 +2,43 @@
 
 All notable changes to context-mem are documented here.
 
+## [3.2.0] — 2026-04-15 — Perfect Recall
+
+### Added
+- **LLM Judge Reranker** — optional Claude Haiku-based semantic reranker. Scores top-N candidates 0-10 based on relevance, blends with retrieval score (50/50 default). Activates when `ai_curation.enabled` is true. Achieves **100% R@5 on LongMemEval (500/500)**.
+- **Temporal Resolver** — deterministic date parsing for relative time expressions ("N days ago", "last Saturday", "last week", "a couple of days ago"). Pure regex, zero LLM cost. 12 unit tests.
+- **Per-Prompt Memory Injection** — `UserPromptSubmit` hook now active (was dead code). Searches knowledge + observations on every user message. Rate-limited: max 2/minute, 5-min topic cooldown.
+- **BM25 Strategy 7b** — individual synonym search catches documents where the synonym appears but the original abstract term doesn't (e.g., "siblings" query finds "brother").
+- **Synonym Expansion** — entertainment (show/movie → comedy, special, stand-up), activities (activity → routine, schedule), evening, plural handling (siblings).
+
+### Fixed
+- **CRITICAL: Session chain continuity** — `created_at` was stored as ISO string but parsed as integer, producing NaN. Every session treated as fresh. Now stores unixepoch seconds.
+- **CRITICAL: `promote_knowledge` crash** — `require('node:path')` in ESM context threw ReferenceError at runtime. Replaced with static import.
+- **CRITICAL: Migration 17 FTS trigger** — referenced non-existent `type` column in `obs_fts`. Fixed to match original FTS schema.
+- **Statement cache leak** — `exec()` bypassed prepared statement cache, leaking memory in long sessions.
+- **BM25 equal-score normalization** — when all results had identical BM25 scores, they normalized to 0.0 instead of 1.0.
+- **Fusion weight negative** — edge case where recency/relevance adjustments could produce negative weights, inverting rankings.
+- **FTS trigger on embedding UPDATE** — every embedding write triggered unnecessary FTS rebuild. Now only fires on summary/content/type changes.
+- **N+1 query in search_knowledge** — 200 individual SELECTs replaced with single IN() query.
+- **Dreamer full table scan** — `progressiveCompress` loaded ALL observations every 5 minutes. Now LIMIT 500 + index.
+- **Dreamer boost cap** — early-exit at 3.0 vs SQL cap at 5.0. Aligned to 5.0.
+- **Precompact hook SQLITE_BUSY** — added busy_timeout=3000ms for concurrent access safety.
+- **Proactive inject LIKE wildcards** — file paths with `_` or `%` caused incorrect matching.
+- **Session-start update check** — 6s timeout reduced to 2s to avoid blocking session start.
+- **Stats field misname** — `read_tokens` renamed to `stored_tokens` (correct semantics).
+- **stdin portability** — user-prompt-hook reads fd 0 instead of `/dev/stdin` for Windows compatibility.
+
+### Changed
+- Migration v17: adds `importance_score` index, `pinned+importance_score` composite index
+- LLM judge prompt: balanced for both direct-match and indirect-preference queries
+- Default LLM judge weights: 50% retrieval + 50% LLM
+
+### Benchmarks
+- **LongMemEval R@5: 100.0% (500/500)** with optional Haiku reranker (~$1/500 queries)
+- LongMemEval R@5: 97.8% | LoCoMo: 98.1% | MemBench: 98.0% | ConvoMem: 97.7% (pure local)
+- 17 bugs fixed, 0 benchmark regressions
+- Tests: 1130 → 1135
+
 ## [3.1.0] — 2026-04-10 — Search Architecture Refactor
 
 ### Changed

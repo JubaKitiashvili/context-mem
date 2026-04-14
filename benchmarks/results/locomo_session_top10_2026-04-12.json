@@ -3,29 +3,29 @@
   "system": "context-mem",
   "granularity": "session",
   "top_k": 10,
-  "questions": 196,
-  "avg_recall": 0.9744897959183674,
-  "elapsed_seconds": 132.811,
+  "questions": 301,
+  "avg_recall": 0.9767441860465116,
+  "elapsed_seconds": 687.008,
   "per_category": {
     "multi-hop": {
-      "hits": 37,
-      "total": 37
+      "hits": 63,
+      "total": 63
     },
     "temporal": {
       "hits": 9,
       "total": 11
     },
     "single-hop": {
-      "hits": 31,
-      "total": 31
+      "hits": 41,
+      "total": 42
     },
     "open-domain": {
-      "hits": 67,
-      "total": 70
+      "hits": 110,
+      "total": 114
     },
     "adversarial": {
-      "hits": 47,
-      "total": 47
+      "hits": 71,
+      "total": 71
     }
   },
   "details": [
@@ -39,16 +39,17 @@
       "retrieved": [
         "sess_1",
         "sess_10",
-        "sess_7",
         "sess_12",
-        "sess_5",
-        "sess_9",
+        "sess_4",
         "sess_13",
+        "sess_7",
+        "sess_5",
         "sess_3",
-        "sess_15",
-        "sess_4"
+        "sess_9",
+        "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -69,7 +70,8 @@
         "sess_4",
         "sess_2"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -80,17 +82,18 @@
       ],
       "retrieved": [
         "sess_7",
-        "sess_6",
-        "sess_13",
         "sess_4",
-        "sess_15",
+        "sess_13",
+        "sess_14",
         "sess_3",
-        "sess_9",
-        "sess_19",
-        "sess_17",
-        "sess_10"
+        "sess_1",
+        "sess_5",
+        "sess_6",
+        "sess_2",
+        "sess_9"
       ],
-      "recall": 0
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -104,14 +107,15 @@
         "sess_17",
         "sess_1",
         "sess_6",
-        "sess_3",
-        "sess_9",
         "sess_12",
         "sess_5",
         "sess_7",
-        "sess_4"
+        "sess_4",
+        "sess_3",
+        "sess_16"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -121,18 +125,19 @@
         "sess_1"
       ],
       "retrieved": [
-        "sess_3",
-        "sess_13",
-        "sess_7",
         "sess_11",
+        "sess_13",
+        "sess_3",
+        "sess_16",
         "sess_17",
+        "sess_4",
+        "sess_2",
+        "sess_6",
         "sess_1",
-        "sess_5",
-        "sess_10",
-        "sess_15",
-        "sess_19"
+        "sess_7"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -153,7 +158,8 @@
         "sess_10",
         "sess_4"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -164,17 +170,18 @@
       ],
       "retrieved": [
         "sess_2",
-        "sess_9",
         "sess_1",
-        "sess_16",
+        "sess_9",
         "sess_10",
         "sess_18",
         "sess_12",
         "sess_14",
         "sess_4",
-        "sess_6"
+        "sess_6",
+        "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -185,18 +192,19 @@
         "sess_2"
       ],
       "retrieved": [
-        "sess_19",
-        "sess_13",
-        "sess_17",
         "sess_16",
         "sess_3",
-        "sess_1",
-        "sess_12",
         "sess_4",
         "sess_2",
-        "sess_6"
+        "sess_6",
+        "sess_1",
+        "sess_8",
+        "sess_15",
+        "sess_5",
+        "sess_14"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -207,17 +215,18 @@
       ],
       "retrieved": [
         "sess_3",
-        "sess_7",
-        "sess_15",
-        "sess_9",
-        "sess_10",
         "sess_5",
         "sess_1",
+        "sess_2",
+        "sess_7",
         "sess_13",
+        "sess_14",
         "sess_6",
-        "sess_11"
+        "sess_18",
+        "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -227,18 +236,19 @@
         "sess_3"
       ],
       "retrieved": [
-        "sess_9",
         "sess_3",
         "sess_16",
-        "sess_17",
-        "sess_10",
-        "sess_13",
-        "sess_7",
         "sess_19",
+        "sess_2",
         "sess_12",
-        "sess_5"
+        "sess_6",
+        "sess_9",
+        "sess_8",
+        "sess_17",
+        "sess_10"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -249,17 +259,18 @@
       ],
       "retrieved": [
         "sess_1",
-        "sess_12",
-        "sess_16",
         "sess_15",
-        "sess_10",
         "sess_5",
+        "sess_12",
+        "sess_10",
         "sess_4",
         "sess_13",
         "sess_6",
-        "sess_3"
+        "sess_3",
+        "sess_16"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -281,7 +292,8 @@
         "sess_10",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -293,16 +305,17 @@
       "retrieved": [
         "sess_4",
         "sess_11",
-        "sess_3",
         "sess_15",
         "sess_6",
         "sess_1",
+        "sess_3",
         "sess_8",
         "sess_9",
         "sess_7",
         "sess_2"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -313,18 +326,19 @@
         "sess_1"
       ],
       "retrieved": [
-        "sess_6",
-        "sess_13",
-        "sess_17",
-        "sess_7",
-        "sess_19",
         "sess_4",
+        "sess_7",
         "sess_1",
         "sess_3",
         "sess_5",
-        "sess_9"
+        "sess_14",
+        "sess_16",
+        "sess_15",
+        "sess_2",
+        "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -335,18 +349,19 @@
         "sess_3"
       ],
       "retrieved": [
-        "sess_6",
         "sess_4",
         "sess_7",
         "sess_5",
         "sess_1",
-        "sess_12",
-        "sess_3",
+        "sess_6",
         "sess_19",
         "sess_17",
-        "sess_2"
+        "sess_3",
+        "sess_2",
+        "sess_13"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -359,17 +374,18 @@
       ],
       "retrieved": [
         "sess_2",
-        "sess_15",
-        "sess_8",
-        "sess_11",
         "sess_5",
+        "sess_15",
+        "sess_3",
+        "sess_11",
+        "sess_13",
         "sess_9",
-        "sess_18",
-        "sess_16",
-        "sess_6",
-        "sess_14"
+        "sess_8",
+        "sess_4",
+        "sess_1"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -381,16 +397,17 @@
       "retrieved": [
         "sess_5",
         "sess_14",
+        "sess_16",
         "sess_8",
         "sess_12",
-        "sess_16",
         "sess_15",
         "sess_10",
         "sess_17",
         "sess_6",
         "sess_2"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -400,18 +417,19 @@
         "sess_5"
       ],
       "retrieved": [
-        "sess_7",
         "sess_5",
         "sess_1",
+        "sess_7",
         "sess_17",
+        "sess_2",
         "sess_3",
         "sess_9",
-        "sess_2",
-        "sess_12",
-        "sess_10",
-        "sess_14"
+        "sess_14",
+        "sess_11",
+        "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -423,18 +441,19 @@
         "sess_8"
       ],
       "retrieved": [
-        "sess_9",
-        "sess_16",
         "sess_10",
+        "sess_9",
         "sess_18",
         "sess_4",
         "sess_6",
+        "sess_16",
         "sess_2",
         "sess_8",
         "sess_15",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -445,18 +464,19 @@
         "sess_4"
       ],
       "retrieved": [
-        "sess_8",
-        "sess_15",
         "sess_11",
+        "sess_15",
         "sess_9",
-        "sess_16",
-        "sess_6",
-        "sess_18",
-        "sess_1",
+        "sess_8",
         "sess_2",
-        "sess_3"
+        "sess_18",
+        "sess_3",
+        "sess_4",
+        "sess_1",
+        "sess_16"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -477,7 +497,8 @@
         "sess_1",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -498,7 +519,8 @@
         "sess_1",
         "sess_10"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -519,7 +541,8 @@
         "sess_3",
         "sess_2"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -541,7 +564,8 @@
         "sess_11",
         "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -563,7 +587,8 @@
         "sess_9",
         "sess_19"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -584,7 +609,8 @@
         "sess_11",
         "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -605,7 +631,8 @@
         "sess_11",
         "sess_18"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -616,17 +643,18 @@
       ],
       "retrieved": [
         "sess_7",
-        "sess_6",
         "sess_1",
         "sess_4",
         "sess_5",
-        "sess_3",
-        "sess_15",
-        "sess_9",
         "sess_2",
-        "sess_14"
+        "sess_14",
+        "sess_3",
+        "sess_8",
+        "sess_17",
+        "sess_13"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -647,7 +675,8 @@
         "sess_15",
         "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -668,7 +697,8 @@
         "sess_2",
         "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -689,7 +719,8 @@
         "sess_8",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -713,7 +744,8 @@
         "sess_15",
         "sess_2"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -734,7 +766,8 @@
         "sess_9",
         "sess_3"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -756,7 +789,8 @@
         "sess_9",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -777,7 +811,8 @@
         "sess_16",
         "sess_4"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -789,16 +824,17 @@
       "retrieved": [
         "sess_9",
         "sess_10",
-        "sess_17",
-        "sess_1",
-        "sess_15",
-        "sess_13",
         "sess_3",
+        "sess_14",
+        "sess_1",
+        "sess_8",
         "sess_6",
+        "sess_15",
         "sess_7",
         "sess_5"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -823,7 +859,8 @@
         "sess_11",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -846,7 +883,8 @@
         "sess_9",
         "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -868,7 +906,8 @@
         "sess_19",
         "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -889,7 +928,8 @@
         "sess_8",
         "sess_7"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -910,7 +950,8 @@
         "sess_13",
         "sess_4"
       ],
-      "recall": 0
+      "recall": 0,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -926,13 +967,14 @@
         "sess_5",
         "sess_14",
         "sess_4",
-        "sess_1",
         "sess_3",
         "sess_2",
         "sess_15",
-        "sess_10"
+        "sess_10",
+        "sess_17"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -953,7 +995,8 @@
         "sess_3",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -974,7 +1017,8 @@
         "sess_1",
         "sess_7"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -996,7 +1040,8 @@
         "sess_8",
         "sess_13"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1019,7 +1064,8 @@
         "sess_10",
         "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1040,7 +1086,8 @@
         "sess_4",
         "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1050,18 +1097,19 @@
         "sess_12"
       ],
       "retrieved": [
-        "sess_10",
-        "sess_3",
-        "sess_7",
         "sess_18",
+        "sess_14",
         "sess_12",
+        "sess_2",
+        "sess_3",
+        "sess_6",
+        "sess_13",
+        "sess_19",
         "sess_5",
-        "sess_1",
-        "sess_15",
-        "sess_9",
-        "sess_14"
+        "sess_4"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1084,7 +1132,8 @@
         "sess_16",
         "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1106,7 +1155,8 @@
         "sess_19",
         "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1127,7 +1177,8 @@
         "sess_3",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1148,7 +1199,8 @@
         "sess_6",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1170,7 +1222,8 @@
         "sess_14",
         "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1181,18 +1234,19 @@
         "sess_4"
       ],
       "retrieved": [
-        "sess_4",
-        "sess_12",
         "sess_14",
-        "sess_7",
+        "sess_4",
+        "sess_11",
+        "sess_12",
+        "sess_6",
         "sess_3",
-        "sess_19",
-        "sess_1",
-        "sess_5",
-        "sess_13",
-        "sess_17"
+        "sess_8",
+        "sess_16",
+        "sess_2",
+        "sess_7"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1213,7 +1267,8 @@
         "sess_2",
         "sess_1"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1234,7 +1289,8 @@
         "sess_4",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1256,7 +1312,8 @@
         "sess_6",
         "sess_10"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1278,7 +1335,8 @@
         "sess_9",
         "sess_8"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1300,7 +1358,8 @@
         "sess_13",
         "sess_16"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1311,17 +1370,18 @@
       ],
       "retrieved": [
         "sess_15",
-        "sess_6",
-        "sess_8",
         "sess_18",
         "sess_16",
         "sess_11",
         "sess_2",
         "sess_9",
         "sess_3",
-        "sess_13"
+        "sess_13",
+        "sess_1",
+        "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1342,7 +1402,8 @@
         "sess_5",
         "sess_2"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1363,7 +1424,8 @@
         "sess_10",
         "sess_16"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1385,7 +1447,8 @@
         "sess_11",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1407,7 +1470,8 @@
         "sess_10",
         "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1428,7 +1492,8 @@
         "sess_9",
         "sess_1"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1449,7 +1514,8 @@
         "sess_19",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1462,17 +1528,18 @@
       ],
       "retrieved": [
         "sess_14",
-        "sess_3",
         "sess_10",
-        "sess_19",
-        "sess_13",
+        "sess_2",
+        "sess_8",
+        "sess_3",
         "sess_17",
-        "sess_7",
-        "sess_6",
-        "sess_12",
-        "sess_5"
+        "sess_4",
+        "sess_15",
+        "sess_1",
+        "sess_6"
       ],
-      "recall": 1
+      "recall": 0,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1494,7 +1561,8 @@
         "sess_13",
         "sess_8"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1516,7 +1584,8 @@
         "sess_14",
         "sess_1"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1537,7 +1606,8 @@
         "sess_3",
         "sess_4"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1558,7 +1628,8 @@
         "sess_4",
         "sess_14"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1579,7 +1650,8 @@
         "sess_15",
         "sess_10"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1600,7 +1672,8 @@
         "sess_10",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1611,17 +1684,18 @@
       ],
       "retrieved": [
         "sess_18",
-        "sess_16",
         "sess_14",
-        "sess_9",
-        "sess_12",
         "sess_4",
+        "sess_12",
+        "sess_9",
         "sess_2",
-        "sess_15",
+        "sess_16",
         "sess_1",
-        "sess_6"
+        "sess_3",
+        "sess_8"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1642,7 +1716,8 @@
         "sess_10",
         "sess_2"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1664,7 +1739,8 @@
         "sess_9",
         "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1685,7 +1761,8 @@
         "sess_1",
         "sess_7"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1706,7 +1783,8 @@
         "sess_9",
         "sess_3"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1727,7 +1805,8 @@
         "sess_5",
         "sess_18"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1748,7 +1827,8 @@
         "sess_15",
         "sess_18"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1769,7 +1849,8 @@
         "sess_13",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1780,17 +1861,18 @@
       ],
       "retrieved": [
         "sess_2",
-        "sess_8",
-        "sess_11",
+        "sess_13",
+        "sess_4",
+        "sess_1",
         "sess_9",
-        "sess_14",
-        "sess_16",
-        "sess_6",
-        "sess_15",
-        "sess_12",
-        "sess_13"
+        "sess_7",
+        "sess_18",
+        "sess_11",
+        "sess_5",
+        "sess_3"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1811,7 +1893,8 @@
         "sess_6",
         "sess_5"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1832,7 +1915,8 @@
         "sess_11",
         "sess_5"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1853,7 +1937,8 @@
         "sess_7",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1874,7 +1959,8 @@
         "sess_1",
         "sess_3"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1895,7 +1981,8 @@
         "sess_1",
         "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1916,7 +2003,8 @@
         "sess_16",
         "sess_18"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1937,7 +2025,8 @@
         "sess_8",
         "sess_2"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1958,7 +2047,8 @@
         "sess_10",
         "sess_8"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -1979,7 +2069,8 @@
         "sess_17",
         "sess_2"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2000,7 +2091,8 @@
         "sess_9",
         "sess_2"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2021,7 +2113,8 @@
         "sess_4",
         "sess_14"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2042,7 +2135,8 @@
         "sess_17",
         "sess_16"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2063,7 +2157,8 @@
         "sess_6",
         "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2084,7 +2179,8 @@
         "sess_16",
         "sess_10"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2105,7 +2201,8 @@
         "sess_12",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2115,18 +2212,19 @@
         "sess_4"
       ],
       "retrieved": [
-        "sess_17",
-        "sess_19",
         "sess_14",
         "sess_4",
-        "sess_13",
-        "sess_6",
+        "sess_17",
         "sess_10",
+        "sess_2",
         "sess_3",
-        "sess_15",
-        "sess_9"
+        "sess_5",
+        "sess_8",
+        "sess_19",
+        "sess_16"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2147,7 +2245,8 @@
         "sess_2",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2168,7 +2267,8 @@
         "sess_12",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2189,7 +2289,8 @@
         "sess_11",
         "sess_19"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2210,7 +2311,8 @@
         "sess_15",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2231,7 +2333,8 @@
         "sess_4",
         "sess_19"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2252,7 +2355,8 @@
         "sess_1",
         "sess_19"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2273,7 +2377,8 @@
         "sess_18",
         "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2294,7 +2399,8 @@
         "sess_13",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2315,7 +2421,8 @@
         "sess_6",
         "sess_10"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2336,7 +2443,8 @@
         "sess_11",
         "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2357,7 +2465,8 @@
         "sess_6",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2378,7 +2487,8 @@
         "sess_11",
         "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2389,17 +2499,18 @@
       ],
       "retrieved": [
         "sess_8",
-        "sess_13",
         "sess_17",
+        "sess_13",
         "sess_9",
         "sess_19",
-        "sess_15",
+        "sess_2",
         "sess_10",
         "sess_5",
         "sess_7",
-        "sess_2"
+        "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2420,7 +2531,8 @@
         "sess_5",
         "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2441,7 +2553,8 @@
         "sess_3",
         "sess_16"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2462,7 +2575,8 @@
         "sess_4",
         "sess_17"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2483,7 +2597,8 @@
         "sess_1",
         "sess_18"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2504,7 +2619,8 @@
         "sess_11",
         "sess_17"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2525,7 +2641,8 @@
         "sess_9",
         "sess_16"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2546,7 +2663,8 @@
         "sess_6",
         "sess_13"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2567,7 +2685,8 @@
         "sess_6",
         "sess_10"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2588,7 +2707,8 @@
         "sess_4",
         "sess_1"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2609,7 +2729,8 @@
         "sess_8",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2630,7 +2751,8 @@
         "sess_9",
         "sess_3"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2651,7 +2773,8 @@
         "sess_5",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2672,7 +2795,8 @@
         "sess_10",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2693,7 +2817,8 @@
         "sess_1",
         "sess_16"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2714,7 +2839,8 @@
         "sess_11",
         "sess_16"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2735,7 +2861,8 @@
         "sess_5",
         "sess_18"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2756,7 +2883,8 @@
         "sess_18",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2777,7 +2905,8 @@
         "sess_9",
         "sess_8"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2798,7 +2927,8 @@
         "sess_2",
         "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2819,7 +2949,8 @@
         "sess_3",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2840,7 +2971,8 @@
         "sess_5",
         "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2861,7 +2993,8 @@
         "sess_11",
         "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2882,7 +3015,8 @@
         "sess_15",
         "sess_1"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2892,18 +3026,19 @@
         "sess_17"
       ],
       "retrieved": [
-        "sess_14",
         "sess_13",
+        "sess_14",
         "sess_17",
         "sess_5",
-        "sess_1",
-        "sess_19",
         "sess_9",
+        "sess_19",
         "sess_18",
         "sess_11",
+        "sess_1",
         "sess_8"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2924,7 +3059,8 @@
         "sess_4",
         "sess_1"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2945,7 +3081,8 @@
         "sess_4",
         "sess_13"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2966,7 +3103,8 @@
         "sess_5",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -2987,7 +3125,8 @@
         "sess_9",
         "sess_6"
       ],
-      "recall": 0
+      "recall": 0,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3008,7 +3147,8 @@
         "sess_7",
         "sess_4"
       ],
-      "recall": 0
+      "recall": 0,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3029,7 +3169,8 @@
         "sess_17",
         "sess_14"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3050,7 +3191,8 @@
         "sess_3",
         "sess_14"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3071,7 +3213,8 @@
         "sess_10",
         "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3092,7 +3235,8 @@
         "sess_13",
         "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3113,7 +3257,8 @@
         "sess_15",
         "sess_16"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3134,7 +3279,8 @@
         "sess_15",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3155,7 +3301,8 @@
         "sess_5",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3176,7 +3323,8 @@
         "sess_2",
         "sess_11"
       ],
-      "recall": 0
+      "recall": 0,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3197,7 +3345,8 @@
         "sess_10",
         "sess_17"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3218,7 +3367,8 @@
         "sess_5",
         "sess_14"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3239,7 +3389,8 @@
         "sess_11",
         "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3260,7 +3411,8 @@
         "sess_11",
         "sess_5"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3281,7 +3433,8 @@
         "sess_11",
         "sess_3"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3302,7 +3455,8 @@
         "sess_11",
         "sess_3"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3323,7 +3477,8 @@
         "sess_1",
         "sess_8"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3344,7 +3499,8 @@
         "sess_18",
         "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3365,7 +3521,8 @@
         "sess_9",
         "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3386,7 +3543,8 @@
         "sess_17",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3407,7 +3565,8 @@
         "sess_18",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3428,7 +3587,8 @@
         "sess_11",
         "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3439,17 +3599,18 @@
       ],
       "retrieved": [
         "sess_4",
-        "sess_2",
         "sess_7",
         "sess_5",
-        "sess_6",
         "sess_1",
+        "sess_6",
+        "sess_2",
         "sess_8",
         "sess_17",
         "sess_11",
         "sess_13"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3470,7 +3631,8 @@
         "sess_16",
         "sess_2"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3491,7 +3653,8 @@
         "sess_13",
         "sess_18"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3512,7 +3675,8 @@
         "sess_5",
         "sess_13"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3533,7 +3697,8 @@
         "sess_14",
         "sess_1"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3554,7 +3719,8 @@
         "sess_1",
         "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3575,7 +3741,8 @@
         "sess_8",
         "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3596,7 +3763,8 @@
         "sess_12",
         "sess_5"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3608,16 +3776,17 @@
       "retrieved": [
         "sess_8",
         "sess_13",
+        "sess_10",
         "sess_19",
         "sess_17",
-        "sess_10",
         "sess_2",
         "sess_15",
         "sess_5",
         "sess_7",
         "sess_3"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3638,7 +3807,8 @@
         "sess_17",
         "sess_13"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3659,7 +3829,8 @@
         "sess_11",
         "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3680,7 +3851,8 @@
         "sess_1",
         "sess_4"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3701,7 +3873,8 @@
         "sess_17",
         "sess_7"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3722,7 +3895,8 @@
         "sess_18",
         "sess_16"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3743,7 +3917,8 @@
         "sess_4",
         "sess_1"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3764,7 +3939,8 @@
         "sess_9",
         "sess_3"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3785,7 +3961,8 @@
         "sess_2",
         "sess_19"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3806,7 +3983,8 @@
         "sess_10",
         "sess_9"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3827,7 +4005,8 @@
         "sess_3",
         "sess_5"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3848,7 +4027,8 @@
         "sess_12",
         "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3869,7 +4049,8 @@
         "sess_18",
         "sess_5"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3890,7 +4071,8 @@
         "sess_4",
         "sess_8"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3911,7 +4093,8 @@
         "sess_17",
         "sess_11"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3932,7 +4115,8 @@
         "sess_6",
         "sess_1"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3953,7 +4137,8 @@
         "sess_12",
         "sess_1"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3974,7 +4159,8 @@
         "sess_1",
         "sess_5"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -3995,7 +4181,8 @@
         "sess_1",
         "sess_15"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -4016,7 +4203,8 @@
         "sess_4",
         "sess_3"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -4037,7 +4225,8 @@
         "sess_11",
         "sess_7"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -4058,7 +4247,8 @@
         "sess_2",
         "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -4069,17 +4259,18 @@
       ],
       "retrieved": [
         "sess_18",
-        "sess_4",
-        "sess_19",
-        "sess_17",
         "sess_3",
         "sess_1",
-        "sess_14",
         "sess_2",
         "sess_9",
-        "sess_12"
+        "sess_4",
+        "sess_14",
+        "sess_11",
+        "sess_6",
+        "sess_10"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -4100,7 +4291,8 @@
         "sess_9",
         "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -4121,7 +4313,8 @@
         "sess_5",
         "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -4142,7 +4335,8 @@
         "sess_16",
         "sess_12"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -4163,7 +4357,8 @@
         "sess_12",
         "sess_2"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
     },
     {
       "conversation": 0,
@@ -4184,7 +4379,2333 @@
         "sess_10",
         "sess_6"
       ],
-      "recall": 1
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When Jon has lost his job as a banker?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_1",
+        "sess_11",
+        "sess_6",
+        "sess_9",
+        "sess_5",
+        "sess_16",
+        "sess_14",
+        "sess_17",
+        "sess_8",
+        "sess_4"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When Gina has lost her job at Door Dash?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_1",
+        "sess_6",
+        "sess_14",
+        "sess_17",
+        "sess_10",
+        "sess_11",
+        "sess_9",
+        "sess_16",
+        "sess_18",
+        "sess_4"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "How do Jon and Gina both like to destress?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_2",
+        "sess_11",
+        "sess_6",
+        "sess_10",
+        "sess_4",
+        "sess_7",
+        "sess_13",
+        "sess_19",
+        "sess_9",
+        "sess_3"
+      ],
+      "recall": 0,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "single-hop",
+      "question": "What do Jon and Gina both have in common?",
+      "correct": [
+        "sess_1",
+        "sess_2"
+      ],
+      "retrieved": [
+        "sess_6",
+        "sess_11",
+        "sess_4",
+        "sess_7",
+        "sess_13",
+        "sess_10",
+        "sess_19",
+        "sess_9",
+        "sess_15",
+        "sess_14"
+      ],
+      "recall": 0,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "Why did Jon decide to start his dance studio?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_16",
+        "sess_10",
+        "sess_11",
+        "sess_13",
+        "sess_6",
+        "sess_5",
+        "sess_2",
+        "sess_17",
+        "sess_1",
+        "sess_19"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "single-hop",
+      "question": "What Jon thinks the ideal dance studio should look like?",
+      "correct": [
+        "sess_1",
+        "sess_2"
+      ],
+      "retrieved": [
+        "sess_2",
+        "sess_1",
+        "sess_3",
+        "sess_15",
+        "sess_9",
+        "sess_5",
+        "sess_18",
+        "sess_11",
+        "sess_8",
+        "sess_10"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When is Jon's group performing at a festival?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_1",
+        "sess_5",
+        "sess_19",
+        "sess_14",
+        "sess_10",
+        "sess_15",
+        "sess_8",
+        "sess_4",
+        "sess_13",
+        "sess_9"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Gina launch an ad campaign for her store?",
+      "correct": [
+        "sess_2"
+      ],
+      "retrieved": [
+        "sess_2",
+        "sess_15",
+        "sess_16",
+        "sess_8",
+        "sess_7",
+        "sess_6",
+        "sess_3",
+        "sess_5",
+        "sess_18",
+        "sess_4"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When was Jon in Paris?",
+      "correct": [
+        "sess_2"
+      ],
+      "retrieved": [
+        "sess_2",
+        "sess_19",
+        "sess_15",
+        "sess_10",
+        "sess_4",
+        "sess_5",
+        "sess_13",
+        "sess_9",
+        "sess_6",
+        "sess_3"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "single-hop",
+      "question": "Which city have both Jean and John visited?",
+      "correct": [
+        "sess_2",
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_2",
+        "sess_10",
+        "sess_15",
+        "sess_13",
+        "sess_7",
+        "sess_11",
+        "sess_3",
+        "sess_6",
+        "sess_9",
+        "sess_5"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Gina team up with a local artist for some cool designs?",
+      "correct": [
+        "sess_5"
+      ],
+      "retrieved": [
+        "sess_5",
+        "sess_1",
+        "sess_8",
+        "sess_16",
+        "sess_18",
+        "sess_3",
+        "sess_11",
+        "sess_2",
+        "sess_12",
+        "sess_10"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Gina get her tattoo?",
+      "correct": [
+        "sess_5"
+      ],
+      "retrieved": [
+        "sess_5",
+        "sess_19",
+        "sess_17",
+        "sess_16",
+        "sess_13",
+        "sess_3",
+        "sess_6",
+        "sess_12",
+        "sess_2",
+        "sess_9"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Jon start to go to the gym?",
+      "correct": [
+        "sess_6"
+      ],
+      "retrieved": [
+        "sess_6",
+        "sess_17",
+        "sess_4",
+        "sess_18",
+        "sess_19",
+        "sess_13",
+        "sess_10",
+        "sess_14",
+        "sess_2",
+        "sess_11"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Gina open her online clothing store?",
+      "correct": [
+        "sess_6"
+      ],
+      "retrieved": [
+        "sess_6",
+        "sess_14",
+        "sess_7",
+        "sess_10",
+        "sess_8",
+        "sess_18",
+        "sess_3",
+        "sess_2",
+        "sess_16",
+        "sess_5"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Jon start expanding his studio's social media presence?",
+      "correct": [
+        "sess_8"
+      ],
+      "retrieved": [
+        "sess_8",
+        "sess_18",
+        "sess_14",
+        "sess_10",
+        "sess_3",
+        "sess_17",
+        "sess_4",
+        "sess_6",
+        "sess_9",
+        "sess_11"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Jon host a dance competition?",
+      "correct": [
+        "sess_8"
+      ],
+      "retrieved": [
+        "sess_8",
+        "sess_4",
+        "sess_1",
+        "sess_19",
+        "sess_9",
+        "sess_15",
+        "sess_11",
+        "sess_13",
+        "sess_17",
+        "sess_5"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Jon go to a fair to get more exposure for his dance studio?",
+      "correct": [
+        "sess_10"
+      ],
+      "retrieved": [
+        "sess_10",
+        "sess_15",
+        "sess_9",
+        "sess_1",
+        "sess_11",
+        "sess_2",
+        "sess_3",
+        "sess_19",
+        "sess_5",
+        "sess_18"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "single-hop",
+      "question": "Why did Gina decide to start her own clothing store?",
+      "correct": [
+        "sess_6",
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_2",
+        "sess_10",
+        "sess_6",
+        "sess_16",
+        "sess_14",
+        "sess_7",
+        "sess_5",
+        "sess_3",
+        "sess_17",
+        "sess_13"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "single-hop",
+      "question": "Do Jon and Gina start businesses out of what they love?",
+      "correct": [
+        "sess_1",
+        "sess_6"
+      ],
+      "retrieved": [
+        "sess_10",
+        "sess_2",
+        "sess_17",
+        "sess_6",
+        "sess_11",
+        "sess_4",
+        "sess_7",
+        "sess_19",
+        "sess_13",
+        "sess_14"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Gina interview for a design internship?",
+      "correct": [
+        "sess_11"
+      ],
+      "retrieved": [
+        "sess_11",
+        "sess_12",
+        "sess_3",
+        "sess_16",
+        "sess_5",
+        "sess_17",
+        "sess_8",
+        "sess_2",
+        "sess_19",
+        "sess_9"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Gina get accepted for the design internship?",
+      "correct": [
+        "sess_12"
+      ],
+      "retrieved": [
+        "sess_12",
+        "sess_11",
+        "sess_3",
+        "sess_16",
+        "sess_5",
+        "sess_8",
+        "sess_17",
+        "sess_2",
+        "sess_19",
+        "sess_15"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Jon start reading \"The Lean Startup\"?",
+      "correct": [
+        "sess_12"
+      ],
+      "retrieved": [
+        "sess_12",
+        "sess_17",
+        "sess_6",
+        "sess_4",
+        "sess_18",
+        "sess_14",
+        "sess_2",
+        "sess_10",
+        "sess_19",
+        "sess_7"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Gina develop a video presentation to teach how to style her fashion pieces? ",
+      "correct": [
+        "sess_13"
+      ],
+      "retrieved": [
+        "sess_13",
+        "sess_5",
+        "sess_17",
+        "sess_11",
+        "sess_1",
+        "sess_16",
+        "sess_3",
+        "sess_14",
+        "sess_12",
+        "sess_7"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "single-hop",
+      "question": "How did Gina promote her clothes store?",
+      "correct": [
+        "sess_5",
+        "sess_16",
+        "sess_8",
+        "sess_13"
+      ],
+      "retrieved": [
+        "sess_2",
+        "sess_3",
+        "sess_14",
+        "sess_18",
+        "sess_6",
+        "sess_8",
+        "sess_16",
+        "sess_7",
+        "sess_10",
+        "sess_5"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "single-hop",
+      "question": "Which events has Jon participated in to promote his business venture?",
+      "correct": [
+        "sess_10",
+        "sess_16",
+        "sess_8"
+      ],
+      "retrieved": [
+        "sess_14",
+        "sess_16",
+        "sess_1",
+        "sess_4",
+        "sess_6",
+        "sess_8",
+        "sess_18",
+        "sess_2",
+        "sess_10",
+        "sess_3"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "single-hop",
+      "question": "What does Jon's dance studio offer?",
+      "correct": [
+        "sess_13",
+        "sess_8"
+      ],
+      "retrieved": [
+        "sess_11",
+        "sess_8",
+        "sess_13",
+        "sess_18",
+        "sess_7",
+        "sess_19",
+        "sess_6",
+        "sess_5",
+        "sess_9",
+        "sess_1"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Jon receive mentorship to promote his venture?",
+      "correct": [
+        "sess_14"
+      ],
+      "retrieved": [
+        "sess_14",
+        "sess_13",
+        "sess_18",
+        "sess_6",
+        "sess_2",
+        "sess_8",
+        "sess_4",
+        "sess_16",
+        "sess_10",
+        "sess_9"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "single-hop",
+      "question": "Did Jon and Gina both participate in dance competitions?",
+      "correct": [
+        "sess_1",
+        "sess_14",
+        "sess_9"
+      ],
+      "retrieved": [
+        "sess_4",
+        "sess_1",
+        "sess_8",
+        "sess_11",
+        "sess_6",
+        "sess_19",
+        "sess_13",
+        "sess_7",
+        "sess_10",
+        "sess_9"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When was Jon in Rome?",
+      "correct": [
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_15",
+        "sess_2",
+        "sess_18",
+        "sess_19",
+        "sess_10",
+        "sess_4",
+        "sess_6",
+        "sess_13",
+        "sess_9",
+        "sess_5"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "single-hop",
+      "question": "Which cities has Jon visited?",
+      "correct": [
+        "sess_2",
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_2",
+        "sess_10",
+        "sess_15",
+        "sess_6",
+        "sess_13",
+        "sess_7",
+        "sess_4",
+        "sess_3",
+        "sess_19",
+        "sess_14"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When Jon is planning to open his dance studio?",
+      "correct": [
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_19",
+        "sess_3",
+        "sess_18",
+        "sess_1",
+        "sess_15",
+        "sess_11",
+        "sess_17",
+        "sess_9",
+        "sess_13",
+        "sess_8"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "single-hop",
+      "question": "How long did it take for Jon to open his studio?",
+      "correct": [
+        "sess_1",
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_19",
+        "sess_10",
+        "sess_3",
+        "sess_18",
+        "sess_15",
+        "sess_17",
+        "sess_8",
+        "sess_2",
+        "sess_12",
+        "sess_9"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Gina design a limited collection of hoodies?",
+      "correct": [
+        "sess_16"
+      ],
+      "retrieved": [
+        "sess_16",
+        "sess_3",
+        "sess_5",
+        "sess_8",
+        "sess_12",
+        "sess_2",
+        "sess_7",
+        "sess_6",
+        "sess_11",
+        "sess_17"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Jon visit networking events for his store?",
+      "correct": [
+        "sess_16"
+      ],
+      "retrieved": [
+        "sess_16",
+        "sess_18",
+        "sess_10",
+        "sess_2",
+        "sess_1",
+        "sess_7",
+        "sess_6",
+        "sess_3",
+        "sess_4",
+        "sess_8"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Gina start being recognized by fashion editors?",
+      "correct": [
+        "sess_17"
+      ],
+      "retrieved": [
+        "sess_17",
+        "sess_2",
+        "sess_10",
+        "sess_12",
+        "sess_5",
+        "sess_7",
+        "sess_6",
+        "sess_8",
+        "sess_13",
+        "sess_16"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Jon start learning marketing and analytics tools?",
+      "correct": [
+        "sess_17"
+      ],
+      "retrieved": [
+        "sess_17",
+        "sess_14",
+        "sess_18",
+        "sess_6",
+        "sess_4",
+        "sess_12",
+        "sess_10",
+        "sess_9",
+        "sess_7",
+        "sess_13"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Jon and Gina decide to collaborate to create dance content?",
+      "correct": [
+        "sess_18"
+      ],
+      "retrieved": [
+        "sess_18",
+        "sess_11",
+        "sess_6",
+        "sess_2",
+        "sess_16",
+        "sess_4",
+        "sess_19",
+        "sess_13",
+        "sess_7",
+        "sess_10"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Gina mention Shia Labeouf?",
+      "correct": [
+        "sess_19"
+      ],
+      "retrieved": [
+        "sess_19",
+        "sess_13",
+        "sess_15",
+        "sess_7",
+        "sess_16",
+        "sess_2",
+        "sess_14",
+        "sess_5",
+        "sess_17",
+        "sess_12"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "multi-hop",
+      "question": "When did Gina go to a dance class with a group of friends?",
+      "correct": [
+        "sess_19"
+      ],
+      "retrieved": [
+        "sess_19",
+        "sess_1",
+        "sess_9",
+        "sess_11",
+        "sess_13",
+        "sess_8",
+        "sess_15",
+        "sess_17",
+        "sess_3",
+        "sess_5"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What is Gina's favorite style of dance?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_1",
+        "sess_3",
+        "sess_5",
+        "sess_13",
+        "sess_16",
+        "sess_9",
+        "sess_19",
+        "sess_17",
+        "sess_2",
+        "sess_11"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What is Jon's favorite style of dance?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_1",
+        "sess_3",
+        "sess_5",
+        "sess_13",
+        "sess_16",
+        "sess_9",
+        "sess_19",
+        "sess_11",
+        "sess_4",
+        "sess_17"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What was Gina's favorite dancing memory?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_1",
+        "sess_5",
+        "sess_9",
+        "sess_15",
+        "sess_19",
+        "sess_3",
+        "sess_11",
+        "sess_4",
+        "sess_2",
+        "sess_17"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What kind of dance piece did Gina's team perform to win first place?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_1",
+        "sess_5",
+        "sess_13",
+        "sess_8",
+        "sess_3",
+        "sess_9",
+        "sess_16",
+        "sess_2",
+        "sess_11",
+        "sess_17"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What do the dancers in the photo represent?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_1",
+        "sess_9",
+        "sess_7",
+        "sess_13",
+        "sess_19",
+        "sess_17",
+        "sess_5",
+        "sess_8",
+        "sess_3",
+        "sess_11"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What does Gina say about the dancers in the photo?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_1",
+        "sess_4",
+        "sess_9",
+        "sess_7",
+        "sess_13",
+        "sess_19",
+        "sess_17",
+        "sess_5",
+        "sess_8",
+        "sess_3"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What is Jon's attitude towards being part of the dance festival?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_5",
+        "sess_1",
+        "sess_12",
+        "sess_7",
+        "sess_17",
+        "sess_8",
+        "sess_10",
+        "sess_9",
+        "sess_2",
+        "sess_19"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What kind of flooring is Jon looking for in his dance studio?",
+      "correct": [
+        "sess_2"
+      ],
+      "retrieved": [
+        "sess_2",
+        "sess_15",
+        "sess_18",
+        "sess_8",
+        "sess_7",
+        "sess_1",
+        "sess_5",
+        "sess_4",
+        "sess_11",
+        "sess_12"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What did Gina find for her clothing store on 1 February, 2023?",
+      "correct": [
+        "sess_3"
+      ],
+      "retrieved": [
+        "sess_3",
+        "sess_5",
+        "sess_2",
+        "sess_4",
+        "sess_6",
+        "sess_10",
+        "sess_16",
+        "sess_18",
+        "sess_7",
+        "sess_11"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What did Gina design for her store?",
+      "correct": [
+        "sess_3"
+      ],
+      "retrieved": [
+        "sess_3",
+        "sess_5",
+        "sess_16",
+        "sess_11",
+        "sess_8",
+        "sess_12",
+        "sess_7",
+        "sess_2",
+        "sess_6",
+        "sess_4"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What did Gina want her customers to feel in her store?",
+      "correct": [
+        "sess_3"
+      ],
+      "retrieved": [
+        "sess_3",
+        "sess_8",
+        "sess_18",
+        "sess_7",
+        "sess_5",
+        "sess_6",
+        "sess_16",
+        "sess_2",
+        "sess_11",
+        "sess_4"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What did Jon say about Gina's progress with her store?",
+      "correct": [
+        "sess_3"
+      ],
+      "retrieved": [
+        "sess_4",
+        "sess_16",
+        "sess_8",
+        "sess_5",
+        "sess_11",
+        "sess_7",
+        "sess_6",
+        "sess_3",
+        "sess_2",
+        "sess_10"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What made Gina choose the furniture and decor for her store?",
+      "correct": [
+        "sess_3"
+      ],
+      "retrieved": [
+        "sess_3",
+        "sess_16",
+        "sess_5",
+        "sess_7",
+        "sess_8",
+        "sess_2",
+        "sess_6",
+        "sess_11",
+        "sess_18",
+        "sess_4"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What did Jon say about creating a special experience for customers?",
+      "correct": [
+        "sess_3"
+      ],
+      "retrieved": [
+        "sess_3",
+        "sess_4",
+        "sess_9",
+        "sess_18",
+        "sess_7",
+        "sess_14",
+        "sess_13",
+        "sess_8",
+        "sess_10",
+        "sess_5"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What did Gina say about creating an experience for her customers?",
+      "correct": [
+        "sess_3"
+      ],
+      "retrieved": [
+        "sess_3",
+        "sess_18",
+        "sess_4",
+        "sess_8",
+        "sess_7",
+        "sess_13",
+        "sess_14",
+        "sess_10",
+        "sess_5",
+        "sess_1"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "How is Gina's store doing?",
+      "correct": [
+        "sess_4"
+      ],
+      "retrieved": [
+        "sess_4",
+        "sess_5",
+        "sess_3",
+        "sess_1",
+        "sess_10",
+        "sess_14",
+        "sess_15",
+        "sess_19",
+        "sess_13",
+        "sess_7"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What does Gina's tattoo symbolize?",
+      "correct": [
+        "sess_5"
+      ],
+      "retrieved": [
+        "sess_5",
+        "sess_13",
+        "sess_3",
+        "sess_16",
+        "sess_19",
+        "sess_9",
+        "sess_7",
+        "sess_15",
+        "sess_6",
+        "sess_17"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What did Jon and Gina compare their entrepreneurial journeys to?",
+      "correct": [
+        "sess_6"
+      ],
+      "retrieved": [
+        "sess_6",
+        "sess_11",
+        "sess_4",
+        "sess_7",
+        "sess_19",
+        "sess_10",
+        "sess_13",
+        "sess_14",
+        "sess_9",
+        "sess_5"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What advice does Gina give to Jon about running a successful business?",
+      "correct": [
+        "sess_7"
+      ],
+      "retrieved": [
+        "sess_10",
+        "sess_7",
+        "sess_14",
+        "sess_18",
+        "sess_12",
+        "sess_5",
+        "sess_6",
+        "sess_8",
+        "sess_4",
+        "sess_9"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "Why did Jon shut down his bank account?",
+      "correct": [
+        "sess_8"
+      ],
+      "retrieved": [
+        "sess_8",
+        "sess_16",
+        "sess_10",
+        "sess_18",
+        "sess_1",
+        "sess_13",
+        "sess_5",
+        "sess_6",
+        "sess_17",
+        "sess_14"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "Why did Gina combine her clothing business with dance?",
+      "correct": [
+        "sess_8"
+      ],
+      "retrieved": [
+        "sess_8",
+        "sess_3",
+        "sess_10",
+        "sess_2",
+        "sess_17",
+        "sess_5",
+        "sess_13",
+        "sess_16",
+        "sess_18",
+        "sess_6"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What does Jon's dance make him?",
+      "correct": [
+        "sess_9"
+      ],
+      "retrieved": [
+        "sess_9",
+        "sess_11",
+        "sess_19",
+        "sess_5",
+        "sess_8",
+        "sess_4",
+        "sess_13",
+        "sess_17",
+        "sess_15",
+        "sess_2"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What did Gina receive from a dance contest?",
+      "correct": [
+        "sess_9"
+      ],
+      "retrieved": [
+        "sess_9",
+        "sess_18",
+        "sess_14",
+        "sess_17",
+        "sess_19",
+        "sess_3",
+        "sess_1",
+        "sess_13",
+        "sess_4",
+        "sess_5"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "How does Gina stay confident in her business?",
+      "correct": [
+        "sess_10"
+      ],
+      "retrieved": [
+        "sess_10",
+        "sess_16",
+        "sess_2",
+        "sess_5",
+        "sess_18",
+        "sess_3",
+        "sess_4",
+        "sess_7",
+        "sess_6",
+        "sess_14"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What kind of professional experience did Gina get accepted for on May 23, 2023?",
+      "correct": [
+        "sess_12"
+      ],
+      "retrieved": [
+        "sess_12",
+        "sess_11",
+        "sess_1",
+        "sess_3",
+        "sess_18",
+        "sess_2",
+        "sess_7",
+        "sess_10",
+        "sess_13",
+        "sess_4"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "Where is Gina's fashion internship?",
+      "correct": [
+        "sess_12"
+      ],
+      "retrieved": [
+        "sess_12",
+        "sess_11",
+        "sess_17",
+        "sess_5",
+        "sess_6",
+        "sess_7",
+        "sess_13",
+        "sess_8",
+        "sess_2",
+        "sess_3"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What book is Jon currently reading?",
+      "correct": [
+        "sess_12"
+      ],
+      "retrieved": [
+        "sess_12",
+        "sess_15",
+        "sess_19",
+        "sess_4",
+        "sess_9",
+        "sess_14",
+        "sess_1",
+        "sess_2",
+        "sess_13",
+        "sess_6"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What is Jon offering to the dancers at his dance studio?",
+      "correct": [
+        "sess_13"
+      ],
+      "retrieved": [
+        "sess_13",
+        "sess_8",
+        "sess_11",
+        "sess_18",
+        "sess_19",
+        "sess_17",
+        "sess_5",
+        "sess_1",
+        "sess_7",
+        "sess_9"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "How does Jon use the clipboard with a notepad attached to it?",
+      "correct": [
+        "sess_13"
+      ],
+      "retrieved": [
+        "sess_13",
+        "sess_9",
+        "sess_11",
+        "sess_16",
+        "sess_10",
+        "sess_8",
+        "sess_7",
+        "sess_3",
+        "sess_18",
+        "sess_6"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What does Jon tell Gina he won't do?",
+      "correct": [
+        "sess_14"
+      ],
+      "retrieved": [
+        "sess_4",
+        "sess_8",
+        "sess_19",
+        "sess_13",
+        "sess_1",
+        "sess_9",
+        "sess_7",
+        "sess_14",
+        "sess_16",
+        "sess_12"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What did Jon take a trip to Rome for?",
+      "correct": [
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_15",
+        "sess_2",
+        "sess_18",
+        "sess_10",
+        "sess_19",
+        "sess_13",
+        "sess_6",
+        "sess_7",
+        "sess_5",
+        "sess_9"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What is Jon working on opening?",
+      "correct": [
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_15",
+        "sess_11",
+        "sess_9",
+        "sess_19",
+        "sess_13",
+        "sess_6",
+        "sess_7",
+        "sess_4",
+        "sess_16",
+        "sess_18"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "How does Gina describe the studio that Jon has opened?",
+      "correct": [
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_18",
+        "sess_15",
+        "sess_11",
+        "sess_17",
+        "sess_6",
+        "sess_14",
+        "sess_12",
+        "sess_5",
+        "sess_9",
+        "sess_13"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "How does Jon feel about the opening night of his dance studio?",
+      "correct": [
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_15",
+        "sess_19",
+        "sess_13",
+        "sess_18",
+        "sess_8",
+        "sess_6",
+        "sess_17",
+        "sess_11",
+        "sess_9",
+        "sess_3"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "How does Gina describe the feeling that dance brings?",
+      "correct": [
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_15",
+        "sess_9",
+        "sess_1",
+        "sess_5",
+        "sess_4",
+        "sess_17",
+        "sess_8",
+        "sess_19",
+        "sess_10",
+        "sess_16"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What does Jon plan to do at the grand opening of his dance studio?",
+      "correct": [
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_15",
+        "sess_19",
+        "sess_18",
+        "sess_3",
+        "sess_1",
+        "sess_11",
+        "sess_9",
+        "sess_8",
+        "sess_13",
+        "sess_4"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What does Gina say to Jon about the grand opening?",
+      "correct": [
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_15",
+        "sess_4",
+        "sess_13",
+        "sess_19",
+        "sess_9",
+        "sess_6",
+        "sess_11",
+        "sess_16",
+        "sess_7",
+        "sess_5"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What is the general sentiment about the upcoming grand opening?",
+      "correct": [
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_15",
+        "sess_4",
+        "sess_1",
+        "sess_8",
+        "sess_10",
+        "sess_9",
+        "sess_16",
+        "sess_2",
+        "sess_17",
+        "sess_5"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What did Gina make a limited edition line of?",
+      "correct": [
+        "sess_16"
+      ],
+      "retrieved": [
+        "sess_16",
+        "sess_5",
+        "sess_18",
+        "sess_2",
+        "sess_7",
+        "sess_8",
+        "sess_6",
+        "sess_4",
+        "sess_3",
+        "sess_10"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "According to Gina, what makes Jon a perfect mentor and guide?",
+      "correct": [
+        "sess_17"
+      ],
+      "retrieved": [
+        "sess_17",
+        "sess_13",
+        "sess_14",
+        "sess_4",
+        "sess_2",
+        "sess_10",
+        "sess_3",
+        "sess_6",
+        "sess_9",
+        "sess_11"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What temporary job did Jon take to cover expenses?",
+      "correct": [
+        "sess_18"
+      ],
+      "retrieved": [
+        "sess_18",
+        "sess_1",
+        "sess_16",
+        "sess_10",
+        "sess_4",
+        "sess_9",
+        "sess_8",
+        "sess_15",
+        "sess_2",
+        "sess_11"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What plans does Jon have after receiving advice at the networking event?",
+      "correct": [
+        "sess_18"
+      ],
+      "retrieved": [
+        "sess_18",
+        "sess_16",
+        "sess_14",
+        "sess_10",
+        "sess_7",
+        "sess_12",
+        "sess_19",
+        "sess_4",
+        "sess_1",
+        "sess_8"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "open-domain",
+      "question": "What offer does Gina make to Jon regarding social media?",
+      "correct": [
+        "sess_18"
+      ],
+      "retrieved": [
+        "sess_18",
+        "sess_8",
+        "sess_14",
+        "sess_13",
+        "sess_7",
+        "sess_6",
+        "sess_11",
+        "sess_2",
+        "sess_16",
+        "sess_19"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What is Jon's favorite style of painting?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_1",
+        "sess_13",
+        "sess_16",
+        "sess_3",
+        "sess_5",
+        "sess_9",
+        "sess_19",
+        "sess_10",
+        "sess_11",
+        "sess_4"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What was Jon's favorite dancing memory?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_1",
+        "sess_5",
+        "sess_9",
+        "sess_15",
+        "sess_19",
+        "sess_11",
+        "sess_4",
+        "sess_3",
+        "sess_2",
+        "sess_14"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What kind of dance piece did Jon's team perform to win first place?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_1",
+        "sess_5",
+        "sess_3",
+        "sess_8",
+        "sess_9",
+        "sess_13",
+        "sess_11",
+        "sess_14",
+        "sess_4",
+        "sess_7"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What is Gina's attitude towards participating in the dance festival?",
+      "correct": [
+        "sess_1"
+      ],
+      "retrieved": [
+        "sess_5",
+        "sess_1",
+        "sess_12",
+        "sess_19",
+        "sess_17",
+        "sess_3",
+        "sess_9",
+        "sess_2",
+        "sess_13",
+        "sess_11"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What kind of flooring is Gina looking for in her dance studio?",
+      "correct": [
+        "sess_2"
+      ],
+      "retrieved": [
+        "sess_2",
+        "sess_18",
+        "sess_8",
+        "sess_7",
+        "sess_1",
+        "sess_4",
+        "sess_5",
+        "sess_12",
+        "sess_11",
+        "sess_17"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What did Jon find for his clothing store on 1 February, 2023?",
+      "correct": [
+        "sess_3"
+      ],
+      "retrieved": [
+        "sess_3",
+        "sess_5",
+        "sess_4",
+        "sess_2",
+        "sess_6",
+        "sess_14",
+        "sess_16",
+        "sess_7",
+        "sess_10",
+        "sess_18"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What did Jon design for his store?",
+      "correct": [
+        "sess_3"
+      ],
+      "retrieved": [
+        "sess_11",
+        "sess_3",
+        "sess_5",
+        "sess_16",
+        "sess_8",
+        "sess_12",
+        "sess_7",
+        "sess_2",
+        "sess_6",
+        "sess_10"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What did Jon want his customers to feel in her store?",
+      "correct": [
+        "sess_3"
+      ],
+      "retrieved": [
+        "sess_3",
+        "sess_13",
+        "sess_7",
+        "sess_8",
+        "sess_18",
+        "sess_5",
+        "sess_6",
+        "sess_16",
+        "sess_2",
+        "sess_11"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What made Jon choose the furniture and decor for his store?",
+      "correct": [
+        "sess_3"
+      ],
+      "retrieved": [
+        "sess_3",
+        "sess_16",
+        "sess_7",
+        "sess_5",
+        "sess_8",
+        "sess_2",
+        "sess_10",
+        "sess_6",
+        "sess_4",
+        "sess_15"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "How is Jon's store doing?",
+      "correct": [
+        "sess_4"
+      ],
+      "retrieved": [
+        "sess_4",
+        "sess_5",
+        "sess_3",
+        "sess_10",
+        "sess_14",
+        "sess_1",
+        "sess_15",
+        "sess_13",
+        "sess_19",
+        "sess_7"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What does Jon's tattoo symbolize?",
+      "correct": [
+        "sess_5"
+      ],
+      "retrieved": [
+        "sess_5",
+        "sess_13",
+        "sess_9",
+        "sess_7",
+        "sess_19",
+        "sess_16",
+        "sess_3",
+        "sess_6",
+        "sess_11",
+        "sess_15"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "Why did Gina shut down her bank account?",
+      "correct": [
+        "sess_8"
+      ],
+      "retrieved": [
+        "sess_8",
+        "sess_18",
+        "sess_10",
+        "sess_5",
+        "sess_17",
+        "sess_13",
+        "sess_1",
+        "sess_16",
+        "sess_6",
+        "sess_2"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "Why did Jon combine his clothing business with dance?",
+      "correct": [
+        "sess_8"
+      ],
+      "retrieved": [
+        "sess_8",
+        "sess_10",
+        "sess_13",
+        "sess_17",
+        "sess_5",
+        "sess_6",
+        "sess_3",
+        "sess_2",
+        "sess_7",
+        "sess_18"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What did Gina receive from a dance contest?",
+      "correct": [
+        "sess_9"
+      ],
+      "retrieved": [
+        "sess_9",
+        "sess_18",
+        "sess_14",
+        "sess_17",
+        "sess_19",
+        "sess_3",
+        "sess_1",
+        "sess_13",
+        "sess_4",
+        "sess_5"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What kind of professional experience did Jon get accepted for on May 23, 2023?",
+      "correct": [
+        "sess_12"
+      ],
+      "retrieved": [
+        "sess_12",
+        "sess_11",
+        "sess_1",
+        "sess_18",
+        "sess_3",
+        "sess_2",
+        "sess_7",
+        "sess_10",
+        "sess_4",
+        "sess_13"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "Where is Gina's HR internship?",
+      "correct": [
+        "sess_12"
+      ],
+      "retrieved": [
+        "sess_12",
+        "sess_11",
+        "sess_15",
+        "sess_7",
+        "sess_2",
+        "sess_6",
+        "sess_9",
+        "sess_19",
+        "sess_1",
+        "sess_17"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "Where is Jon's fashion internship?",
+      "correct": [
+        "sess_12"
+      ],
+      "retrieved": [
+        "sess_12",
+        "sess_11",
+        "sess_6",
+        "sess_5",
+        "sess_17",
+        "sess_7",
+        "sess_8",
+        "sess_13",
+        "sess_2",
+        "sess_3"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What book is Gina currently reading?",
+      "correct": [
+        "sess_12"
+      ],
+      "retrieved": [
+        "sess_12",
+        "sess_15",
+        "sess_19",
+        "sess_9",
+        "sess_2",
+        "sess_14",
+        "sess_4",
+        "sess_1",
+        "sess_6",
+        "sess_3"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "How does Gina use the clipboard with a notepad attached to it?",
+      "correct": [
+        "sess_13"
+      ],
+      "retrieved": [
+        "sess_1",
+        "sess_16",
+        "sess_13",
+        "sess_9",
+        "sess_3",
+        "sess_2",
+        "sess_8",
+        "sess_17",
+        "sess_11",
+        "sess_18"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What did Jon take a trip to Barcelona for?",
+      "correct": [
+        "sess_15"
+      ],
+      "retrieved": [
+        "sess_18",
+        "sess_15",
+        "sess_2",
+        "sess_10",
+        "sess_13",
+        "sess_19",
+        "sess_9",
+        "sess_3",
+        "sess_16",
+        "sess_8"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What did Jon make a limited edition line of?",
+      "correct": [
+        "sess_16"
+      ],
+      "retrieved": [
+        "sess_16",
+        "sess_5",
+        "sess_18",
+        "sess_2",
+        "sess_7",
+        "sess_10",
+        "sess_8",
+        "sess_6",
+        "sess_4",
+        "sess_13"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What temporary job did Gina take to cover expenses?",
+      "correct": [
+        "sess_18"
+      ],
+      "retrieved": [
+        "sess_18",
+        "sess_17",
+        "sess_19",
+        "sess_16",
+        "sess_11",
+        "sess_1",
+        "sess_2",
+        "sess_15",
+        "sess_8",
+        "sess_12"
+      ],
+      "recall": 1,
+      "diagnostics": null
+    },
+    {
+      "conversation": 1,
+      "category": "adversarial",
+      "question": "What plans does Gina have after receiving advice at the networking event?",
+      "correct": [
+        "sess_18"
+      ],
+      "retrieved": [
+        "sess_18",
+        "sess_16",
+        "sess_14",
+        "sess_10",
+        "sess_7",
+        "sess_12",
+        "sess_19",
+        "sess_17",
+        "sess_8",
+        "sess_1"
+      ],
+      "recall": 1,
+      "diagnostics": null
     }
   ]
 }

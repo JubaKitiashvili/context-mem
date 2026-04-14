@@ -1,0 +1,1162 @@
+{
+  "total_questions": 1250,
+  "total_failures": 53,
+  "retrieval_misses": 17,
+  "rank_misses": 36,
+  "failures": [
+    {
+      "question": "Can you remind me of the documentation strategy you recommended to handle a micromanager effectively?",
+      "category": "assistant_facts_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_5",
+          "msg_1",
+          "msg_12",
+          "msg_10",
+          "msg_0"
+        ]
+      }
+    },
+    {
+      "question": "In reviewing case #789, you mentioned a specific error made by the previous agent. Could you remind me what that mistake was?",
+      "category": "assistant_facts_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 23
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_21",
+          "msg_33",
+          "msg_19",
+          "msg_20",
+          "msg_15"
+        ]
+      }
+    },
+    {
+      "question": "I'm trying to remember the name of that simple browser extension you told me about for managing customer timezones. What was it called again?",
+      "category": "assistant_facts_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_3",
+          "msg_1",
+          "msg_5",
+          "msg_20",
+          "msg_12"
+        ]
+      }
+    },
+    {
+      "question": "You previously explained the difference between loan consolidation and refinancing. What did you say was the primary advantage of refinancing for someone with a good credit score?",
+      "category": "assistant_facts_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_8",
+          "msg_7",
+          "msg_1",
+          "msg_6",
+          "msg_5"
+        ]
+      }
+    },
+    {
+      "question": "You previously recommended a mindfulness app that has guided sessions specifically for financial anxiety. What was the name of that app?",
+      "category": "assistant_facts_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_11",
+          "msg_10",
+          "msg_9",
+          "msg_6",
+          "msg_7"
+        ]
+      }
+    },
+    {
+      "question": "A while back, you gave me some advice for my dating profile. You specifically recommended adding a certain kind of 'conversation starter' photo. Can you remind me what type of photo you said that was?",
+      "category": "assistant_facts_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_4",
+          "msg_0",
+          "msg_5",
+          "msg_12",
+          "msg_13"
+        ]
+      }
+    },
+    {
+      "question": "You previously explained the 'debt avalanche' method for my student loans. According to that method, which specific loan did you advise me to prioritize paying off first?",
+      "category": "assistant_facts_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_3",
+          "msg_2",
+          "msg_1",
+          "msg_5",
+          "msg_4"
+        ]
+      }
+    },
+    {
+      "question": "A while ago, I was complaining about forgetting all my passwords. You suggested a specific password manager that was free and open-source. What was the name of that tool again?",
+      "category": "assistant_facts_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_7",
+          "msg_3",
+          "msg_0",
+          "msg_16",
+          "msg_10"
+        ]
+      }
+    },
+    {
+      "question": "Can you tell me the name of the specific street food vendor in Hanoi where you had that memorable pho?",
+      "category": "abstention_evidence",
+      "recall": 0.5,
+      "found": 1,
+      "evidence_count": 2,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 1,
+            "pool_rank": 1
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_11",
+          "msg_12",
+          "msg_17",
+          "msg_21",
+          "msg_14"
+        ]
+      }
+    },
+    {
+      "question": "What are the last four digits of Jordan Chen's Social Security Number?",
+      "category": "abstention_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 25
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_8",
+          "msg_29",
+          "msg_2",
+          "msg_4",
+          "msg_5"
+        ]
+      }
+    },
+    {
+      "question": "When is the new CRM reporting module expected to launch?",
+      "category": "abstention_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_7",
+          "msg_15",
+          "msg_17",
+          "msg_34",
+          "msg_8"
+        ]
+      }
+    },
+    {
+      "question": "Which specific executive dashboard is Alex currently investigating for data quality issues?",
+      "category": "abstention_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_30",
+          "msg_5",
+          "msg_11",
+          "msg_3",
+          "msg_0"
+        ]
+      }
+    },
+    {
+      "question": "My brain feels completely scattered after all those calls today. What's a simple, immediate action I can take to help me disconnect and feel like the workday is actually over?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 25
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_24",
+          "msg_17",
+          "msg_35",
+          "msg_10",
+          "msg_0"
+        ]
+      }
+    },
+    {
+      "question": "How would you write an impactful LinkedIn 'About' section for a results-oriented sales professional?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 22
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_17",
+          "msg_19",
+          "msg_9",
+          "msg_2",
+          "msg_33"
+        ]
+      }
+    },
+    {
+      "question": "I'm looking for a new podcast to listen to for my commute. Can you recommend something engaging?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 22
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_38",
+          "msg_68",
+          "msg_37",
+          "msg_79",
+          "msg_13"
+        ]
+      }
+    },
+    {
+      "question": "I need some music to help me focus while I work on a detailed project. Can you recommend a playlist?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 23
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_47",
+          "msg_9",
+          "msg_29",
+          "msg_31",
+          "msg_26"
+        ]
+      }
+    },
+    {
+      "question": "I'm looking for ways to improve our bug submission process. What are some good tools or methods to help customers provide more complete technical reports?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 22
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_7",
+          "msg_8",
+          "msg_4",
+          "msg_29",
+          "msg_33"
+        ]
+      }
+    },
+    {
+      "question": "What's a good resume project for a support engineer aiming to transition into a DevOps role?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 26
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_18",
+          "msg_11",
+          "msg_13",
+          "msg_10",
+          "msg_9"
+        ]
+      }
+    },
+    {
+      "question": "I'm thinking about my next career move in the tech industry. What are some good roles for someone with a technical background to consider?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_21",
+          "msg_30",
+          "msg_22",
+          "msg_33",
+          "msg_6"
+        ]
+      }
+    },
+    {
+      "question": "I'm dealing with a customer's intermittent network connectivity problem. What are some advanced diagnostic steps I could take to identify the root cause?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 24
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_9",
+          "msg_4",
+          "msg_28",
+          "msg_10",
+          "msg_45"
+        ]
+      }
+    },
+    {
+      "question": "What are some effective tools for creating an internal knowledge base from technical support case notes?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 21
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_20",
+          "msg_4",
+          "msg_62",
+          "msg_27",
+          "msg_21"
+        ]
+      }
+    },
+    {
+      "question": "My team is starting a new shared script repository for some internal tools. What's a good way to manage the codebase?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 23
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_39",
+          "msg_5",
+          "msg_31",
+          "msg_23",
+          "msg_9"
+        ]
+      }
+    },
+    {
+      "question": "I've got some free time and I'm looking for a new project. Got any fun DIY ideas?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 21
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_26",
+          "msg_42",
+          "msg_30",
+          "msg_46",
+          "msg_33"
+        ]
+      }
+    },
+    {
+      "question": "A candidate for my team just asked about our culture, specifically regarding crunch time and deadlines. What are some key points I should emphasize when I answer them?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 21
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_12",
+          "msg_38",
+          "msg_2",
+          "msg_24",
+          "msg_3"
+        ]
+      }
+    },
+    {
+      "question": "I need to buy more dog food. Can you find some online deals?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 30
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_47",
+          "msg_68",
+          "msg_37",
+          "msg_40",
+          "msg_53"
+        ]
+      }
+    },
+    {
+      "question": "As part of our team onboarding process, what are the best practices for managing credentials for our shared data sources and internal tools?",
+      "category": "preference_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 24
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_0",
+          "msg_34",
+          "msg_9",
+          "msg_4",
+          "msg_13"
+        ]
+      }
+    },
+    {
+      "question": "What's the best way to get a quick update from this prospect?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 26
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_3",
+          "msg_5",
+          "msg_4",
+          "msg_32",
+          "msg_23"
+        ]
+      }
+    },
+    {
+      "question": "What kind of class should I consider joining at the community center on Saturdays?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 2,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 25
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_5",
+          "msg_23",
+          "msg_17",
+          "msg_73",
+          "msg_45"
+        ]
+      }
+    },
+    {
+      "question": "What are some engaging topics to discuss at a dinner with new acquaintances?",
+      "category": "implicit_connection_evidence",
+      "recall": 0.6666666666666666,
+      "found": 2,
+      "evidence_count": 3,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 16
+          },
+          {
+            "evidence_idx": 1,
+            "pool_rank": 27
+          },
+          {
+            "evidence_idx": 2,
+            "pool_rank": 15
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_22",
+          "msg_15",
+          "msg_11",
+          "msg_0",
+          "msg_16"
+        ]
+      }
+    },
+    {
+      "question": "I've got a free weekend coming up and was thinking of trying to pick up a new hobby. Any suggestions for something interesting to get into?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 37
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_48",
+          "msg_21",
+          "msg_19",
+          "msg_77",
+          "msg_25"
+        ]
+      }
+    },
+    {
+      "question": "What are some fun things to do in the Bay Area this weekend?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_4",
+          "msg_16",
+          "msg_21",
+          "msg_12",
+          "msg_10"
+        ]
+      }
+    },
+    {
+      "question": "Can you suggest some places where I can truly unwind and disconnect?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 22
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_11",
+          "msg_39",
+          "msg_33",
+          "msg_37",
+          "msg_35"
+        ]
+      }
+    },
+    {
+      "question": "I've got some free time coming up and was thinking about taking some online courses to learn a new skill. Any suggestions?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 25
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_25",
+          "msg_21",
+          "msg_23",
+          "msg_22",
+          "msg_7"
+        ]
+      }
+    },
+    {
+      "question": "Can you suggest a way to keep track of my tasks effectively?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 22
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_4",
+          "msg_23",
+          "msg_37",
+          "msg_17",
+          "msg_38"
+        ]
+      }
+    },
+    {
+      "question": "I'm kicking off a new data enrichment project and need to validate the physical addresses for a batch of 10,000 new contact records. What would be the most efficient way to approach this?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 33
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_2",
+          "msg_25",
+          "msg_31",
+          "msg_36",
+          "msg_35"
+        ]
+      }
+    },
+    {
+      "question": "What approach should I take to efficiently handle duplicate records in our CRM system?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_6",
+          "msg_34",
+          "msg_29",
+          "msg_39",
+          "msg_30"
+        ]
+      }
+    },
+    {
+      "question": "What's a relaxing activity I can do on a weekday near Oakland?",
+      "category": "implicit_connection_evidence",
+      "recall": 0.6666666666666666,
+      "found": 2,
+      "evidence_count": 3,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 23
+          },
+          {
+            "evidence_idx": 1,
+            "pool_rank": 2
+          },
+          {
+            "evidence_idx": 2,
+            "pool_rank": 8
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_40",
+          "msg_54",
+          "msg_45",
+          "msg_58",
+          "msg_41"
+        ]
+      }
+    },
+    {
+      "question": "What are some engaging hobbies I can do while sitting on the couch?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 33
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_33",
+          "msg_36",
+          "msg_37",
+          "msg_5",
+          "msg_26"
+        ]
+      }
+    },
+    {
+      "question": "I'm feeling a bit restless this weekend. Got any suggestions for interesting things to do around Oakland?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 26
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_0",
+          "msg_35",
+          "msg_2",
+          "msg_34",
+          "msg_28"
+        ]
+      }
+    },
+    {
+      "question": "Can you suggest a recipe for homemade tacos?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_46",
+          "msg_15",
+          "msg_47",
+          "msg_44",
+          "msg_31"
+        ]
+      }
+    },
+    {
+      "question": "I'm looking for some fun activities to do at home this weekend. Any suggestions?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 21
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_23",
+          "msg_31",
+          "msg_32",
+          "msg_11",
+          "msg_41"
+        ]
+      }
+    },
+    {
+      "question": "Where can I watch the game this weekend?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 21
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_73",
+          "msg_40",
+          "msg_30",
+          "msg_35",
+          "msg_41"
+        ]
+      }
+    },
+    {
+      "question": "I need to set up a new recurring project sync with the West Coast onboarding team. They're in the PST zone, three hours behind me. Can you find a good weekly slot for us?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 24
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_19",
+          "msg_16",
+          "msg_31",
+          "msg_29",
+          "msg_18"
+        ]
+      }
+    },
+    {
+      "question": "I'm thinking of upgrading my home entertainment system. Do you have any recommendations?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 23
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_20",
+          "msg_32",
+          "msg_21",
+          "msg_36",
+          "msg_3"
+        ]
+      }
+    },
+    {
+      "question": "Which activity do you think would be more enjoyable for our trip?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_81",
+          "msg_7",
+          "msg_6",
+          "msg_70",
+          "msg_36"
+        ]
+      }
+    },
+    {
+      "question": "How should I respond to my aunt's invitation?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 28
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_12",
+          "msg_39",
+          "msg_40",
+          "msg_38",
+          "msg_45"
+        ]
+      }
+    },
+    {
+      "question": "What would be a good time to host a game night?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 28
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_36",
+          "msg_48",
+          "msg_42",
+          "msg_15",
+          "msg_27"
+        ]
+      }
+    },
+    {
+      "question": "What would be a valuable skill for me to focus on developing next quarter?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 27
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_34",
+          "msg_38",
+          "msg_33",
+          "msg_18",
+          "msg_40"
+        ]
+      }
+    },
+    {
+      "question": "Can you help me draft a proposal to improve my work efficiency?",
+      "category": "implicit_connection_evidence",
+      "recall": 0.5,
+      "found": 1,
+      "evidence_count": 2,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 27
+          },
+          {
+            "evidence_idx": 1,
+            "pool_rank": 4
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_57",
+          "msg_53",
+          "msg_69",
+          "msg_48",
+          "msg_17"
+        ]
+      }
+    },
+    {
+      "question": "Okay, big task for this week. I need to prepare the QBR summary for the CIO at DataWeave. Can you help me outline a 15-minute presentation covering our quarterly engagement and results?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "rank_miss",
+        "evidence_in_pool": [
+          {
+            "evidence_idx": 0,
+            "pool_rank": 23
+          }
+        ],
+        "top_5_retrieved": [
+          "msg_38",
+          "msg_65",
+          "msg_10",
+          "msg_53",
+          "msg_31"
+        ]
+      }
+    },
+    {
+      "question": "What are some effective data visualization tools I can use for my project?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_15",
+          "msg_29",
+          "msg_6",
+          "msg_17",
+          "msg_13"
+        ]
+      }
+    },
+    {
+      "question": "When should I schedule some uninterrupted time for strategic planning today?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_6",
+          "msg_41",
+          "msg_13",
+          "msg_24",
+          "msg_30"
+        ]
+      }
+    },
+    {
+      "question": "I'm feeling a bit restless tonight. Any suggestions on what I could do?",
+      "category": "implicit_connection_evidence",
+      "recall": 0,
+      "found": 0,
+      "evidence_count": 1,
+      "diagnostics": {
+        "failure_type": "retrieval_miss",
+        "evidence_in_pool": [],
+        "top_5_retrieved": [
+          "msg_14",
+          "msg_18",
+          "msg_30",
+          "msg_2",
+          "msg_8"
+        ]
+      }
+    }
+  ]
+}
