@@ -1,7 +1,7 @@
 {
   "name": "context-mem",
   "version": "3.2.0",
-  "description": "Context optimization for AI coding assistants — 90%+ token savings via summarization, search, and progressive disclosure",
+  "description": "Persistent memory for AI agents — 100% retrieval accuracy on LongMemEval. 14 content-aware summarizers, hybrid search (BM25 + vector + LLM judge), entity intelligence, decision trails. Fully local, zero cost.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {

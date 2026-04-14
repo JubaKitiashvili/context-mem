@@ -15,3 +15,8 @@ Transcript
 honcho-analysis.md
 docs/superpowers/
 .playwright-mcp/
+
+# Benchmark debug/temp files
+benchmarks/debug-*
+benchmarks/micro-test-*
+benchmarks/results/*-failures.json

@@ -1,4 +1,26 @@
-# context-mem ERNE-Parity Benchmarks
+# context-mem Benchmarks
+
+## Retrieval Benchmarks (v3.2, April 2026)
+
+### With Optional LLM Enhancement (Claude Haiku, ~$1 per 500 queries)
+
+| Benchmark | Context Mem | MemPalace | Notes |
+|---|---|---|---|
+| **LongMemEval R@5** | **100.0% (500/500)** | 100.0% | NDCG 0.992 |
+
+### Pure Local (zero API calls)
+
+| Benchmark | Context Mem | MemPalace | Notes |
+|---|---|---|---|
+| **LongMemEval R@5** | **97.8%** | 96.6% | 500 questions, session retrieval |
+| **LongMemEval R@10** | **98.8%** | 98.2% | |
+| **LoCoMo** (top-10) | **98.1%** | 60.3% | 1,977 multi-hop QA pairs |
+| **ConvoMem** | **97.7%** | 92.9% | 250 items, 5 categories |
+| **MemBench** | **98.0%** | 80.3% | 500 person-attribute queries |
+
+---
+
+## Compression Benchmarks (v3.0, March 2026)
 
 > Using ERNE's exact fixture files for apples-to-apples comparison.
 > Generated on 2026-03-20
