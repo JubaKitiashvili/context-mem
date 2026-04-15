@@ -1,0 +1,20 @@
+{
+  "name": "context-mem",
+  "display_name": "Context Mem",
+  "description": "Persistent memory for AI agents — 98%+ retrieval recall on 4 academic benchmarks, 99% token savings with 14 content-aware summarizers, 44 MCP tools. Fully local, zero cost.",
+  "repository": "https://github.com/JubaKitiashvili/context-mem",
+  "homepage": "https://www.npmjs.com/package/context-mem",
+  "author": {
+    "name": "Juba Kitiashvili",
+    "url": "https://github.com/JubaKitiashvili"
+  },
+  "license": "MIT",
+  "categories": ["knowledge-memory", "developer-tools"],
+  "tags": ["memory", "retrieval", "context", "compression", "search", "sqlite", "local-first"],
+  "installation": {
+    "npm": "npm i context-mem && npx context-mem init"
+  },
+  "transport": ["stdio"],
+  "tools_count": 44,
+  "platforms": ["macos", "windows", "linux"]
+}
