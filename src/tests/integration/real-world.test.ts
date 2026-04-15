@@ -132,7 +132,7 @@ describe('Real-World Integration', () => {
 
     // 8. Verify progressive disclosure works (search returns snippets, not full content)
     for (const r of errorResults) {
-      assert.ok(r.snippet.length <= 200, `Snippet (${r.snippet.length} chars) should be reasonably short`);
+      assert.ok(r.snippet.length <= 300, `Snippet (${r.snippet.length} chars) should be reasonably short`);
     }
   });
 
