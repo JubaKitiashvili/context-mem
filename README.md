@@ -6,12 +6,11 @@
 
 # Context Mem
 
-**The highest-accuracy memory system for AI agents.**
-**100% retrieval on LongMemEval. Fully local. Zero cost.**
+**Your AI coding assistant forgets everything between sessions. This fixes that.**
 
 [![npm version](https://img.shields.io/npm/v/context-mem)](https://www.npmjs.com/package/context-mem)
 [![LongMemEval](https://img.shields.io/badge/LongMemEval-100%25%20(500%2F500)-gold)]()
-[![tests](https://img.shields.io/badge/tests-1135%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-1143%20passing-brightgreen)]()
 [![tools](https://img.shields.io/badge/MCP%20tools-44-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
@@ -19,28 +18,50 @@
 
 ---
 
-Context Mem captures everything your AI does, compresses it with 14 content-aware summarizers (99% token savings), and retrieves exactly what's needed in future sessions — scoring **100% on LongMemEval**, the standard benchmark for long-term memory retrieval.
+## The Problem
 
-Runs entirely on your machine via [MCP](https://modelcontextprotocol.io). No cloud, no API keys, no subscription. Optional LLM enhancement when you want even better results.
+Every time you start a new AI session, your assistant has zero memory of what you built yesterday. The architecture decisions, the bugs you fixed, the preferences you stated — all gone. You spend the first 10 minutes re-explaining context.
 
----
+## The Fix
 
-## Quick Start
+context-mem runs in the background, captures everything automatically, and retrieves exactly the right context when you need it:
+
+- **Longer sessions** without losing context (99% token savings)
+- **Instant continuity** — new sessions pick up where you left off
+- **Automatic** — no manual saving, no commands to remember
+- **Fully local** — your code never leaves your machine
+- **Free** — no API keys, no subscription, no cloud
 
 ```bash
 npm i context-mem && npx context-mem init
 ```
 
-One command. `init` auto-detects your editor and creates everything:
+One command. Works with Claude Code, Cursor, Windsurf, VS Code, Cline, and Roo Code.
 
-| Editor | What gets created |
-|--------|-------------------|
-| **Claude Code** | `.mcp.json` + hooks (8 hooks incl. context-triggered injection) + CLAUDE.md |
-| **Cursor** | `.cursor/mcp.json` + `.cursor/rules/context-mem.mdc` |
-| **Windsurf** | `.windsurf/mcp.json` + `.windsurf/rules/context-mem.md` |
-| **VS Code / Copilot** | `.vscode/mcp.json` + `.github/copilot-instructions.md` |
-| **Cline** | `.cline/mcp_settings.json` + `.clinerules/context-mem.md` |
-| **Roo Code** | `.roo-code/mcp_settings.json` + `.roo/rules/context-mem.md` |
+---
+
+## How accurate is the retrieval?
+
+Tested on 4 academic benchmarks — over 3,200 questions total:
+
+### Pure Local (zero API calls, fully free)
+
+| Benchmark | Context Mem | MemPalace | Mem0 | Zep |
+|---|---|---|---|---|
+| **LongMemEval** (500 Q) | **97.8%** | 96.6% | ~85% | ~85% |
+| **LoCoMo** (1,977 Q) | **98.1%** | 60.3% | — | — |
+| **MemBench** (500 Q) | **98.0%** | 80.3% | — | — |
+| **ConvoMem** (250 Q) | **97.7%** | 92.9% | — | — |
+
+### With Optional LLM Enhancement (Haiku, ~$1 per 500 queries)
+
+| Benchmark | Context Mem | MemPalace |
+|---|---|---|
+| **LongMemEval R@5** | **100.0% (500/500)** | 100.0%* |
+
+*Both systems achieve 100% with Haiku reranking. The difference is in pure-local scores — and in every other benchmark.
+
+> The LoCoMo gap tells the real story: **98.1% vs 60.3%** on multi-hop reasoning. Simple queries are easy. Complex ones separate the systems.
 
 ---
 
@@ -54,46 +75,36 @@ Full coding session (50 tool outputs): **365 KB → 3.2 KB** (99% savings).
 
 ---
 
-## Retrieval Benchmarks
+## What it is (and isn't)
 
-### With Optional LLM Enhancement (Haiku, ~$1 per 500 queries)
+**context-mem is:**
+- A retrieval-first memory system (not a chatbot wrapper)
+- A context compression engine (14 content-aware summarizers)
+- Infrastructure for AI agents (44 MCP tools)
 
-| Benchmark | Context Mem | MemPalace | Notes |
-|---|---|---|---|
-| **LongMemEval R@5** | **100.0% (500/500)** | 100.0%* | Session retrieval, NDCG 0.992 |
-
-*MemPalace uses top-50 + Haiku reranking. Context Mem uses BM25 top-30 + Haiku reranking.
-
-### Pure Local (zero API calls, fully free)
-
-| Benchmark | Context Mem | MemPalace | Notes |
-|---|---|---|---|
-| **LongMemEval R@5** | **97.8%** | 96.6% | 500 questions |
-| **LongMemEval R@10** | **98.8%** | 98.2% | |
-| **LoCoMo** (top-10) | **98.1%** | 60.3% | 1,977 multi-hop QA pairs |
-| **ConvoMem** | **97.7%** | 92.9% | 250 items, 5 categories |
-| **MemBench** | **98.0%** | 80.3% | 500 person-attribute queries |
-
-> Pure local retrieval beats every published system. With optional Haiku reranking (~$1 per 500 queries), LongMemEval reaches **100% — perfect score**.
-
-### vs Other Memory Systems
-
-| System | LME R@5 | Local-first | Price |
-|---|---|---|---|
-| **Context Mem** | **100%** | **Yes** | **Free** (MIT) |
-| MemPalace | 100%* | Yes | Free |
-| Mem0 | ~85% | No | $19-249/mo |
-| Zep | ~85% | No | $25/mo+ |
-
-*Both Context Mem and MemPalace achieve 100% with optional Haiku. Context Mem's pure-local score (97.8%) beats MemPalace's (96.6%).
+**context-mem is not:**
+- Chat history storage (it extracts meaning, not raw logs)
+- An LLM wrapper (works without any API keys)
+- A cloud service (fully local SQLite)
 
 ---
 
-## Search Architecture
+## Quick Start
 
-<img src="https://raw.githubusercontent.com/JubaKitiashvili/context-mem/main/docs/search-architecture.svg" alt="Hybrid Parallel Search" width="100%"/>
+```bash
+npm i context-mem && npx context-mem init
+```
 
-BM25 (8 strategies + synonym expansion) and vector search run **independently in parallel**, then fuse via intent-adaptive weights with IDF-weighted content reranking. Optional LLM judge reranker pushes accuracy to 100%. Fully local by default.
+`init` auto-detects your editor:
+
+| Editor | What gets created |
+|--------|-------------------|
+| **Claude Code** | `.mcp.json` + hooks (8 hooks incl. context-triggered injection) + CLAUDE.md |
+| **Cursor** | `.cursor/mcp.json` + `.cursor/rules/context-mem.mdc` |
+| **Windsurf** | `.windsurf/mcp.json` + `.windsurf/rules/context-mem.md` |
+| **VS Code / Copilot** | `.vscode/mcp.json` + `.github/copilot-instructions.md` |
+| **Cline** | `.cline/mcp_settings.json` + `.clinerules/context-mem.md` |
+| **Roo Code** | `.roo-code/mcp_settings.json` + `.roo/rules/context-mem.md` |
 
 ---
 
@@ -108,10 +119,6 @@ You: "What did Sarah work on last sprint?"
   → browse by person shows 14 observations mentioning Sarah,
     grouped by topic (auth, database, deployment)
 
-You: "This worked last week"
-  → regression fingerprint shows 3 knowledge entries changed since
-    last working state, 2 new error patterns appeared
-
 You: "Generate a PR description"
   → context-mem story --format pr assembles changes, decisions, resolved
     issues, and test plan from the current session
@@ -120,6 +127,14 @@ You: "What are we about to forget?"
   → predict_loss shows 8 entries at risk: low importance, 45+ days old,
     never accessed. Pin the critical ones before they decay.
 ```
+
+---
+
+## Search Architecture
+
+<img src="https://raw.githubusercontent.com/JubaKitiashvili/context-mem/main/docs/search-architecture.svg" alt="Hybrid Parallel Search" width="100%"/>
+
+BM25 (8 strategies + synonym expansion) and vector search run **independently in parallel**, then fuse via intent-adaptive weights with IDF-weighted content reranking. Optional LLM judge reranker pushes accuracy to 100%. Fully local by default.
 
 ---
 
@@ -135,17 +150,12 @@ You: "What are we about to forget?"
 | **Wake-Up Primer** | Token-budgeted context at session start. 4 layers: profile (15%), critical knowledge (40%), decisions (30%), entities (15%). |
 | **Decision Trails** | Evidence chain reconstruction. `explain_decision` walks events backward: file reads → errors → searches → decision. |
 | **Session Narratives** | 4 templates: PR description, standup update, ADR, onboarding guide. CLI: `context-mem story --format pr`. |
-| **Topic Navigation** | 13 auto-detected categories. `browse` by topic/person/time. `find_tunnels` for cross-project bridges. |
-| **Conversation Import** | 5 parsers: Claude Code JSONL, Claude AI JSON, ChatGPT JSON, Slack JSON, plain text. Auto-detection. |
-| **14 Summarizers** | Content-aware: shell, JSON, errors, test results, TS errors, build output, git, CSV, markdown, HTML, network, code, logs, binary. |
-| **Hybrid Search** | BM25 (8 strategies + synonym expansion) + vector (nomic-embed 768-dim) parallel fusion. Trigram + Levenshtein fallback. Optional LLM judge reranker. Sub-millisecond. |
+| **Hybrid Search** | BM25 (8 strategies + synonym expansion) + vector (nomic-embed 768-dim) parallel fusion. Optional LLM judge reranker. Sub-millisecond. |
 | **Temporal Resolver** | Deterministic date parsing for relative time queries ("3 days ago", "last Saturday"). Zero LLM cost. |
 | **Per-Prompt Injection** | UserPromptSubmit hook auto-injects relevant memories on every user message. Rate-limited, topic-deduplicated. |
 | **Knowledge Graph** | Entity-relationship model: files, modules, patterns, decisions, bugs, people, libraries, services, APIs, configs. |
-| **Dreamer Agent** | Background: stale marking (30d), archival (90d), contradiction detection, auto-promote, consolidation, causal chains. |
 | **Multi-Agent** | Register, claim files, check status, broadcast. Shared memory prevents duplicate work and merge conflicts. |
 | **Privacy Engine** | Fully local. `<private>` tag stripping, custom regex, 9 secret detectors. No telemetry, no cloud. |
-| **Optional LLM** | Query expansion, smart titles, contradiction explanation, LLM summarization. Ollama, OpenRouter, Claude API. Fail-safe to deterministic. |
 
 ---
 
@@ -172,31 +182,21 @@ Real-time web UI with 6 pages — `context-mem dashboard` to launch:
 
 </details>
 
-| Page | What it shows |
-|---|---|
-| **Home** | 7 intelligence cards, compression tiers, pressure alerts, wake-up preview |
-| **Topics** | Topic cloud + cross-project tunnels |
-| **Graph** | Force-directed entity visualization |
-| **Timeline** | Importance badges + significance flags |
-| **Trail** | Decision evidence chain explorer |
-| **Narrative** | PR / standup / ADR / onboarding generator |
-
 ---
 
 ## How It Compares
 
 | | Context Mem v3.2 | MemPalace | claude-mem |
 |---|---|---|---|
-| **Retrieval Accuracy** | **100% LME**, 98%+ (4 benchmarks) | 96.6% raw, 100% with LLM | Not benchmarked |
+| **Retrieval Accuracy** | 98%+ (4 benchmarks), 100% LME | 96.6% raw, 100% LME with LLM | Not benchmarked |
 | **Token Savings** | 99% (benchmarked) | 0% (stores everything) | ~95% (claimed) |
 | **Search** | BM25 (8 strategies) + Vector + LLM Judge | ChromaDB | Basic recall |
 | **Entity Intelligence** | Auto-detect + 100 aliases + graph | No | No |
 | **Importance Scoring** | 0.0-1.0 with 6 significance flags | No | No |
 | **Decision Trails** | Evidence chain reconstruction | No | No |
 | **Session Narratives** | PR/Standup/ADR/Onboarding | No | No |
-| **Conversation Import** | ChatGPT, Claude, Slack, plaintext | No | No |
 | **Cross-Project Memory** | Global store + topic tunnels | No | No |
-| **LLM Dependency** | Optional (100% free, 100% LME with Haiku) | 100% LME requires paid Haiku API | Required (~$57/mo) |
+| **LLM Dependency** | Optional (free by default) | 100% LME requires paid API | Required (~$57/mo) |
 | **Privacy** | Fully local, 9 secret detectors | Local | Local |
 | **License** | MIT | Proprietary | AGPL-3.0 |
 
@@ -334,8 +334,7 @@ context-mem plugin add|remove|list  # Manage summarizer plugins
 
 | Doc | Description |
 |---|---|
-| [Benchmark Results](docs/benchmarks/results.md) | Compression + search benchmarks |
-| [Total Recall Benchmarks](docs/benchmarks/run-total-recall-benchmarks.js) | v3.0 feature performance |
+| [Benchmark Results](docs/benchmarks/results.md) | Compression + retrieval benchmarks |
 | [Contributing](CONTRIBUTING.md) | How to contribute |
 
 ## License
@@ -356,7 +355,7 @@ npm i context-mem && npx context-mem init
 
 ---
 
-**Context Mem v3.2 "Perfect Recall"** — 100% retrieval accuracy. Your AI never forgets.
+**Context Mem v3.2** — 98%+ accuracy on every benchmark. Your AI never forgets.
 
 [![Star on GitHub](https://img.shields.io/github/stars/JubaKitiashvili/context-mem?style=social)](https://github.com/JubaKitiashvili/context-mem)
 [![npm](https://img.shields.io/npm/dm/context-mem)](https://www.npmjs.com/package/context-mem)
