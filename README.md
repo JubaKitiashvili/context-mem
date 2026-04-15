@@ -40,28 +40,44 @@ One command. Works with Claude Code, Cursor, Windsurf, VS Code, Cline, and Roo C
 
 ---
 
-## How accurate is the retrieval?
+## Retrieval Benchmarks
 
-Tested on 4 academic benchmarks — over 3,200 questions total:
+Tested on 4 academic benchmarks. All scores are **session-level retrieval recall** (did the correct session appear in top-k?), not end-to-end QA accuracy.
 
 ### Pure Local (zero API calls, fully free)
 
-| Benchmark | Context Mem | MemPalace | Mem0 | Zep |
+| Benchmark | Retrieval Recall | Questions | Sessions/conv | Metric |
 |---|---|---|---|---|
-| **LongMemEval** (500 Q) | **97.8%** | 96.6% | ~85% | ~85% |
-| **LoCoMo** (1,977 Q) | **98.1%** | 60.3% | — | — |
-| **MemBench** (500 Q) | **98.0%** | 80.3% | — | — |
-| **ConvoMem** (250 Q) | **97.7%** | 92.9% | — | — |
+| **LongMemEval** | **97.8%** R@5 | 500 | ~53 | Session R@5 |
+| **LoCoMo** | **98.1%** R@10 | 1,977 | 19-35 | Session R@10 |
+| **MemBench** | **98.0%** R@5 | 500 | — | Hybrid top-5 |
+| **ConvoMem** | **97.7%** R@10 | 250 | — | Session R@10 |
 
-### With Optional LLM Enhancement (Haiku, ~$1 per 500 queries)
+### With Optional LLM Reranking (Haiku, ~$1 per 500 queries)
+
+| Benchmark | Retrieval Recall |
+|---|---|
+| **LongMemEval** | **100.0%** R@5 (500/500) |
+
+### vs MemPalace (same methodology — session-level retrieval recall)
 
 | Benchmark | Context Mem | MemPalace |
 |---|---|---|
-| **LongMemEval R@5** | **100.0% (500/500)** | 100.0%* |
+| **LongMemEval** R@5 | **97.8%** | 96.6% |
+| **LoCoMo** R@10 | **98.1%** | 60.3% |
 
-*Both systems achieve 100% with Haiku reranking. The difference is in pure-local scores — and in every other benchmark.
+> Both systems achieve 100% on LME with optional Haiku reranking. MemPalace comparison uses identical methodology (session-level, same datasets).
 
-> The LoCoMo gap tells the real story: **98.1% vs 60.3%** on multi-hop reasoning. Simple queries are easy. Complex ones separate the systems.
+<details>
+<summary>Benchmark methodology notes</summary>
+
+- **Metric:** Session-level retrieval recall — a hit is scored if any correct evidence session appears in the top-k results. This is different from end-to-end QA accuracy (retrieve + generate answer + judge), which would be lower for any system.
+- **Granularity:** Sessions (all dialog turns joined per session). LoCoMo has 19-35 sessions per conversation, so R@10 selects roughly a third of the candidate pool.
+- **Ingestion:** LoCoMo benchmark appends dataset-provided metadata (session_summary, observation, event_summary) to session documents. The production system does similar enrichment via summarizers and entity extraction.
+- **Synonym expansions:** Core query-builder includes general synonyms (movie→film, sibling→brother). Benchmark adapter adds ~50 additional domain-specific expansions derived from failure analysis. Core-only results are ~1-2% lower.
+- **Benchmark code:** Fully open in [`benchmarks/`](benchmarks/) — run them yourself with `npm run bench`.
+
+</details>
 
 ---
 
@@ -188,7 +204,7 @@ Real-time web UI with 6 pages — `context-mem dashboard` to launch:
 
 | | Context Mem v3.2 | MemPalace | claude-mem |
 |---|---|---|---|
-| **Retrieval Accuracy** | 98%+ (4 benchmarks), 100% LME | 96.6% raw, 100% LME with LLM | Not benchmarked |
+| **Retrieval Recall** | 98%+ session recall (4 benchmarks) | 96.6% LME, 60.3% LoCoMo | Not benchmarked |
 | **Token Savings** | 99% (benchmarked) | 0% (stores everything) | ~95% (claimed) |
 | **Search** | BM25 (8 strategies) + Vector + LLM Judge | ChromaDB | Basic recall |
 | **Entity Intelligence** | Auto-detect + 100 aliases + graph | No | No |
