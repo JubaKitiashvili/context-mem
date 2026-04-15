@@ -1,7 +1,7 @@
 {
   "name": "context-mem",
-  "version": "2.5.0",
-  "description": "Context optimization for AI coding assistants — token savings via 14 content-aware summarizers, 4-layer search (BM25 + Trigram + Levenshtein + Vector), activity journal, and progressive disclosure. Zero LLM calls, zero cloud, zero cost.",
+  "version": "3.2.0",
+  "description": "The highest-accuracy memory system for AI agents — 100% retrieval on LongMemEval. 14 content-aware summarizers, hybrid search (BM25 + vector + LLM judge), entity intelligence, decision trails. Fully local, zero cost.",
   "author": {
     "name": "Juba Kitiashvili",
     "url": "https://github.com/JubaKitiashvili"

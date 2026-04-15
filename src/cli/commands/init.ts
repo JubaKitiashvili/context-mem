@@ -344,6 +344,7 @@ function setupClaudeCodeHooks(projectDir: string): void {
     { name: 'context-mem-hook.js', event: 'PostToolUse', timeout: 5, matcher: 'Bash|Read|Write|Edit|Grep|Glob' },
     { name: 'proactive-inject.js', event: 'PostToolUse', timeout: 3, matcher: 'Bash|Read|Write|Edit|Grep|Glob' },
     { name: 'user-prompt-hook.js', event: 'UserPromptSubmit', timeout: 3 },
+    { name: 'context-mem-precompact.js', event: 'PreCompact', timeout: 5 },
     { name: 'dashboard-stop.js', event: 'Stop', timeout: 5 },
   ];
 
