@@ -1,6 +1,6 @@
 {
   "name": "context-mem",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "Persistent memory for AI agents — 100% retrieval accuracy on LongMemEval. 14 content-aware summarizers, hybrid search (BM25 + vector + LLM judge), entity intelligence, decision trails. Fully local, zero cost.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -51,5 +51,6 @@
     "@types/node": "^20.0.0",
     "@types/ws": "^8.18.1",
     "typescript": "^5.5.0"
-  }
+  },
+  "mcpName": "io.github.JubaKitiashvili/context-mem"
 }

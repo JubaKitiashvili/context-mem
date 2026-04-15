@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.JubaKitiashvili/context-mem",
+  "description": "Persistent memory for AI agents — 98%+ retrieval recall, 99% token savings, 44 tools",
+  "repository": {
+    "url": "https://github.com/JubaKitiashvili/context-mem",
+    "source": "github"
+  },
+  "version": "3.2.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "context-mem",
+      "version": "3.2.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeHint": "npx -y context-mem serve",
+      "environmentVariables": []
+    }
+  ]
+}
