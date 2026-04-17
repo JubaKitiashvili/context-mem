@@ -69,10 +69,10 @@ export class ErrorLogger {
     };
 
     // Deactivate any previous logger for the same storage so its pending setImmediate
-    // callbacks don't fire after the new logger has taken over.
+    // callbacks don't fire after the new logger has taken over. Also stop its prune timer.
     const prev = storageRegistry.get(storage);
-    if (prev) {
-      prev.active = false;
+    if (prev && prev !== this) {
+      prev.stop();
     }
     storageRegistry.set(storage, this);
 
@@ -80,6 +80,17 @@ export class ErrorLogger {
       try { this.prune(); } catch { /* logger must never throw */ }
     }, this.opts.pruneIntervalMs);
     (this.pruneTimer as unknown as { unref?: () => void }).unref?.();
+  }
+
+  /**
+   * Get or create the active ErrorLogger for a storage instance.
+   * Preferred over `new ErrorLogger(...)` for production code — guarantees a single
+   * active logger per storage.
+   */
+  static instance(storage: StoragePlugin, options?: ErrorLoggerOptions): ErrorLogger {
+    const existing = storageRegistry.get(storage);
+    if (existing && existing.active) return existing;
+    return new ErrorLogger(storage, options);
   }
 
   stop(): void {
@@ -97,7 +108,7 @@ export class ErrorLogger {
 
   private sanitizeStack(stack: string | undefined): string | undefined {
     if (!stack) return undefined;
-    const home = process.env.HOME || '';
+    const home = process.env.HOME ?? process.env.USERPROFILE ?? '';
     const sanitized = home ? stack.split(home).join('~') : stack;
     return this.truncate(sanitized, STACK_MAX);
   }
@@ -164,7 +175,11 @@ export class ErrorLogger {
               self.throttleCache.delete(k);
             }
           }
-        } catch { /* logger must never throw */ }
+        } catch {
+          // INSERT failed — evict cache entry so a future log attempts a fresh insert
+          // (prevents pendingOccurrences from growing unboundedly on persistent DB errors).
+          self.throttleCache.delete(key);
+        }
       });
     } catch { /* logger must never throw */ }
   }
@@ -219,11 +234,13 @@ export class ErrorLogger {
     const since = opts.since ?? 0;
     const limit = Math.max(1, Math.min(500, opts.limit ?? 50));
     try {
+      // GROUP BY includes severity so the same (category, message) logged at different
+      // levels is split into distinct summary rows with accurate severity.
       return this.storage.prepare(
         `SELECT category, message, severity, SUM(occurrences) as count, MIN(first_seen) as first_seen, MAX(last_seen) as last_seen
          FROM error_log
          WHERE timestamp >= ?
-         GROUP BY category, message_hash
+         GROUP BY category, message_hash, severity
          ORDER BY last_seen DESC
          LIMIT ?`
       ).all(since, limit) as ErrorLogSummary[];
