@@ -7,6 +7,7 @@
  */
 import type { StoragePlugin, KnowledgeCategory } from './types.js';
 import type { KnowledgeBase } from '../plugins/knowledge/knowledge-base.js';
+import type { ErrorLogger } from './error-logger.js';
 import type { GlobalKnowledgeStore } from './global-store.js';
 import { getTargetTier, compressToTier } from './adaptive-compressor.js';
 import type { CompressionTier } from './adaptive-compressor.js';
@@ -34,6 +35,7 @@ export class Dreamer {
   private readonly PROMOTION_SESSION_THRESHOLD: number;
   private readonly logs: DreamerLog[] = [];
   private globalStore?: GlobalKnowledgeStore;
+  private errorLogger?: ErrorLogger;
 
   constructor(
     private knowledgeBase: KnowledgeBase,
@@ -51,6 +53,10 @@ export class Dreamer {
     this.ARCHIVE_THRESHOLD_DAYS = opts?.archiveThresholdDays ?? 90;
     this.PROMOTION_SESSION_THRESHOLD = opts?.promotionSessionThreshold ?? 3;
     this.globalStore = opts?.globalStore;
+  }
+
+  setErrorLogger(logger: ErrorLogger): void {
+    this.errorLogger = logger;
   }
 
   start(): void {
@@ -90,7 +96,8 @@ export class Dreamer {
       await this.consolidateRelated();
       await this.extractCausalChains();
       await this.boostCorroboration();
-    } catch {
+    } catch (err) {
+      this.errorLogger?.error('dreamer', err, { cycle: 'main' });
       // Dreamer is non-critical — never crash the host
     }
   }

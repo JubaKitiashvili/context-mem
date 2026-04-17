@@ -51,6 +51,7 @@ import { GlobalKnowledgeStore } from './global-store.js';
 import { PluginLoader } from './plugin-loader.js';
 import { KnowledgeGraph } from './knowledge-graph.js';
 import { AgentRegistry } from './agent-registry.js';
+import { ErrorLogger } from './error-logger.js';
 import type { VectorSearch } from '../plugins/search/vector.js';
 import type {
   SessionContext,
@@ -81,6 +82,7 @@ export class Kernel {
   agentRegistry?: AgentRegistry;
   llmService?: LLMService;
   feedbackEngine?: import('./feedback-engine.js').FeedbackEngine;
+  errorLogger!: ErrorLogger;
 
   constructor(projectDir: string) {
     this.projectDir = projectDir;
@@ -103,6 +105,9 @@ export class Kernel {
     await this.storage.open(dbPath);
     await this.registry.register(this.storage);
 
+    // 1b. Error logger — must exist before any subsystem that might fail
+    this.errorLogger = ErrorLogger.instance(this.storage);
+
     // 2. Privacy
     const privacy = new PrivacyEngine(this.config.privacy);
 
@@ -118,6 +123,7 @@ export class Kernel {
 
     // 3b. Knowledge graph
     this.knowledgeGraph = new KnowledgeGraph(this.storage);
+    this.knowledgeGraph.setErrorLogger(this.errorLogger);
 
     // 3b2. Feedback engine
     try {
@@ -127,6 +133,7 @@ export class Kernel {
 
     // 3c. Dreamer background agent
     this.dreamer = new Dreamer(this.knowledgeBase, this.storage);
+    this.dreamer.setErrorLogger(this.errorLogger);
     this.dreamer.start();
 
     // 3d. Global knowledge store
@@ -176,6 +183,7 @@ export class Kernel {
     this.pipeline.setSessionManager(this.sessionManager);
     this.pipeline.setLLMService(this.llmService);
     this.pipeline.setKnowledgeGraph(this.knowledgeGraph);
+    this.pipeline.setErrorLogger(this.errorLogger);
 
     // 5. Summarizers — registered in priority order (most specific first)
     const summarizers = [
@@ -511,6 +519,11 @@ export class Kernel {
     }
 
     await this.registry.shutdown();
+
+    // Stop error logger last (after all subsystems that might log)
+    if (this.errorLogger) {
+      this.errorLogger.stop();
+    }
   }
 
   async restoreSession(sessionId: string): Promise<{ snapshot: Record<string, unknown>; condensed: boolean } | null> {

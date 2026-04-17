@@ -49,7 +49,8 @@ export async function startHttpBridge(kernel: Kernel, port: number): Promise<htt
     for (const item of items) {
       try {
         await kernel.observe(item.content, item.type, item.source, item.filePath);
-      } catch {
+      } catch (err) {
+        kernel.errorLogger?.error('hook', err, { source: 'observe-queue' });
         // Individual observation failures shouldn't crash the bridge
       }
     }
@@ -82,6 +83,9 @@ export async function startHttpBridge(kernel: Kernel, port: number): Promise<htt
 
         json(res, 200, { ok: true, enqueued });
       } catch (err) {
+        kernel.errorLogger?.warn('hook', 'POST /api/observe failed', {
+          message: err instanceof Error ? err.message : String(err),
+        });
         const msg = err instanceof Error ? err.message : 'Bad request';
         json(res, 400, { ok: false, error: msg });
       }

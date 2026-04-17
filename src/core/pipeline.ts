@@ -12,6 +12,7 @@ import { extractEntities, resolveAlias } from './entity-extractor.js';
 import type { KnowledgeGraph } from './knowledge-graph.js';
 import { detectTopics, storeTopics } from './topic-detector.js';
 import { computeSignalScore } from './noise-filter.js';
+import type { ErrorLogger } from './error-logger.js';
 
 export class Pipeline {
   private budgetManager?: BudgetManager;
@@ -21,6 +22,7 @@ export class Pipeline {
   private embedder: { embed(text: string): Promise<Float32Array | null>; toBuffer(e: Float32Array): Buffer } | null = null;
   private llmService?: LLMService;
   private knowledgeGraph?: KnowledgeGraph;
+  private errorLogger?: ErrorLogger;
 
   constructor(
     private registry: PluginRegistry,
@@ -49,6 +51,10 @@ export class Pipeline {
     this.knowledgeGraph = kg;
   }
 
+  setErrorLogger(logger: ErrorLogger): void {
+    this.errorLogger = logger;
+  }
+
   private scheduleEmbedding(id: string, text: string): void {
     setImmediate(async () => {
       try {
@@ -57,8 +63,8 @@ export class Pipeline {
           this.storage.exec('UPDATE observations SET embeddings = ? WHERE id = ?', [this.embedder!.toBuffer(embedding), id]);
         }
       } catch (err) {
+        this.errorLogger?.error('embedder', err, { observation_id: id, mode: 'async' });
         // Non-critical — embedding failure never blocks observe()
-        console.error('context-mem: embedding failed:', (err as Error).message);
       }
     });
   }
@@ -96,7 +102,8 @@ export class Pipeline {
       let metadata: Observation['metadata'];
       try {
         metadata = JSON.parse(existing.metadata as string) as Observation['metadata'];
-      } catch {
+      } catch (err) {
+        this.errorLogger?.warn('pipeline', 'deduplication metadata parse failed', { content_hash: contentHash });
         metadata = { source, tokens_original: 0, tokens_summarized: 0, privacy_level: privacyLevel };
       }
       return {
@@ -146,7 +153,8 @@ export class Pipeline {
           summary = llmResult.summary;
           tokensSummarized = estimateTokens(summary);
         }
-      } catch {
+      } catch (err) {
+        this.errorLogger?.error('llm', err, { op: 'summarize' });
         // LLM failure is non-critical — fall through to deterministic
       }
     }
@@ -158,7 +166,8 @@ export class Pipeline {
           const result = await s.summarize(cleaned, {});
           summary = result.summary;
           tokensSummarized = result.tokens_summarized;
-        } catch {
+        } catch (err) {
+          this.errorLogger?.warn('summarizer', `summarizer ${s.name} failed`, { summarizer: s.name });
           // Summarizer failed — store raw
         }
         break;
@@ -224,7 +233,8 @@ export class Pipeline {
             });
           }
         }
-      } catch {
+      } catch (err) {
+        this.errorLogger?.error('entity', err, { observation_id: obs.id });
         // Entity extraction is non-critical — never block observe()
       }
     }
@@ -233,7 +243,8 @@ export class Pipeline {
     if (detectedTopics.length > 0) {
       try {
         storeTopics(this.storage, obs.id, detectedTopics);
-      } catch {
+      } catch (err) {
+        this.errorLogger?.error('topic', err, { observation_id: obs.id });
         // Topic storage is non-critical
       }
     }
@@ -247,7 +258,10 @@ export class Pipeline {
           if (embedding) {
             this.storage.exec('UPDATE observations SET embeddings = ? WHERE id = ?', [this.embedder.toBuffer(embedding), obs.id]);
           }
-        } catch { /* non-critical */ }
+        } catch (err) {
+          this.errorLogger?.error('embedder', err, { observation_id: obs.id, mode: 'sync' });
+          /* non-critical */
+        }
       } else {
         this.scheduleEmbedding(obs.id, textToEmbed);
       }
@@ -287,7 +301,8 @@ export class Pipeline {
           savings_percentage: row.t_in > 0 ? Math.round(((row.t_in - row.t_out) / row.t_in) * 100) : 0,
         };
         this.sessionManager.saveSnapshot(this.sessionId, minimalStats);
-      } catch {
+      } catch (err) {
+        this.errorLogger?.warn('pipeline', 'checkpoint snapshot failed', { session_id: this.sessionId });
         // Non-fatal — checkpoint is best-effort
       }
     }

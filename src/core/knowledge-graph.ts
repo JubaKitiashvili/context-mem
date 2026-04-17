@@ -8,6 +8,7 @@ import type {
   KnowledgeCategory,
 } from './types.js';
 import { ulid } from './utils.js';
+import type { ErrorLogger } from './error-logger.js';
 
 /** Map knowledge categories to entity types for auto-extraction. */
 const CATEGORY_TO_ENTITY: Partial<Record<KnowledgeCategory, EntityType>> = {
@@ -19,7 +20,13 @@ const CATEGORY_TO_ENTITY: Partial<Record<KnowledgeCategory, EntityType>> = {
 };
 
 export class KnowledgeGraph {
+  private errorLogger?: ErrorLogger;
+
   constructor(private storage: StoragePlugin) {}
+
+  setErrorLogger(logger: ErrorLogger): void {
+    this.errorLogger = logger;
+  }
 
   // ---------------------------------------------------------------------------
   // Entity CRUD
@@ -286,7 +293,8 @@ export class KnowledgeGraph {
         if (knowledgeEntity.length > 0) {
           try {
             this.addRelationship(knowledgeEntity[0].id, fileEntity[0].id, 'documents');
-          } catch {
+          } catch (err) {
+            this.errorLogger?.error('knowledge-graph', err, { op: 'relationship' });
             // Ignore duplicate relationship errors
           }
         }
