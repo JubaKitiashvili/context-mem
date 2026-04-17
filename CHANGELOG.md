@@ -2,6 +2,27 @@
 
 All notable changes to context-mem are documented here.
 
+## [3.3.0] — 2026-04-17 — Foundations
+
+### Added
+- **GitHub Actions CI** — test + typecheck + bench:quick on Node 18/20/22; weekly full benchmark sweep.
+- **Structured error log** — migration v18 adds `error_log` table capturing internal subsystem failures with throttled dedup, 7-day retention, 10k-row cap. Composite `(message_hash, category)` index serves the dedup throttle lookup.
+- **`ErrorLogger` core class** — synchronous <1ms log path, async INSERT via `setImmediate`, category-tagged, `static instance()` factory with WeakMap-backed registry preventing duplicate loggers per storage.
+- **`diagnostics` MCP tool** — query internal error log by severity, category, time range. Summary (grouped by category+message+severity) or list mode. Tool count: 44 → 45.
+- **Dashboard Diagnostics page** — new `/diagnostics` route + `/api/diagnostics` endpoint with severity/since filters. Added to nav across all pages.
+
+### Fixed
+- **Flaky `context-mem-hook` E2E test** — hook now honors both `CONTEXT_MEM_API_PORT` (canonical) and `CONTEXT_MEM_PORT` (alias) env vars. Test aligned to canonical name. Added 10-run stability sweep.
+
+### Changed
+- 12 high-value silent catch sites now log to `error_log` while retaining fail-open behavior (pipeline × 8, dreamer × 1, knowledge-graph × 1, http-bridge × 2). Existing "non-critical" comments preserved alongside log calls.
+- Pipeline `warn()` calls forward the err message as context (not just a static string) for better operational insight.
+- Migration v18 timestamp column CHECK constraint prevents accidental seconds-epoch writes (enforces millisecond precision).
+- Tests: 1143 → 1166 (+23 new tests: 7 migration, 8 ErrorLogger, 6 diagnostics MCP, 1 integration, 1 hook stability).
+
+### Benchmarks
+- No regressions — retrieval paths unchanged from v3.2.0. LongMemEval R@5 97.8% pure local / 100% with Haiku judge, LoCoMo 98.1%, MemBench 98.0%, ConvoMem 97.7%.
+
 ## [3.2.0] — 2026-04-15 — Perfect Recall
 
 ### Added
