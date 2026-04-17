@@ -15,6 +15,7 @@
     "lint": "tsc --noEmit",
     "bench": "node benchmarks/run-all.js",
     "bench:full": "node benchmarks/run-all.js --full",
+    "bench:quick": "node benchmarks/longmemeval.js /tmp/longmemeval-data/longmemeval_s_cleaned.json --limit 50",
     "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
