@@ -243,7 +243,7 @@ export async function handleGlobalSearch(
     limit: validateLimit(params.limit ?? 10),
   });
 
-  return results.map(r => ({
+  const mapped = results.map(r => ({
     id: r.id,
     category: r.category,
     title: r.title,
@@ -253,6 +253,15 @@ export async function handleGlobalSearch(
     source_type: r.source_type,
     source_project: r.source_project,
   }));
+
+  return Object.assign(mapped, {
+    _meta: {
+      deprecated: true,
+      replacement: 'search',
+      replacement_params: { query: params.query, scope: 'all', mode: 'hybrid' },
+      removal_planned: 'v5.0.0',
+    },
+  });
 }
 
 export async function handleMergeSuggestions(
