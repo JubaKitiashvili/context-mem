@@ -64,4 +64,43 @@ describe('migration v18 — error_log table', () => {
       );
     }, /CHECK constraint|constraint failed/i);
   });
+
+  it('rejects seconds-epoch timestamp via CHECK constraint', () => {
+    assert.throws(() => {
+      storage.exec(
+        `INSERT INTO error_log (timestamp, severity, category, message, message_hash, first_seen, last_seen)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        // 1_700_000_000 is 2023-11-14 in seconds — well below the 1_000_000_000_000 ms lower bound
+        [1_700_000_000, 'error', 'embedder', 'secs not ms', 'hash2', Date.now(), Date.now()],
+      );
+    }, /CHECK constraint|constraint failed/i);
+  });
+
+  it('schema matches spec: nullability, defaults, and column types', () => {
+    const columns = storage.prepare('PRAGMA table_info(error_log)').all() as Array<{
+      name: string;
+      type: string;
+      notnull: number;
+      dflt_value: string | null;
+      pk: number;
+    }>;
+    const byName = Object.fromEntries(columns.map(c => [c.name, c]));
+
+    // Primary key
+    assert.equal(byName.id.pk, 1);
+    assert.equal(byName.id.type.toUpperCase(), 'INTEGER');
+
+    // Required columns
+    for (const col of ['timestamp', 'severity', 'category', 'message', 'message_hash', 'occurrences', 'first_seen', 'last_seen']) {
+      assert.equal(byName[col].notnull, 1, `${col} should be NOT NULL`);
+    }
+
+    // Nullable columns
+    for (const col of ['context_json', 'stack']) {
+      assert.equal(byName[col].notnull, 0, `${col} should be nullable`);
+    }
+
+    // Defaults
+    assert.equal(byName.occurrences.dflt_value, '1');
+  });
 });

@@ -562,14 +562,14 @@ export const migrations: Migration[] = [
     up: `
       CREATE TABLE IF NOT EXISTS error_log (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        timestamp INTEGER NOT NULL,
+        timestamp INTEGER NOT NULL CHECK (timestamp > 1000000000000),
         severity TEXT NOT NULL CHECK (severity IN ('info','warn','error','critical')),
         category TEXT NOT NULL,
         message TEXT NOT NULL,
         message_hash TEXT NOT NULL,
         context_json TEXT,
         stack TEXT,
-        occurrences INTEGER NOT NULL DEFAULT 1,
+        occurrences INTEGER NOT NULL DEFAULT 1, -- always 1 on first insert; incremented in-place by ErrorLogger
         first_seen INTEGER NOT NULL,
         last_seen INTEGER NOT NULL
       );
@@ -577,7 +577,8 @@ export const migrations: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_error_log_timestamp ON error_log(timestamp DESC);
       CREATE INDEX IF NOT EXISTS idx_error_log_severity ON error_log(severity);
       CREATE INDEX IF NOT EXISTS idx_error_log_category ON error_log(category);
-      CREATE INDEX IF NOT EXISTS idx_error_log_hash ON error_log(message_hash);
+      -- Composite index serves the ErrorLogger dedup throttle lookup (category, message_hash)
+      CREATE INDEX IF NOT EXISTS idx_error_log_hash ON error_log(message_hash, category);
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (18, unixepoch(), 'Add error_log table for structured internal error capture');
