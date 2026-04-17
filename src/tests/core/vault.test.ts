@@ -176,6 +176,69 @@ describe('VaultSync', () => {
     assert.ok(rendered.includes('[[entities/------evil]]'), 'sanitized backlink must appear with entities/ prefix');
   });
 
+  it('refreshSession excludes privacy_level=private observations', async () => {
+    await vault.init();
+    const sid = 'sess-priv-001';
+    const now = Date.now();
+    storage.exec(
+      `INSERT INTO observations (id, type, content, summary, metadata, indexed_at, session_id, privacy_level)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ['obs-pub', 'code', 'public hello', 'public summary', '{}', now, sid, 'public'],
+    );
+    storage.exec(
+      `INSERT INTO observations (id, type, content, summary, metadata, indexed_at, session_id, privacy_level)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ['obs-priv', 'code', 'SECRET_PRIVATE_PAYLOAD', 'secret summary', '{}', now, sid, 'private'],
+    );
+    await vault.refreshSession(sid);
+    const date = new Date(now).toISOString().slice(0, 10);
+    const pagePath = path.join(vaultDir, 'sources', `${sid}-${date}.md`);
+    const content = fs.readFileSync(pagePath, 'utf8');
+    assert.ok(content.includes('public'), 'public observation must appear');
+    assert.ok(!content.includes('SECRET_PRIVATE_PAYLOAD'), 'private content must not leak to disk');
+    assert.ok(!content.includes('secret summary'), 'private summary must not leak to disk');
+  });
+
+  it('refreshTopic excludes privacy_level=private observations', async () => {
+    await vault.init();
+    const now = Date.now();
+    storage.exec(
+      `INSERT INTO topics (id, name, parent_id, observation_count, last_seen) VALUES (?, ?, ?, ?, ?)`,
+      ['t-priv', 'auth', null, 2, now],
+    );
+    storage.exec(
+      `INSERT INTO observations (id, type, content, summary, metadata, indexed_at, session_id, privacy_level)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ['oA', 'code', 'login flow', 'public topic obs', '{}', now, 'sX', 'public'],
+    );
+    storage.exec(
+      `INSERT INTO observations (id, type, content, summary, metadata, indexed_at, session_id, privacy_level)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ['oB', 'code', 'PRIVATE_TOKEN_ABC', 'private topic obs', '{}', now, 'sY', 'private'],
+    );
+    storage.exec(
+      `INSERT INTO observation_topics (observation_id, topic_id, confidence) VALUES (?, ?, ?), (?, ?, ?)`,
+      ['oA', 't-priv', 1.0, 'oB', 't-priv', 1.0],
+    );
+    await vault.refreshTopic('auth');
+    const pagePath = path.join(vaultDir, 'topics', 'auth.md');
+    const content = fs.readFileSync(pagePath, 'utf8');
+    assert.ok(content.includes('public topic obs'), 'public observation must appear');
+    assert.ok(!content.includes('PRIVATE_TOKEN_ABC'), 'private content must not leak');
+    assert.ok(!content.includes('private topic obs'), 'private summary must not leak');
+  });
+
+  it('safeName collapses dot-only and dash-only names to _unnamed', async () => {
+    const { safeName } = await import('../../core/vault-templates.js');
+    assert.equal(safeName('.'), '_unnamed');
+    assert.equal(safeName('..'), '_unnamed');
+    assert.equal(safeName('...'), '_unnamed');
+    assert.equal(safeName('-'), '_unnamed');
+    assert.equal(safeName('-.-'), '_unnamed');
+    assert.equal(safeName(''), '_unnamed');
+    assert.equal(safeName('   '), '_unnamed');
+  });
+
   it('renderIndex enriches entity links with updated date and topic links with observation count', () => {
     const now = Date.now();
     const entity = {

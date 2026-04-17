@@ -220,22 +220,31 @@ function buildJudgePrompt(question, expected, predicted) {
       context = contextRows.map(r => r.content).join('\n\n---\n\n').slice(0, 20000);
     }
 
-    // 4. Haiku answer generation
+    // 4. Haiku answer generation — skip when retrieval returned nothing
     let predicted = '';
-    try {
-      predicted = await callHaiku(buildAnswerPrompt(question, context), 400);
-    } catch (e) {
-      predicted = '[ERROR: answer generation failed]';
+    if (context.length === 0) {
+      predicted = "I don't know.";
+    } else {
+      try {
+        predicted = await callHaiku(buildAnswerPrompt(question, context), 400);
+      } catch (e) {
+        predicted = '[ERROR: answer generation failed]';
+      }
     }
 
-    // 5. Haiku-as-judge scoring
+    // 5. Haiku-as-judge scoring — skip when no retrieval; always wrong by definition
     let judgment = '';
-    try {
-      judgment = await callHaiku(buildJudgePrompt(question, expected, predicted), 150);
-    } catch (e) {
-      judgment = 'SCORE: 0\n[ERROR: judge failed]';
+    let score = 0;
+    if (context.length === 0) {
+      judgment = 'SCORE: 0\n[no-retrieval: top-k was empty]';
+    } else {
+      try {
+        judgment = await callHaiku(buildJudgePrompt(question, expected, predicted), 150);
+      } catch (e) {
+        judgment = 'SCORE: 0\n[ERROR: judge failed]';
+      }
+      score = /SCORE:\s*1/i.test(judgment) ? 1 : 0;
     }
-    const score = /SCORE:\s*1/i.test(judgment) ? 1 : 0;
 
     results.push({
       q_id: entry.id || entry.question_id || `q${qi}`,

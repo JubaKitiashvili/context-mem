@@ -13,7 +13,8 @@ export function safeName(name: string): string {
     .replace(/[\x00-\x1f\x7f]/g, '')
     .replace(/\.\./g, '--')
     .trim();
-  return cleaned.length > 0 ? cleaned.slice(0, 200) : '_unnamed';
+  if (!cleaned || /^[-.]+$/.test(cleaned)) return '_unnamed';
+  return cleaned.slice(0, 200);
 }
 
 export interface EntityRow {
@@ -167,7 +168,7 @@ ${knowledgeLinks}
 
 ---
 
-_Schema reference: [[schema.md]]_
+_Schema reference: see \`docs/llm-wiki-schema.md\` in the context-mem repository._
 `;
 }
 

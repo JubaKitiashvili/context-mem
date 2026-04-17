@@ -235,10 +235,10 @@ All operations are sub-millisecond, zero LLM dependency:
 
 ---
 
-## MCP Tools (44)
+## MCP Tools (45)
 
 <details>
-<summary>Click to see all 44 tools</summary>
+<summary>Click to see all 45 tools</summary>
 
 | Tool | Description |
 |---|---|

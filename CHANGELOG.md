@@ -10,15 +10,17 @@ All notable changes to context-mem are documented here.
 - **Auto-generated `log.md`** — append-only chronological event log, grep-parseable: `## [YYYY-MM-DD HH:MM] event | summary`. Pipeline `observe()` emits an `ingest` entry after each INSERT.
 - **Entity / topic / session / knowledge pages** — one markdown page per row, linked via `[[entities/<safeName>]]` wikilinks. `safeName` neutralizes `/\:`, control chars, `..` traversal, and collapses empty input to `_unnamed`.
 - **Path-traversal guard** — `withinVault()` resolves the absolute path before every write and refuses anything outside the vault root.
+- **Privacy filter on vault writes** — `refreshSession` and `refreshTopic` exclude `privacy_level='private'` rows from markdown output; `pipeline.observe()` skips `logEvent` emission for private observations and masks summaries for redacted ones. Private content never reaches disk even with `vault.enabled=true`.
+- **Async `logEvent`** — vault log appends use `fs.promises.appendFile` and fire-and-forget in the pipeline, so the `observe()` hot path is never blocked on filesystem I/O.
 - **CLAUDE.md schema spec v1** — `docs/llm-wiki-schema.md` formalizes the convention (directory layout, page types, linking rules, ingest/query/lint operations, agent workflows, interop contract). Pattern credit: Andrej Karpathy's LLM Wiki gist (2026-04-04).
 - **README v4 draft** — `docs/README-v4-draft.md` repositions context-mem as dual-pillar (Memory + Compression). Promoted to `README.md` at v4.0.
 - **E2E QA benchmark** — `npm run bench:e2e-qa` retrieves top-k then runs Haiku-answer + Haiku-judge to measure end-to-end QA accuracy, not just retrieval recall. Addresses point 1 of issue #6.
 - **Benchmark methodology doc** — `docs/benchmarks/methodology.md` discloses granularity, scoring rules, and enriched-ingestion practices previously buried in `<details>` blocks. Addresses points 2 + 3 of issue #6.
 
 ### Changed
-- **Synonym migration** — 22 general-vocabulary entries (family terms, workplace vocab, object nouns) moved from `benchmarks/lib/expansions.js` into core `src/plugins/search/query-builder.ts`. 8 benchmark-fitted entries (`violin`, `cookie`, `supervillain`, `martial`, `race`, `counseling`, `digestive`, and `sport`'s `collectible`) deleted. Migration audit at `docs/benchmarks/synonym-migration-2026-04.md`. Addresses point 4 of issue #6.
+- **Synonym migration** — 38 entries in `benchmarks/lib/expansions.js` audited: 28 moved to core `src/plugins/search/query-builder.ts` as new keys (family terms, workplace vocab, object/subject nouns), 3 merged into existing core keys (`education`, `workplace`, `hobby`), 7 deleted as benchmark-fitted (`cookie`, `violin`, `race`, `martial`, `supervillain`, `counseling`, `digestive`). `sport` moved without its `collectible` value. Migration audit at `docs/benchmarks/synonym-migration-2026-04.md`. Addresses point 4 of issue #6.
 - MCP server version string → 3.4.0.
-- Tests: 1166 → 1179 (+13 new: 10 vault unit tests, 3 vault lifecycle + template tests).
+- Tests: 1166 → 1182 (+16 new: 10 vault unit tests, 3 vault lifecycle + template tests, 3 vault privacy + safeName dot-only regression tests).
 
 ### Notes
 - Benchmark delta numbers (pre- vs post- synonym migration) are marked `_pending_` in `docs/benchmarks/synonym-migration-2026-04.md`. Re-run `npm run bench` with `ANTHROPIC_API_KEY` + datasets before tagging `v3.4.0`; backfill the table before the git tag.

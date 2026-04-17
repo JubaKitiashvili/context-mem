@@ -18,10 +18,11 @@ This migration:
 
 ## Audit Summary
 
-- **Total entries before migration:** 30
-- **Classified as general vocabulary → moved to core:** 22
-- **Classified as benchmark-fitted → deleted:** 8
-- **Close calls (documented below):** 1 (`sport`)
+- **Total entries before migration:** 38 (`wc -l` was misleading; precise count of `key:` lines is 38)
+- **Moved to core as new keys:** 28 (family terms, workplace vocab, objects/subject nouns)
+- **Extended existing core keys (value-merge only):** 3 (`education`, `workplace`, `hobby`)
+- **Deleted as benchmark-fitted:** 7 (`cookie`, `violin`, `race`, `martial`, `supervillain`, `counseling`, `digestive`)
+- **Value-stripped during move:** 1 (`sport`'s `collectible` value — see Close Calls)
 - **Remaining in `benchmarks/lib/expansions.js`:** 0
 
 ## General-vocabulary entries migrated to core
@@ -60,7 +61,7 @@ This migration:
 | `conference` | `['publication', 'research', 'academic', 'paper']` (new key) |
 | `sport` | `['game', 'play', 'athletic', 'team']` — see Close Calls below |
 
-## Benchmark-fitted entries deleted
+## Benchmark-fitted entries deleted (7 keys)
 
 - **`cookie: ['bake', 'recipe', 'chocolate', 'dessert']`** — Narrowly fitted to a cookie-baking narrative question. The
   coverage is already provided by core `cook: ['recipe', 'bake', 'kitchen', 'meal']`.
@@ -76,8 +77,9 @@ This migration:
   counseling in general usage, exposing the benchmark-fitted origin. Too narrow.
 - **`digestive: ['stomach', 'health', 'issue', 'problem']`** — Overly specific medical/health pattern fitted to one
   health-related question. Generalising health vocabulary belongs in a dedicated health-domain module, not ad-hoc here.
-- **`sport`'s `collectible` value** — Removed during close-call resolution (see below). The general synonym set was
-  moved to core.
+
+The `sport` key was moved to core without the `collectible` value (see Close Calls below) — not counted among the 7
+deleted keys since the key itself survives.
 
 ## Close calls and rationale
 

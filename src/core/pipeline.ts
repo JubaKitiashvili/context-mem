@@ -229,13 +229,12 @@ export class Pipeline {
       [obs.id, obs.type, obs.content, obs.summary || null, JSON.stringify(obs.metadata), obs.indexed_at, privacyLevel, this.sessionId, contentHash, opts?.correlation_id || null, importance.score, importance.pinned ? 1 : 0, 'verbatim']
     );
 
-    // 6a. Vault event log (fail-open — never blocks observe)
-    if (this.vaultSync) {
-      try {
-        await this.vaultSync.logEvent('ingest', `${obs.type}: ${(obs.summary ?? obs.content).slice(0, 80)}`);
-      } catch (err) {
+    // 6a. Vault event log — fail-open, never blocks observe, never leaks private content
+    if (this.vaultSync && privacyLevel !== 'private') {
+      const safeSummary = redactions > 0 ? `${obs.type}: [redacted]` : `${obs.type}: ${(obs.summary ?? obs.content).slice(0, 80)}`;
+      this.vaultSync.logEvent('ingest', safeSummary).catch(err => {
         this.errorLogger?.error('pipeline', err, { observation_id: obs.id, mode: 'vault-log' });
-      }
+      });
     }
 
     // 6b. Create/update entities in knowledge graph (sync but non-critical)

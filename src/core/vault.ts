@@ -98,6 +98,7 @@ export class VaultSync {
        FROM observations o
        JOIN observation_topics ot ON ot.observation_id = o.id
        WHERE ot.topic_id = ?
+         AND (o.privacy_level IS NULL OR o.privacy_level != 'private')
        ORDER BY o.indexed_at DESC
        LIMIT 20`,
     ).all(topic.id) as ObsRow[];
@@ -113,7 +114,9 @@ export class VaultSync {
     if (!this.enabled) return;
     const observations = this.storage.prepare(
       `SELECT id, type, content, summary, indexed_at, session_id
-       FROM observations WHERE session_id = ?
+       FROM observations
+       WHERE session_id = ?
+         AND (privacy_level IS NULL OR privacy_level != 'private')
        ORDER BY indexed_at ASC`,
     ).all(sessionId) as ObsRow[];
 
@@ -194,10 +197,12 @@ export class VaultSync {
     if (!this.enabled) return;
     const entry = renderLogEntry(event, summary, Date.now());
     const logPath = path.join(this.vaultDir, 'log.md');
-    fs.mkdirSync(path.dirname(logPath), { recursive: true });
-    if (!fs.existsSync(logPath)) {
-      fs.writeFileSync(logPath, '# Event Log\n\n', 'utf8');
+    await fs.promises.mkdir(path.dirname(logPath), { recursive: true });
+    try {
+      await fs.promises.access(logPath);
+    } catch {
+      await fs.promises.writeFile(logPath, '# Event Log\n\n', 'utf8');
     }
-    fs.appendFileSync(logPath, entry, 'utf8');
+    await fs.promises.appendFile(logPath, entry, 'utf8');
   }
 }
