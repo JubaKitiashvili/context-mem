@@ -13,7 +13,11 @@ function runHook(input: string): { status: number | null; stdout: string; stderr
     encoding: 'utf8',
     timeout: 2000,
     // Prevent actual HTTP POST by setting an unusable port
-    env: { ...process.env, CONTEXT_MEM_PORT: '1' },
+    env: {
+      ...process.env,
+      CONTEXT_MEM_PORT: '1',
+      CONTEXT_MEM_API_PORT: '1',
+    },
   });
   return {
     status: result.status,
@@ -135,6 +139,18 @@ describe('context-mem-hook', () => {
     });
     const { status } = runHook(payload);
     assert.equal(status, 0);
+  });
+
+  it('stable across 10 consecutive runs', () => {
+    const payload = JSON.stringify({
+      tool_name: 'Bash',
+      tool_input: {},
+      tool_output: { stdout: 'this is a long enough bash output string' },
+    });
+    for (let i = 0; i < 10; i++) {
+      const { status } = runHook(payload);
+      assert.equal(status, 0, `run #${i + 1} exited non-zero`);
+    }
   });
 
   it('handles missing tool_input and tool_output gracefully', () => {

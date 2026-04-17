@@ -55,7 +55,10 @@ if (cleaned.length < 10) process.exit(0);
 
 // Fire-and-forget POST to HTTP bridge
 const http = require('http');
-const port = parseInt(process.env.CONTEXT_MEM_API_PORT || '51894', 10);
+const port = parseInt(
+  process.env.CONTEXT_MEM_API_PORT || process.env.CONTEXT_MEM_PORT || '51894',
+  10,
+);
 const payload = JSON.stringify({
   content: cleaned.slice(0, 50000), // Cap at 50KB
   type: obs.type,
