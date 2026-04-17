@@ -452,6 +452,10 @@ export interface ContextMemConfig {
   auto_promote?: AutoPromoteConfig;
   ai_curation?: AICurationConfig;
   token_estimation?: TokenEstimationConfig;
+  vault?: {
+    enabled?: boolean;
+    dir?: string;
+  };
   port: number;
   api_port: number;
   db_path: string;

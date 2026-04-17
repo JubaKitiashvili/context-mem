@@ -52,6 +52,7 @@ import { PluginLoader } from './plugin-loader.js';
 import { KnowledgeGraph } from './knowledge-graph.js';
 import { AgentRegistry } from './agent-registry.js';
 import { ErrorLogger } from './error-logger.js';
+import { VaultSync } from './vault.js';
 import type { VectorSearch } from '../plugins/search/vector.js';
 import type {
   SessionContext,
@@ -83,6 +84,7 @@ export class Kernel {
   llmService?: LLMService;
   feedbackEngine?: import('./feedback-engine.js').FeedbackEngine;
   errorLogger!: ErrorLogger;
+  private vaultSync?: VaultSync;
 
   constructor(projectDir: string) {
     this.projectDir = projectDir;
@@ -107,6 +109,17 @@ export class Kernel {
 
     // 1b. Error logger — must exist before any subsystem that might fail
     this.errorLogger = ErrorLogger.instance(this.storage);
+
+    // 1c. Vault sync (opt-in via vault.enabled)
+    if (this.config.vault?.enabled) {
+      const vaultDir = this.config.vault.dir
+        ? (path.isAbsolute(this.config.vault.dir)
+          ? this.config.vault.dir
+          : path.join(this.projectDir, this.config.vault.dir))
+        : path.join(this.projectDir, '.context-mem/vault');
+      this.vaultSync = new VaultSync(this.storage, { vaultDir, enabled: true });
+      await this.vaultSync.init();
+    }
 
     // 2. Privacy
     const privacy = new PrivacyEngine(this.config.privacy);
@@ -309,6 +322,7 @@ export class Kernel {
   }
 
   /** Safe accessors for ToolKernel adapter */
+  getVaultSync(): VaultSync | undefined { return this.vaultSync; }
   getConfig(): ContextMemConfig { this.ensureStarted(); return this.config; }
   getStorage(): BetterSqlite3Storage { this.ensureStarted(); return this.storage; }
   getSearchFusion(): SearchFusion { this.ensureStarted(); return this.searchFusion; }
@@ -468,6 +482,11 @@ export class Kernel {
   }
 
   async stop(): Promise<void> {
+    // Stop vault sync
+    if (this.vaultSync) {
+      this.vaultSync.stop();
+    }
+
     // Stop Dreamer background agent
     if (this.dreamer) {
       this.dreamer.stop();
