@@ -38,7 +38,7 @@ let _expansions: Record<string, string[]> = {
   activity: ['hobby', 'sport', 'exercise', 'game', 'routine', 'schedule', 'pastime'],
   evening: ['night', 'routine', 'activity', 'relax', 'leisure', 'schedule'],
   exercise: ['workout', 'gym', 'fitness', 'sport'],
-  hobby: ['interest', 'activity', 'passion', 'enjoy'],
+  hobby: ['interest', 'activity', 'passion', 'enjoy', 'loves', 'likes', 'free'],
   // Work
   tool: ['app', 'software', 'platform', 'service'],
   email: ['message', 'outreach', 'send', 'follow'],
@@ -48,19 +48,51 @@ let _expansions: Record<string, string[]> = {
   // Common relationships
   sibling: ['brother', 'sister', 'family'],
   siblings: ['brother', 'sister', 'family', 'sibling'],
+  // Family terms (general personal-context vocabulary)
+  aunt: ['relative', 'family'],
+  brother: ['sibling', 'family'],
+  cousin: ['relative', 'family'],
+  father: ['dad', 'parent', 'papa'],
+  mother: ['mom', 'parent', 'mama'],
+  nephew: ['relative', 'family'],
+  niece: ['relative', 'family'],
+  sister: ['sibling', 'family'],
+  uncle: ['relative', 'family'],
   // Commerce
   buy: ['purchase', 'bought', 'order', 'shop'],
   bought: ['purchase', 'buy', 'ordered'],
   travel: ['trip', 'visit', 'vacation', 'went'],
   // Person attributes (general vocabulary)
+  age: ['years', 'old', 'born', 'birthday'],
+  background: ['degree', 'studied', 'education', 'school'],
+  education: ['degree', 'university', 'college', 'school', 'studied', 'graduated'],
   hometown: ['city', 'town', 'lives', 'born', 'from', 'home'],
+  level: ['degree', 'completed', 'graduated'],
   location: ['city', 'town', 'place', 'address', 'lives'],
-  education: ['degree', 'university', 'college', 'school', 'studied'],
-  position: ['role', 'title', 'job', 'work', 'occupation'],
-  workplace: ['company', 'office', 'employer', 'firm'],
+  living: ['job', 'work', 'career', 'profession'],
   occupation: ['job', 'work', 'career', 'profession'],
+  position: ['role', 'title', 'job', 'work', 'occupation'],
+  workplace: ['company', 'office', 'employer', 'firm', 'works'],
   career: ['job', 'work', 'profession'],
   company: ['firm', 'business', 'organization', 'employer'],
+  // Work / social
+  boss: ['manager', 'supervisor', 'lead'],
+  coworker: ['colleague', 'workmate', 'office'],
+  // Activities (extended)
+  hobbies: ['interest', 'activity', 'passion', 'enjoy', 'loves', 'likes'],
+  sport: ['game', 'play', 'athletic', 'team'],
+  // Object / subject-area nouns (general vocabulary)
+  accessories: ['gear', 'equipment', 'setup', 'kit'],
+  appliance: ['kitchen', 'device'],
+  battery: ['charge', 'power'],
+  bookshelf: ['furniture', 'shelf', 'storage'],
+  certificate: ['award', 'achievement', 'recognition'],
+  conference: ['publication', 'research', 'academic', 'paper'],
+  jewelry: ['ring', 'necklace', 'bracelet', 'gift'],
+  journal: ['write', 'diary', 'notebook'],
+  photography: ['camera', 'photo', 'lens', 'shoot'],
+  publication: ['conference', 'research', 'journal', 'paper'],
+  volunteer: ['charity', 'community', 'help', 'service'],
 };
 
 /** Current active expansions (core + any injected extras). */
