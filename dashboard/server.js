@@ -1556,6 +1556,46 @@ function handleApi(req, res) {
       case '/api/tunnels':
         data = getTunnels();
         break;
+      case '/api/diagnostics': {
+        const mode = url.searchParams.get('mode') === 'list' ? 'list' : 'summary';
+        const since = parseInt(url.searchParams.get('since') || String(Date.now() - 3600000), 10);
+        const severity = url.searchParams.get('severity');
+        const category = url.searchParams.get('category');
+        const limit = Math.max(1, Math.min(500, parseInt(url.searchParams.get('limit') || '50', 10)));
+
+        let rows;
+        if (mode === 'list') {
+          const clauses = ['timestamp >= ?'];
+          const args = [since];
+          if (severity) { clauses.push('severity = ?'); args.push(severity); }
+          if (category) { clauses.push('category = ?'); args.push(category); }
+          rows = db.prepare(
+            `SELECT id, timestamp, severity, category, message, occurrences, first_seen, last_seen, stack
+             FROM error_log
+             WHERE ${clauses.join(' AND ')}
+             ORDER BY timestamp DESC
+             LIMIT ?`
+          ).all(...args, limit);
+        } else {
+          const clauses = ['timestamp >= ?'];
+          const args = [since];
+          if (severity) { clauses.push('severity = ?'); args.push(severity); }
+          if (category) { clauses.push('category = ?'); args.push(category); }
+          rows = db.prepare(
+            `SELECT category, message, severity,
+                    SUM(occurrences) as count,
+                    MIN(first_seen) as first_seen,
+                    MAX(last_seen) as last_seen
+             FROM error_log
+             WHERE ${clauses.join(' AND ')}
+             GROUP BY category, message_hash, severity
+             ORDER BY last_seen DESC
+             LIMIT ?`
+          ).all(...args, limit);
+        }
+        data = { mode, rows };
+        break;
+      }
       default:
         // Path-based observation lookup: /api/observation/<id>
         if (route.startsWith('/api/observation/')) {
@@ -3483,6 +3523,7 @@ function getDashboardHtml() {
       <a href="/timeline" class="nav-link">Timeline</a>
       <a href="/trail" class="nav-link">Trail</a>
       <a href="/narrative" class="nav-link">Narrative</a>
+      <a href="/diagnostics" class="nav-link">Diagnostics</a>
     </nav>
   </div>
   <div class="header-right">
@@ -6084,6 +6125,7 @@ function getGraphPageHtml() {
       <a href="/" class="nav-link">Home</a>
       <a href="/graph" class="nav-link active">Graph</a>
       <a href="/timeline" class="nav-link">Timeline</a>
+      <a href="/diagnostics" class="nav-link">Diagnostics</a>
     </nav>
   </div>
   <button class="theme-toggle" id="themeToggle" title="Toggle light/dark theme">L</button>
@@ -6896,6 +6938,7 @@ function getTimelinePageHtml() {
       <a href="/" class="nav-link">Home</a>
       <a href="/graph" class="nav-link">Graph</a>
       <a href="/timeline" class="nav-link active">Timeline</a>
+      <a href="/diagnostics" class="nav-link">Diagnostics</a>
     </nav>
   </div>
   <div class="header-right">
@@ -7409,6 +7452,8 @@ const server = http.createServer((req, res) => {
     res.end(getTrailPageHtml());
   } else if (pagePath === '/narrative') {
     res.end(getNarrativePageHtml());
+  } else if (pagePath === '/diagnostics') {
+    res.end(getDiagnosticsPageHtml());
   } else {
     res.end(getDashboardHtml());
   }
@@ -7447,7 +7492,7 @@ function getTopicsPageHtml() {
 <div class="header"><div class="header-left">
   <div class="logo">cm</div><span style="font-size:14px;font-weight:600;">context-mem <span style="font-size:10px;color:var(--text-muted);font-weight:400;">v3.0</span></span>
   <nav class="nav-links">
-    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link active">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link">Trail</a><a href="/narrative" class="nav-link">Narrative</a>
+    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link active">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link">Trail</a><a href="/narrative" class="nav-link">Narrative</a><a href="/diagnostics" class="nav-link">Diagnostics</a>
   </nav>
 </div></div>
 <div class="main">
@@ -7532,7 +7577,7 @@ function getTrailPageHtml() {
 <div class="header"><div class="header-left">
   <div class="logo">cm</div><span style="font-size:14px;font-weight:600;">context-mem <span style="font-size:10px;color:var(--text-muted);font-weight:400;">v3.0</span></span>
   <nav class="nav-links">
-    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link active">Trail</a><a href="/narrative" class="nav-link">Narrative</a>
+    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link active">Trail</a><a href="/narrative" class="nav-link">Narrative</a><a href="/diagnostics" class="nav-link">Diagnostics</a>
   </nav>
 </div></div>
 <div class="main">
@@ -7606,7 +7651,7 @@ function getNarrativePageHtml() {
 <div class="header"><div class="header-left">
   <div class="logo">cm</div><span style="font-size:14px;font-weight:600;">context-mem <span style="font-size:10px;color:var(--text-muted);font-weight:400;">v3.0</span></span>
   <nav class="nav-links">
-    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link">Trail</a><a href="/narrative" class="nav-link active">Narrative</a>
+    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link">Trail</a><a href="/narrative" class="nav-link active">Narrative</a><a href="/diagnostics" class="nav-link">Diagnostics</a>
   </nav>
 </div></div>
 <div class="main">
@@ -7656,6 +7701,108 @@ function copyNarrative() {
 }
 document.getElementById('narrativeTopic').addEventListener('input', () => { clearTimeout(window._nt); window._nt = setTimeout(generateNarrative, 500); });
 generateNarrative();
+</script></body></html>`;
+}
+
+function getDiagnosticsPageHtml() {
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>context-mem - Diagnostics</title>
+<style>
+  :root { --bg:#08080d;--bg-card:#0f0f17;--bg-card-hover:#161622;--bg-elevated:#1a1a28;--border:#1e1e30;--text:#e8e8ef;--text-dim:#7a7a90;--text-muted:#4a4a60;--accent:#818cf8;--green:#34d399;--orange:#fbbf24;--red:#f87171;--blue:#60a5fa;--purple:#c084fc;--cyan:#22d3ee;--radius:16px;--radius-sm:10px;--font-ui:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;--font-mono:'SF Mono','Cascadia Code',monospace; }
+  * { margin:0;padding:0;box-sizing:border-box; }
+  body { font-family:var(--font-ui);background:var(--bg);color:var(--text);min-height:100vh; }
+  .header { display:flex;align-items:center;padding:0 24px;height:56px;border-bottom:1px solid var(--border);background:rgba(8,8,13,0.85);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px); }
+  .header-left { display:flex;align-items:center;gap:10px; }
+  .logo { width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white; }
+  .nav-links { display:flex;gap:2px;margin-left:12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:3px; }
+  .nav-link { font-size:12px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:4px 12px;border-radius:7px; }
+  .nav-link:hover { color:var(--text);background:var(--bg-card-hover); }
+  .nav-link.active { color:var(--text);background:var(--bg-card); }
+  .main { max-width:900px;margin:0 auto;padding:24px; }
+  .card { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px; }
+  .filters { display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end; }
+  .filters label { font-size:12px;color:var(--text-dim);display:flex;flex-direction:column;gap:4px; }
+  .filters select { padding:6px 12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;outline:none; }
+  .filters button { padding:6px 16px;background:var(--accent);color:white;border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:12px; }
+  .filters button:hover { opacity:0.85; }
+  .data-table { width:100%;border-collapse:collapse;font-size:12px; }
+  .data-table th { text-align:left;padding:8px 12px;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.5px; }
+  .data-table td { padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-dim);vertical-align:top; }
+  .data-table tr:last-child td { border-bottom:none; }
+  .data-table tr:hover td { background:var(--bg-card-hover); }
+  .sev-error { color:var(--red); }
+  .sev-critical { color:var(--red);font-weight:700; }
+  .sev-warn { color:var(--orange); }
+  .sev-info { color:var(--blue); }
+</style></head><body>
+<div class="header"><div class="header-left">
+  <div class="logo">cm</div><span style="font-size:14px;font-weight:600;">context-mem <span style="font-size:10px;color:var(--text-muted);font-weight:400;">v3.0</span></span>
+  <nav class="nav-links">
+    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link">Trail</a><a href="/narrative" class="nav-link">Narrative</a><a href="/diagnostics" class="nav-link active">Diagnostics</a>
+  </nav>
+</div></div>
+<div class="main">
+  <h2 style="font-size:18px;margin-bottom:8px;">Diagnostics</h2>
+  <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;">Internal error log — what context-mem subsystems have been failing at.</p>
+  <div class="card">
+    <div class="filters">
+      <label>Since
+        <select id="diag-since">
+          <option value="3600000">Last hour</option>
+          <option value="86400000" selected>Last 24 hours</option>
+          <option value="604800000">Last 7 days</option>
+        </select>
+      </label>
+      <label>Severity
+        <select id="diag-severity">
+          <option value="">Any</option>
+          <option value="info">info</option>
+          <option value="warn">warn</option>
+          <option value="error" selected>error</option>
+          <option value="critical">critical</option>
+        </select>
+      </label>
+      <button id="diag-refresh">Refresh</button>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr><th>Category</th><th>Message</th><th>Severity</th><th>Count</th><th>Last seen</th></tr>
+      </thead>
+      <tbody id="diag-rows"></tbody>
+    </table>
+    <p id="diag-empty" style="display:none;opacity:0.6;margin-top:12px;font-size:12px;">No errors in selected window.</p>
+  </div>
+</div>
+<script>
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+async function loadDiagnostics() {
+  const since = Date.now() - parseInt(document.getElementById('diag-since').value, 10);
+  const severity = document.getElementById('diag-severity').value;
+  const params = new URLSearchParams({ mode: 'summary', since: String(since) });
+  if (severity) params.set('severity', severity);
+  const res = await fetch('/api/diagnostics?' + params.toString());
+  const data = await res.json();
+  const tbody = document.getElementById('diag-rows');
+  const empty = document.getElementById('diag-empty');
+  tbody.innerHTML = '';
+  if (!data.rows || !data.rows.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  for (const r of data.rows) {
+    const sevClass = 'sev-' + escapeHtml(r.severity);
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + escapeHtml(r.category) + '</td>' +
+      '<td style="max-width:400px;word-break:break-word;">' + escapeHtml(r.message) + '</td>' +
+      '<td class="' + sevClass + '">' + escapeHtml(r.severity) + '</td>' +
+      '<td>' + r.count + '</td>' +
+      '<td style="white-space:nowrap;">' + new Date(r.last_seen).toLocaleString() + '</td>';
+    tbody.appendChild(tr);
+  }
+}
+document.getElementById('diag-refresh').addEventListener('click', loadDiagnostics);
+loadDiagnostics();
 </script></body></html>`;
 }
 
