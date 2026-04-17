@@ -23,7 +23,7 @@ All notable changes to context-mem are documented here.
 - Tests: 1166 → 1182 (+16 new: 10 vault unit tests, 3 vault lifecycle + template tests, 3 vault privacy + safeName dot-only regression tests).
 
 ### Notes
-- Benchmark delta numbers (pre- vs post- synonym migration) are marked `_pending_` in `docs/benchmarks/synonym-migration-2026-04.md`. Re-run `npm run bench` with `ANTHROPIC_API_KEY` + datasets before tagging `v3.4.0`; backfill the table before the git tag.
+- v3.4.0 is a flag-plant preview release: `vault.enabled` is opt-in (default off). The synonym-migration benchmark re-run is scheduled for v4.0.0 "Cognition" alongside the full benchmark sweep. See `docs/benchmarks/synonym-migration-2026-04.md` for the pending-deltas table.
 
 ### Credits
 - Andrej Karpathy — [LLM Wiki gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) for the paradigm framing.

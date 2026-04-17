@@ -1,5 +1,15 @@
 # context-mem Project Instructions
 
+## Strategic Context (read first)
+
+The **source of truth for direction, positioning, pricing, fundraising, roadmap** is:
+
+📍 [`docs/superpowers/plans/2026-04-17-1b-company-architecture.md`](docs/superpowers/plans/2026-04-17-1b-company-architecture.md)
+
+Read it before answering any strategic question. Update the Decision Log (§9) whenever a strategic call is made. Plans navigation: [`docs/superpowers/plans/INDEX.md`](docs/superpowers/plans/INDEX.md).
+
+Current phase: **v3.4.0 "LLM Wiki Preview" shipped** (2026-04-18). Next: **v4.0.0 "Cognition"** (target 2026-05-22) — full synthesis pages, Obsidian plugin, 8 IDE integrations, Context Protocol v1 RFC, and the post-migration benchmark re-run to backfill `docs/benchmarks/synonym-migration-2026-04.md`.
+
 ## Auto-Observe Rule
 When working on this project, use `mcp__context-mem__observe` to store:
 - Every benchmark result (scores, per-category breakdown)

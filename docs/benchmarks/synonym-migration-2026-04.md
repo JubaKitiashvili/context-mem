@@ -103,9 +103,10 @@ Result: `sport: ['game', 'play', 'athletic', 'team']` lives in core; `collectibl
 | MemBench R@5 | 98.0% | _pending_ | _pending_ |
 | ConvoMem R@10 | 97.7% | _pending_ | _pending_ |
 
-> **Note:** Numbers will be backfilled by the maintainer running `npm run bench` with `ANTHROPIC_API_KEY` + datasets
-> before v3.4.0 publishing. This migration changes core expansion semantics — benchmarks MUST be re-run before the
-> release is tagged.
+> **Note:** v3.4.0 ships without re-run numbers — the release is a flag-plant preview (`vault.enabled` is opt-in
+> off by default) whose value is the LLM Wiki narrative and schema spec, not a retrieval-score claim. The migration
+> changes core expansion semantics, so the post-migration re-run is scheduled for v4.0.0 "Cognition" (target 2026-05-22)
+> where the full benchmark sweep is part of the release gate.
 
 ## Honest reporting
 
