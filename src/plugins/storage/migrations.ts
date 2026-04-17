@@ -4,7 +4,7 @@ export interface Migration {
   up: string;
 }
 
-export const LATEST_SCHEMA_VERSION = 17;
+export const LATEST_SCHEMA_VERSION = 18;
 
 export const migrations: Migration[] = [
   {
@@ -554,6 +554,33 @@ export const migrations: Migration[] = [
 
       INSERT OR IGNORE INTO schema_version (version, applied_at, description)
       VALUES (17, unixepoch(), 'Add importance_score index + fix FTS trigger on embedding-only updates');
+    `,
+  },
+  {
+    version: 18,
+    description: 'Add error_log table for structured internal error capture',
+    up: `
+      CREATE TABLE IF NOT EXISTS error_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp INTEGER NOT NULL,
+        severity TEXT NOT NULL CHECK (severity IN ('info','warn','error','critical')),
+        category TEXT NOT NULL,
+        message TEXT NOT NULL,
+        message_hash TEXT NOT NULL,
+        context_json TEXT,
+        stack TEXT,
+        occurrences INTEGER NOT NULL DEFAULT 1,
+        first_seen INTEGER NOT NULL,
+        last_seen INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_error_log_timestamp ON error_log(timestamp DESC);
+      CREATE INDEX IF NOT EXISTS idx_error_log_severity ON error_log(severity);
+      CREATE INDEX IF NOT EXISTS idx_error_log_category ON error_log(category);
+      CREATE INDEX IF NOT EXISTS idx_error_log_hash ON error_log(message_hash);
+
+      INSERT OR IGNORE INTO schema_version (version, applied_at, description)
+      VALUES (18, unixepoch(), 'Add error_log table for structured internal error capture');
     `,
   },
 ];

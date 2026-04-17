@@ -4,12 +4,12 @@ import Database from 'better-sqlite3';
 import { LATEST_SCHEMA_VERSION, migrations } from '../../../plugins/storage/migrations.js';
 
 describe('migrations', () => {
-  it('LATEST_SCHEMA_VERSION is 17', () => {
-    assert.equal(LATEST_SCHEMA_VERSION, 17);
+  it('LATEST_SCHEMA_VERSION is 18', () => {
+    assert.equal(LATEST_SCHEMA_VERSION, 18);
   });
 
-  it('migrations array has 17 entries', () => {
-    assert.equal(migrations.length, 17);
+  it('migrations array has 18 entries', () => {
+    assert.equal(migrations.length, 18);
   });
 
   it('each migration has version, description, and up', () => {
@@ -250,7 +250,7 @@ describe('migrations', () => {
 
       // Verify schema_version has all entries
       const versions = db.prepare('SELECT version FROM schema_version ORDER BY version').all() as Array<{ version: number }>;
-      assert.equal(versions.length, 17);
+      assert.equal(versions.length, 18);
       assert.equal(versions[0].version, 1);
       assert.equal(versions[1].version, 2);
       assert.equal(versions[2].version, 3);
@@ -267,6 +267,8 @@ describe('migrations', () => {
       assert.equal(versions[13].version, 14);
       assert.equal(versions[14].version, 15);
       assert.equal(versions[15].version, 16);
+      assert.equal(versions[16].version, 17);
+      assert.equal(versions[17].version, 18);
 
       // Verify observations table exists and is insertable
       db.exec(`INSERT INTO observations (id, type, content, summary, metadata, indexed_at)

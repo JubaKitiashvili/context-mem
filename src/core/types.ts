@@ -515,3 +515,55 @@ export const DEFAULT_CONFIG: ContextMemConfig = deepFreeze({
     per_message_overhead: 500,
   },
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Error log (Phase 0 — foundations)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const ERROR_CATEGORIES = [
+  'embedder',
+  'entity',
+  'topic',
+  'summarizer',
+  'pipeline',
+  'dreamer',
+  'knowledge-graph',
+  'knowledge-base',
+  'storage',
+  'search',
+  'llm',
+  'privacy',
+  'hook',
+  'dashboard',
+  'mcp',
+  'config',
+  'migration',
+  'lifecycle',
+  'other',
+] as const;
+
+export type ErrorCategory = typeof ERROR_CATEGORIES[number];
+export type ErrorSeverity = 'info' | 'warn' | 'error' | 'critical';
+
+export interface ErrorLogEntry {
+  id: number;
+  timestamp: number;
+  severity: ErrorSeverity;
+  category: ErrorCategory;
+  message: string;
+  message_hash: string;
+  context_json?: string;
+  stack?: string;
+  occurrences: number;
+  first_seen: number;
+  last_seen: number;
+}
+
+export interface ErrorLogSummary {
+  category: ErrorCategory;
+  message: string;
+  severity: ErrorSeverity;
+  count: number;
+  first_seen: number;
+  last_seen: number;
+}
