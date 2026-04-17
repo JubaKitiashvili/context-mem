@@ -18,8 +18,10 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
-      - run: npm run build
+      - name: Install dependencies
+        run: npm ci
+      - name: Build TypeScript
+        run: npm run build
       - name: Run all benchmarks (if datasets available)
         run: |
           if [ -f /tmp/longmemeval-data/longmemeval_s_cleaned.json ] && [ -f /tmp/locomo/data/locomo10.json ] && [ -d /tmp/membench-data/MemData/FirstAgent ] && [ -d /tmp/beam/chats/100K ]; then
