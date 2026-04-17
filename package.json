@@ -10,8 +10,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "node --test 'dist/tests/**/*.test.js'",
-    "test:watch": "tsc --watch & node --test --watch 'dist/tests/**/*.test.js'",
+    "test": "node --test $(find dist/tests -name '*.test.js')",
+    "test:watch": "tsc --watch & node --test --watch $(find dist/tests -name '*.test.js')",
     "lint": "tsc --noEmit",
     "bench": "node benchmarks/run-all.js",
     "bench:full": "node benchmarks/run-all.js --full",
