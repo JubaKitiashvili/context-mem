@@ -48,6 +48,7 @@ import {
   handleEntityDetect,
   handleListPeople,
   handleTemporalQuery,
+  handleDiagnostics,
 } from './tools.js';
 
 export function createMcpServer(kernel: ToolKernel): Server {
@@ -206,6 +207,9 @@ export function createMcpServer(kernel: ToolKernel): Server {
           break;
         case 'temporal_query':
           result = await handleTemporalQuery(params as Parameters<typeof handleTemporalQuery>[0], kernel);
+          break;
+        case 'diagnostics':
+          result = await handleDiagnostics(params as Parameters<typeof handleDiagnostics>[0], kernel);
           break;
         default:
           console.error(`context-mem: Unknown MCP tool requested: ${name}`);

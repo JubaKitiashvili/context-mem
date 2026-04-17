@@ -19,8 +19,12 @@ import type {
   RelationshipType,
   GraphResult,
   AgentInfo,
+  ErrorSeverity,
+  ErrorCategory,
+  ErrorLogEntry,
+  ErrorLogSummary,
 } from '../core/types.js';
-import { OBSERVATION_TYPES, ENTITY_TYPES, RELATIONSHIP_TYPES } from '../core/types.js';
+import { OBSERVATION_TYPES, ENTITY_TYPES, RELATIONSHIP_TYPES, ERROR_CATEGORIES } from '../core/types.js';
 import type { KnowledgeGraph } from '../core/knowledge-graph.js';
 import type { PluginRegistry } from '../core/plugin-registry.js';
 import type { ContextMemConfig } from '../core/types.js';
@@ -80,6 +84,7 @@ export interface ToolKernel {
   agentRegistry?: AgentRegistry;
   llmService?: LLMService;
   feedbackEngine?: import('../core/feedback-engine.js').FeedbackEngine;
+  errorLogger?: import('../core/error-logger.js').ErrorLogger;
 }
 
 // ---------------------------------------------------------------------------
@@ -703,6 +708,32 @@ export const toolDefinitions: ToolDefinition[] = [
       properties: {
         status: { type: 'string', enum: ['pending', 'accepted', 'dismissed', 'all'], description: 'Filter by status (default: pending)' },
         limit: { type: 'number', description: 'Max results (default: 10)' },
+      },
+    },
+  },
+  // Diagnostics
+  {
+    name: 'diagnostics',
+    description: 'Query internal error log. Shows what context-mem subsystems have failed at (embedder, entity extraction, topic storage, dreamer, etc.). Useful for doctor-style debugging.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        since: { type: 'number', description: 'Unix ms — only include entries at or after. Default: last hour.' },
+        severity: {
+          type: 'string',
+          enum: ['info', 'warn', 'error', 'critical'],
+          description: 'Filter by severity. Omit for all severities.',
+        },
+        category: {
+          type: 'string',
+          description: 'Filter by category (embedder, entity, topic, summarizer, pipeline, dreamer, knowledge-graph, etc.).',
+        },
+        limit: { type: 'number', minimum: 1, maximum: 500, description: 'Max results. Default 50.' },
+        mode: {
+          type: 'string',
+          enum: ['summary', 'list'],
+          description: 'summary (default) groups by category+message; list returns raw rows.',
+        },
       },
     },
   },
@@ -2490,4 +2521,56 @@ export async function handleHandoffSession(
     snapshot_id: kernel.sessionId,
     token_estimate: tokenEstimate,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Diagnostics (Phase 0)
+// ---------------------------------------------------------------------------
+
+const VALID_SEVERITIES: ReadonlyArray<ErrorSeverity> = ['info', 'warn', 'error', 'critical'];
+
+function validateDiagSeverity(v: unknown): ErrorSeverity | undefined {
+  if (typeof v !== 'string') return undefined;
+  return VALID_SEVERITIES.includes(v as ErrorSeverity) ? (v as ErrorSeverity) : undefined;
+}
+
+function validateDiagCategory(v: unknown): ErrorCategory | undefined {
+  if (typeof v !== 'string') return undefined;
+  return (ERROR_CATEGORIES as readonly string[]).includes(v) ? (v as ErrorCategory) : undefined;
+}
+
+export async function handleDiagnostics(
+  params: {
+    since?: number;
+    severity?: ErrorSeverity;
+    category?: ErrorCategory;
+    limit?: number;
+    mode?: 'summary' | 'list';
+  },
+  kernel: ToolKernel,
+): Promise<{ mode: 'summary' | 'list'; rows: ErrorLogSummary[] | ErrorLogEntry[] }> {
+  if (!kernel.errorLogger) {
+    return { mode: 'summary', rows: [] };
+  }
+
+  const mode = params.mode === 'list' ? 'list' : 'summary';
+  const since = typeof params.since === 'number' && params.since >= 0 ? params.since : Date.now() - 3600_000;
+  const limit = Math.max(1, Math.min(500, Number(params.limit ?? 50)));
+  const severity = validateDiagSeverity(params.severity);
+  const category = validateDiagCategory(params.category);
+
+  if (mode === 'list') {
+    return {
+      mode,
+      rows: kernel.errorLogger.query({ since, severity, category, limit }),
+    };
+  }
+
+  const rows = kernel.errorLogger.summary({ since, limit });
+  const filtered = rows.filter(r => {
+    if (severity && r.severity !== severity) return false;
+    if (category && r.category !== category) return false;
+    return true;
+  });
+  return { mode, rows: filtered };
 }
