@@ -103,7 +103,10 @@ export class Pipeline {
       try {
         metadata = JSON.parse(existing.metadata as string) as Observation['metadata'];
       } catch (err) {
-        this.errorLogger?.warn('pipeline', 'deduplication metadata parse failed', { content_hash: contentHash });
+        this.errorLogger?.warn('pipeline', 'deduplication metadata parse failed', {
+          content_hash: contentHash,
+          error: err instanceof Error ? err.message : String(err),
+        });
         metadata = { source, tokens_original: 0, tokens_summarized: 0, privacy_level: privacyLevel };
       }
       return {
@@ -167,7 +170,10 @@ export class Pipeline {
           summary = result.summary;
           tokensSummarized = result.tokens_summarized;
         } catch (err) {
-          this.errorLogger?.warn('summarizer', `summarizer ${s.name} failed`, { summarizer: s.name });
+          this.errorLogger?.warn('summarizer', `summarizer ${s.name} failed`, {
+            summarizer: s.name,
+            error: err instanceof Error ? err.message : String(err),
+          });
           // Summarizer failed — store raw
         }
         break;
@@ -302,7 +308,10 @@ export class Pipeline {
         };
         this.sessionManager.saveSnapshot(this.sessionId, minimalStats);
       } catch (err) {
-        this.errorLogger?.warn('pipeline', 'checkpoint snapshot failed', { session_id: this.sessionId });
+        this.errorLogger?.warn('pipeline', 'checkpoint snapshot failed', {
+          session_id: this.sessionId,
+          error: err instanceof Error ? err.message : String(err),
+        });
         // Non-fatal — checkpoint is best-effort
       }
     }
