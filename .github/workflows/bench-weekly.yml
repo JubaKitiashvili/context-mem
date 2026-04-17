@@ -5,6 +5,9 @@ on:
     - cron: '17 6 * * 1'  # Mondays 06:17 UTC
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   full-bench:
     name: Full 4-benchmark sweep
@@ -19,7 +22,7 @@ jobs:
       - run: npm run build
       - name: Run all benchmarks (if datasets available)
         run: |
-          if [ -d /tmp/longmemeval-data ] && [ -d /tmp/locomo ] && [ -d /tmp/membench-data ] && [ -d /tmp/beam ]; then
+          if [ -f /tmp/longmemeval-data/longmemeval_s_cleaned.json ] && [ -f /tmp/locomo/data/locomo10.json ] && [ -d /tmp/membench-data/MemData/FirstAgent ] && [ -d /tmp/beam/chats/100K ]; then
             npm run bench
           else
             echo "Dataset(s) missing — skipping full run." >&2

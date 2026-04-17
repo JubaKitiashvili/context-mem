@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test (Node ${{ matrix.node }})
@@ -44,21 +47,26 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
-      - run: npm run lint
+      - name: Install dependencies
+        run: npm ci
+      - name: Build TypeScript
+        run: npm run build
+      - name: Type-check (tsc --noEmit)
+        run: npm run lint
 
   bench-quick:
     name: Benchmark smoke (50 queries)
     runs-on: ubuntu-latest
-    continue-on-error: true  # dataset may be absent; do not fail CI on missing fixture
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
-      - run: npm run build
+      - name: Install dependencies
+        run: npm ci
+      - name: Build TypeScript
+        run: npm run build
       - name: Check for LongMemEval dataset
         id: dataset
         run: |
@@ -69,4 +77,5 @@ jobs:
           fi
       - name: Run quick benchmark
         if: steps.dataset.outputs.present == 'true'
+        continue-on-error: true  # dataset may be absent; do not fail CI on missing fixture
         run: npm run bench:quick
