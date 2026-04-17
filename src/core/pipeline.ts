@@ -13,6 +13,7 @@ import type { KnowledgeGraph } from './knowledge-graph.js';
 import { detectTopics, storeTopics } from './topic-detector.js';
 import { computeSignalScore } from './noise-filter.js';
 import type { ErrorLogger } from './error-logger.js';
+import type { VaultSync } from './vault.js';
 
 export class Pipeline {
   private budgetManager?: BudgetManager;
@@ -23,6 +24,7 @@ export class Pipeline {
   private llmService?: LLMService;
   private knowledgeGraph?: KnowledgeGraph;
   private errorLogger?: ErrorLogger;
+  private vaultSync?: VaultSync;
 
   constructor(
     private registry: PluginRegistry,
@@ -53,6 +55,10 @@ export class Pipeline {
 
   setErrorLogger(logger: ErrorLogger): void {
     this.errorLogger = logger;
+  }
+
+  setVaultSync(vault: VaultSync): void {
+    this.vaultSync = vault;
   }
 
   private scheduleEmbedding(id: string, text: string): void {
@@ -222,6 +228,15 @@ export class Pipeline {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [obs.id, obs.type, obs.content, obs.summary || null, JSON.stringify(obs.metadata), obs.indexed_at, privacyLevel, this.sessionId, contentHash, opts?.correlation_id || null, importance.score, importance.pinned ? 1 : 0, 'verbatim']
     );
+
+    // 6a. Vault event log (fail-open — never blocks observe)
+    if (this.vaultSync) {
+      try {
+        await this.vaultSync.logEvent('ingest', `${obs.type}: ${(obs.summary ?? obs.content).slice(0, 80)}`);
+      } catch (err) {
+        this.errorLogger?.error('pipeline', err, { observation_id: obs.id, mode: 'vault-log' });
+      }
+    }
 
     // 6b. Create/update entities in knowledge graph (sync but non-critical)
     if (this.knowledgeGraph && extractedEntities.length > 0) {

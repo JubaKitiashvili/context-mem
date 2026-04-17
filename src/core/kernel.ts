@@ -197,6 +197,9 @@ export class Kernel {
     this.pipeline.setLLMService(this.llmService);
     this.pipeline.setKnowledgeGraph(this.knowledgeGraph);
     this.pipeline.setErrorLogger(this.errorLogger);
+    if (this.vaultSync) {
+      this.pipeline.setVaultSync(this.vaultSync);
+    }
 
     // 5. Summarizers — registered in priority order (most specific first)
     const summarizers = [

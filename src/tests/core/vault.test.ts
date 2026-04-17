@@ -5,6 +5,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { BetterSqlite3Storage } from '../../plugins/storage/better-sqlite3.js';
 import { VaultSync } from '../../core/vault.js';
+import { renderEntityPage, renderIndex } from '../../core/vault-templates.js';
 
 describe('VaultSync', () => {
   let tmp: string;
@@ -144,5 +145,62 @@ describe('VaultSync', () => {
     await vault.refreshEntity('../../escape');
     const escapedPath = path.join(vaultDir, '..', '..', 'escape.md');
     assert.ok(!fs.existsSync(escapedPath), 'must not escape vault dir');
+  });
+
+  it('logEvent appends a formatted entry with event name and summary', async () => {
+    await vault.init();
+    await vault.logEvent('ingest', 'code: console.log("hello")');
+    const logPath = path.join(vaultDir, 'log.md');
+    const content = fs.readFileSync(logPath, 'utf8');
+    assert.ok(content.includes('ingest'), 'log.md must include event type');
+    assert.ok(content.includes('console.log("hello")'), 'log.md must include summary text');
+    // Entry must follow the ## [datetime] event | summary pattern
+    assert.match(content, /##\s+\[\d{4}-\d{2}-\d{2}/);
+  });
+
+  it('renderEntityPage backlinks apply safeName to dangerous names', () => {
+    const entity = {
+      id: 'e-safe',
+      name: 'SafeEntity',
+      entity_type: 'person',
+      metadata: '{}',
+      knowledge_id: null,
+      created_at: Date.now(),
+      updated_at: Date.now(),
+    };
+    const dangerousBacklink = '../../evil';
+    const rendered = renderEntityPage(entity, [dangerousBacklink]);
+    // The raw dangerous string must not appear as a wikilink target
+    assert.ok(!rendered.includes('[[../../evil]]'), 'raw path traversal must not appear in backlinks');
+    // The sanitized form must appear with entities/ prefix
+    assert.ok(rendered.includes('[[entities/------evil]]'), 'sanitized backlink must appear with entities/ prefix');
+  });
+
+  it('renderIndex enriches entity links with updated date and topic links with observation count', () => {
+    const now = Date.now();
+    const entity = {
+      id: 'e-idx',
+      name: 'Postgres',
+      entity_type: 'library',
+      metadata: '{}',
+      knowledge_id: null,
+      created_at: now,
+      updated_at: now,
+    };
+    const topic = {
+      id: 't-idx',
+      name: 'authentication',
+      parent_id: null,
+      observation_count: 12,
+      last_seen: now,
+    };
+    const rendered = renderIndex(
+      { observations: 1, entities: 1, topics: 1, knowledge: 0, sessions: 0 },
+      [entity],
+      [topic],
+      [],
+    );
+    assert.match(rendered, /\[\[entities\/Postgres\]\] — updated \d{4}-\d{2}-\d{2}/);
+    assert.ok(rendered.includes('[[topics/authentication]] — 12 observations'));
   });
 });

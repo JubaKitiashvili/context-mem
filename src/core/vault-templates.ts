@@ -56,7 +56,7 @@ export interface KnowledgeRow {
 export function renderEntityPage(entity: EntityRow, backlinks: string[]): string {
   const meta = (() => { try { return JSON.parse(entity.metadata); } catch { return {}; } })();
   const backlinkSection = backlinks.length > 0
-    ? backlinks.map(b => `- [[${b}]]`).join('\n')
+    ? backlinks.map(b => `- [[entities/${safeName(b)}]]`).join('\n')
     : '_No backlinks yet._';
   return `# ${entity.name}
 
@@ -135,8 +135,8 @@ export function renderIndex(
   recentTopics: TopicRow[],
   recentKnowledge: KnowledgeRow[],
 ): string {
-  const entityLinks = topEntities.map(e => `- [[entities/${safeName(e.name)}]]`).join('\n') || '_None yet._';
-  const topicLinks = recentTopics.map(t => `- [[topics/${safeName(t.name)}]]`).join('\n') || '_None yet._';
+  const entityLinks = topEntities.map(e => `- [[entities/${safeName(e.name)}]] — updated ${fmtDate(e.updated_at)}`).join('\n') || '_None yet._';
+  const topicLinks = recentTopics.map(t => `- [[topics/${safeName(t.name)}]] — ${t.observation_count} observations`).join('\n') || '_None yet._';
   const knowledgeLinks = recentKnowledge.map(k => `- [[knowledge/${safeName(k.id)}]]  ${k.title}`).join('\n') || '_None yet._';
   const now = fmtDateTime(Date.now());
   return `# Context-Mem Vault
