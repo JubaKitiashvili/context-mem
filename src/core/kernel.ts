@@ -53,6 +53,7 @@ import { KnowledgeGraph } from './knowledge-graph.js';
 import { AgentRegistry } from './agent-registry.js';
 import { ErrorLogger } from './error-logger.js';
 import { VaultSync } from './vault.js';
+import { SynthesisEngine } from './synthesis.js';
 import type { VectorSearch } from '../plugins/search/vector.js';
 import type {
   SessionContext,
@@ -85,6 +86,7 @@ export class Kernel {
   feedbackEngine?: import('./feedback-engine.js').FeedbackEngine;
   errorLogger!: ErrorLogger;
   private vaultSync?: VaultSync;
+  private synthesisEngine?: SynthesisEngine;
 
   constructor(projectDir: string) {
     this.projectDir = projectDir;
@@ -190,6 +192,27 @@ export class Kernel {
       // Chain init is non-critical
     }
 
+    // 3f. Synthesis engine (requires vault; LLM-gated)
+    if (this.vaultSync) {
+      const vaultDir = this.config.vault?.dir
+        ? (path.isAbsolute(this.config.vault.dir)
+          ? this.config.vault.dir
+          : path.join(this.projectDir, this.config.vault.dir))
+        : path.join(this.projectDir, '.context-mem/vault');
+      this.synthesisEngine = new SynthesisEngine(
+        this.storage,
+        this.vaultSync,
+        this.config.ai_curation?.enabled ? (this.llmService ?? null) : null,
+        {
+          vaultDir,
+          enabled: this.config.vault?.synthesis !== false,
+          debounceMs: 2000,
+          minObservations: 3,
+        },
+      );
+      this.synthesisEngine.setErrorLogger(this.errorLogger);
+    }
+
     // 4. Pipeline (with budget + session integration)
     this.pipeline = new Pipeline(this.registry, this.storage, privacy, this.session.session_id);
     this.pipeline.setBudgetManager(this.budgetManager);
@@ -199,6 +222,9 @@ export class Kernel {
     this.pipeline.setErrorLogger(this.errorLogger);
     if (this.vaultSync) {
       this.pipeline.setVaultSync(this.vaultSync);
+    }
+    if (this.synthesisEngine) {
+      this.pipeline.setSynthesisEngine(this.synthesisEngine);
     }
 
     // 5. Summarizers — registered in priority order (most specific first)
@@ -485,6 +511,12 @@ export class Kernel {
   }
 
   async stop(): Promise<void> {
+    // Stop synthesis engine (flush pending before shutdown)
+    if (this.synthesisEngine) {
+      await this.synthesisEngine.flush();
+      this.synthesisEngine.stop();
+    }
+
     // Stop vault sync
     if (this.vaultSync) {
       this.vaultSync.stop();

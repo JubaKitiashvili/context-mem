@@ -63,4 +63,30 @@ export const PROMPT_TEMPLATES = {
         && Array.isArray(r.key_terms) && r.key_terms.every((t: unknown) => typeof t === 'string');
     },
   },
+
+  synthesize_page: {
+    name: 'synthesize_page',
+    prompt: (existingPage: string, newObservations: string, entityName: string) =>
+      `You are maintaining a wiki page about "${entityName}".
+
+Current page content:
+${existingPage || '(new page)'}
+
+New observations to incorporate:
+${newObservations}
+
+Task: produce an updated markdown page that:
+- Preserves verifiable prior content
+- Incorporates new observations naturally
+- Flags any contradictions between new and prior content in a "## Open Questions" section
+- Starts with a 1-2 sentence summary
+- Uses wikilinks [[other-entity]] for cross-references
+- Keeps under 800 words
+
+Return JSON: { "synthesis": "<full markdown content>" }`,
+    validate: (r: unknown): boolean => {
+      if (!isObject(r)) return false;
+      return typeof r.synthesis === 'string' && r.synthesis.length > 0 && r.synthesis.length < 10000;
+    },
+  },
 } as const satisfies Record<string, PromptTemplate>;

@@ -69,4 +69,10 @@ export class LLMService {
     const r = result as { summary: string; key_terms: string[] };
     return { summary: r.summary, key_terms: r.key_terms };
   }
+
+  async synthesizePage(existingPage: string, newObservations: string, entityName: string): Promise<{ synthesis: string } | null> {
+    const result = await this.call('synthesize_page', existingPage, newObservations, entityName);
+    if (!result) return null;
+    return result as { synthesis: string };
+  }
 }

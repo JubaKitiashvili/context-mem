@@ -14,6 +14,7 @@ import { detectTopics, storeTopics } from './topic-detector.js';
 import { computeSignalScore } from './noise-filter.js';
 import type { ErrorLogger } from './error-logger.js';
 import type { VaultSync } from './vault.js';
+import type { SynthesisEngine } from './synthesis.js';
 
 export class Pipeline {
   private budgetManager?: BudgetManager;
@@ -25,6 +26,7 @@ export class Pipeline {
   private knowledgeGraph?: KnowledgeGraph;
   private errorLogger?: ErrorLogger;
   private vaultSync?: VaultSync;
+  private synthesisEngine?: SynthesisEngine;
 
   constructor(
     private registry: PluginRegistry,
@@ -59,6 +61,10 @@ export class Pipeline {
 
   setVaultSync(vault: VaultSync): void {
     this.vaultSync = vault;
+  }
+
+  setSynthesisEngine(engine: SynthesisEngine): void {
+    this.synthesisEngine = engine;
   }
 
   private scheduleEmbedding(id: string, text: string): void {
@@ -269,7 +275,22 @@ export class Pipeline {
       }
     }
 
-    // 6d. Embedding — synchronous for short content, async for large
+    // 6d. Schedule synthesis for extracted entities and detected topics (non-critical)
+    if (this.synthesisEngine) {
+      try {
+        for (const entity of extractedEntities) {
+          this.synthesisEngine.scheduleEntity(entity.name);
+        }
+        for (const topic of detectedTopics) {
+          this.synthesisEngine.scheduleTopic(topic.name);
+        }
+      } catch (err) {
+        this.errorLogger?.error('synthesis', err, { observation_id: obs.id });
+        // Synthesis scheduling is non-critical — never block observe()
+      }
+    }
+
+    // 6e. Embedding — synchronous for short content, async for large
     if (this.embedder) {
       const textToEmbed = obs.summary || obs.content;
       if (textToEmbed.length < 2000) {

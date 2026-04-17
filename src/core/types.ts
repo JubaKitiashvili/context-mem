@@ -455,6 +455,7 @@ export interface ContextMemConfig {
   vault?: {
     enabled?: boolean;
     dir?: string;
+    synthesis?: boolean;
   };
   port: number;
   api_port: number;
@@ -543,6 +544,7 @@ export const ERROR_CATEGORIES = [
   'config',
   'migration',
   'lifecycle',
+  'synthesis',
   'other',
 ] as const;
 
