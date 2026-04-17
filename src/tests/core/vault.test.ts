@@ -26,7 +26,7 @@ describe('VaultSync', () => {
     if (fs.existsSync(vaultDir)) {
       fs.rmSync(vaultDir, { recursive: true });
     }
-    vault = new VaultSync(storage, { vaultDir, debounceMs: 0 });
+    vault = new VaultSync(storage, { vaultDir });
   });
 
   after(async () => {
@@ -128,9 +128,21 @@ describe('VaultSync', () => {
   });
 
   it('vault.enabled=false prevents any writes', async () => {
-    const disabledVault = new VaultSync(storage, { vaultDir, enabled: false, debounceMs: 0 });
+    const disabledVault = new VaultSync(storage, { vaultDir, enabled: false });
     await disabledVault.init();
     assert.ok(!fs.existsSync(vaultDir), 'vault dir should not be created when disabled');
     disabledVault.stop();
+  });
+
+  it('sanitizes entity names to prevent path traversal', async () => {
+    await vault.init();
+    storage.exec(
+      `INSERT INTO entities (id, name, entity_type, metadata, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      ['e-trav', '../../escape', 'library', '{}', Date.now(), Date.now()],
+    );
+    await vault.refreshEntity('../../escape');
+    const escapedPath = path.join(vaultDir, '..', '..', 'escape.md');
+    assert.ok(!fs.existsSync(escapedPath), 'must not escape vault dir');
   });
 });

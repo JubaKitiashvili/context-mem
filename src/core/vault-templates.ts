@@ -6,6 +6,16 @@ function fmtDateTime(ms: number): string {
   return new Date(ms).toISOString().slice(0, 16).replace('T', ' ');
 }
 
+export function safeName(name: string): string {
+  const cleaned = name
+    .replace(/[/\\:]/g, '-')
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\x00-\x1f\x7f]/g, '')
+    .replace(/\.\./g, '--')
+    .trim();
+  return cleaned.length > 0 ? cleaned.slice(0, 200) : '_unnamed';
+}
+
 export interface EntityRow {
   id: string;
   name: string;
@@ -125,9 +135,9 @@ export function renderIndex(
   recentTopics: TopicRow[],
   recentKnowledge: KnowledgeRow[],
 ): string {
-  const entityLinks = topEntities.map(e => `- [[entities/${e.name}]]`).join('\n') || '_None yet._';
-  const topicLinks = recentTopics.map(t => `- [[topics/${t.name}]]`).join('\n') || '_None yet._';
-  const knowledgeLinks = recentKnowledge.map(k => `- [[knowledge/${k.id}]]  ${k.title}`).join('\n') || '_None yet._';
+  const entityLinks = topEntities.map(e => `- [[entities/${safeName(e.name)}]]`).join('\n') || '_None yet._';
+  const topicLinks = recentTopics.map(t => `- [[topics/${safeName(t.name)}]]`).join('\n') || '_None yet._';
+  const knowledgeLinks = recentKnowledge.map(k => `- [[knowledge/${safeName(k.id)}]]  ${k.title}`).join('\n') || '_None yet._';
   const now = fmtDateTime(Date.now());
   return `# Context-Mem Vault
 

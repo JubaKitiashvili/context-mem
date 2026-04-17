@@ -8,6 +8,7 @@ import {
   renderKnowledgePage,
   renderIndex,
   renderLogEntry,
+  safeName as safeNameImpl,
   type EntityRow,
   type TopicRow,
   type ObsRow,
@@ -17,14 +18,14 @@ import {
 export interface VaultOptions {
   vaultDir: string;
   enabled?: boolean;
-  debounceMs?: number;
 }
+
+export { safeName } from './vault-templates.js';
 
 export class VaultSync {
   private storage: StoragePlugin;
   private vaultDir: string;
   private enabled: boolean;
-  private _debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(storage: StoragePlugin, options: VaultOptions) {
     this.storage = storage;
@@ -32,11 +33,16 @@ export class VaultSync {
     this.enabled = options.enabled ?? true;
   }
 
-  stop(): void {
-    if (this._debounceTimer) {
-      clearTimeout(this._debounceTimer);
-      this._debounceTimer = null;
-    }
+  stop(): void {}
+
+  private safeName(name: string): string {
+    return safeNameImpl(name);
+  }
+
+  private withinVault(fullPath: string): boolean {
+    const resolvedVault = path.resolve(this.vaultDir);
+    const resolved = path.resolve(fullPath);
+    return resolved === resolvedVault || resolved.startsWith(resolvedVault + path.sep);
   }
 
   async init(): Promise<void> {
@@ -52,13 +58,6 @@ export class VaultSync {
     if (!fs.existsSync(logPath)) {
       fs.writeFileSync(logPath, '# Event Log\n\n', 'utf8');
     }
-  }
-
-  private safeName(name: string): string {
-    return name
-      .replace(/[/\\:]/g, '-')
-      // eslint-disable-next-line no-control-regex
-      .replace(/[\x00-\x1f\x7f]/g, '');
   }
 
   async refreshEntity(name: string): Promise<void> {
@@ -82,6 +81,7 @@ export class VaultSync {
 
     const content = renderEntityPage(row, backlinks);
     const filePath = path.join(this.vaultDir, 'entities', `${this.safeName(name)}.md`);
+    if (!this.withinVault(filePath)) return;
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, content, 'utf8');
   }
@@ -104,6 +104,7 @@ export class VaultSync {
 
     const content = renderTopicPage(topic, observations);
     const filePath = path.join(this.vaultDir, 'topics', `${this.safeName(name)}.md`);
+    if (!this.withinVault(filePath)) return;
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, content, 'utf8');
   }
@@ -122,6 +123,7 @@ export class VaultSync {
     const fileName = `${this.safeName(sessionId)}-${date}.md`;
     const content = renderSessionPage(sessionId, observations);
     const filePath = path.join(this.vaultDir, 'sources', fileName);
+    if (!this.withinVault(filePath)) return;
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, content, 'utf8');
   }
@@ -135,6 +137,7 @@ export class VaultSync {
 
     const content = renderKnowledgePage(row);
     const filePath = path.join(this.vaultDir, 'knowledge', `${this.safeName(id)}.md`);
+    if (!this.withinVault(filePath)) return;
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, content, 'utf8');
   }
