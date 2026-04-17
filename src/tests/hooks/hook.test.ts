@@ -12,12 +12,9 @@ function runHook(input: string): { status: number | null; stdout: string; stderr
     input,
     encoding: 'utf8',
     timeout: 2000,
-    // Prevent actual HTTP POST by setting an unusable port
-    env: {
-      ...process.env,
-      CONTEXT_MEM_PORT: '1',
-      CONTEXT_MEM_API_PORT: '1',
-    },
+    // Prevent actual HTTP POST by setting an unusable port.
+    // CONTEXT_MEM_API_PORT is canonical; the hook also accepts CONTEXT_MEM_PORT as an alias.
+    env: { ...process.env, CONTEXT_MEM_API_PORT: '1' },
   });
   return {
     status: result.status,
@@ -142,6 +139,8 @@ describe('context-mem-hook', () => {
   });
 
   it('stable across 10 consecutive runs', () => {
+    // Exercises the full POST path (Bash tool, content > 10 chars, ECONNREFUSED on port 1).
+    // If this flakes, env var alignment in runHook() or the hook itself has regressed.
     const payload = JSON.stringify({
       tool_name: 'Bash',
       tool_input: {},
