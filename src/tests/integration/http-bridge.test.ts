@@ -122,10 +122,43 @@ describe('HTTP Bridge Integration', () => {
     assert.equal(typeof res.data.uptime, 'number');
   });
 
-  it('GET unknown route returns 404', async () => {
+  it('GET unknown route returns 404 with a hint', async () => {
     await setup();
     const res = await get(bridgePort, '/api/unknown');
     assert.equal(res.status, 404);
     assert.equal(res.data.ok, false);
+    assert.ok(typeof res.data.hint === 'string', '404 must include a hint');
+  });
+
+  it('GET / returns service info with endpoint map and dashboard URL', async () => {
+    await setup();
+    const res = await get(bridgePort, '/');
+    assert.equal(res.status, 200);
+    assert.equal(res.data.ok, true);
+    assert.equal(res.data.service, 'context-mem HTTP bridge');
+    assert.ok(typeof res.data.version === 'string');
+    assert.ok(typeof res.data.endpoints === 'object' && res.data.endpoints !== null);
+    const endpoints = res.data.endpoints as Record<string, string>;
+    assert.ok('POST /api/observe' in endpoints);
+    assert.ok('GET /api/health' in endpoints);
+    assert.ok(typeof res.data.dashboard === 'string' && (res.data.dashboard as string).startsWith('http://'));
+  });
+
+  it('GET /api returns the same service info as GET /', async () => {
+    await setup();
+    const res = await get(bridgePort, '/api');
+    assert.equal(res.status, 200);
+    assert.equal(res.data.service, 'context-mem HTTP bridge');
+  });
+
+  it('GET /favicon.ico returns 204 No Content', async () => {
+    await setup();
+    const res = await new Promise<{ status: number }>((resolve, reject) => {
+      http.get(`http://127.0.0.1:${bridgePort}/favicon.ico`, (r) => {
+        r.resume();
+        r.on('end', () => resolve({ status: r.statusCode! }));
+      }).on('error', reject);
+    });
+    assert.equal(res.status, 204);
   });
 });

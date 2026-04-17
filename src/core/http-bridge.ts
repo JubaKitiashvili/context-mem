@@ -5,6 +5,7 @@ import { ObserveQueue, type QueueItem } from './observe-queue.js';
 import { OBSERVATION_TYPES, type ObservationType } from './types.js';
 
 const MAX_BODY_SIZE = 512 * 1024; // 512KB
+const BRIDGE_VERSION = '3.4.0';
 
 function isPortInUse(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -97,7 +98,31 @@ export async function startHttpBridge(kernel: Kernel, port: number): Promise<htt
       return;
     }
 
-    json(res, 404, { ok: false, error: 'Not found' });
+    if (req.method === 'GET' && (req.url === '/' || req.url === '/api' || req.url === '/api/')) {
+      const dashboardPort = kernel.getConfig()?.port ?? 51893;
+      json(res, 200, {
+        ok: true,
+        service: 'context-mem HTTP bridge',
+        version: BRIDGE_VERSION,
+        description: 'Ingestion endpoint for hooks + health check. The interactive dashboard runs on a separate port.',
+        endpoints: {
+          'POST /api/observe': 'Queue an observation for ingestion (body: { content, type, source?, filePath? })',
+          'GET /api/health': 'Liveness check — returns { ok, pid, uptime }',
+          'GET /api': 'This endpoint — service info',
+        },
+        dashboard: `http://127.0.0.1:${dashboardPort}`,
+        docs: 'https://github.com/JubaKitiashvili/context-mem',
+      });
+      return;
+    }
+
+    if (req.method === 'GET' && req.url === '/favicon.ico') {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    json(res, 404, { ok: false, error: 'Not found', hint: 'GET / for service info, GET /api/health for liveness, POST /api/observe to ingest.' });
   });
 
   return new Promise((resolve) => {
