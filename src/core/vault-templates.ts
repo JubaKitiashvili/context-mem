@@ -175,3 +175,46 @@ _Schema reference: see \`docs/llm-wiki-schema.md\` in the context-mem repository
 export function renderLogEntry(event: string, summary: string, timestamp: number): string {
   return `## [${fmtDateTime(timestamp)}] ${event} | ${summary}\n`;
 }
+
+// ---------------------------------------------------------------------------
+// Answer-as-Page (T4.5)
+// ---------------------------------------------------------------------------
+
+export interface AnswerPage {
+  id: string;
+  question: string;
+  answer: string;
+  sources: Array<{ id: string; title?: string; snippet?: string }>;
+  createdAt: number;
+  knowledgeId?: string;
+}
+
+export function renderAnswerPage(a: AnswerPage): string {
+  const sourceLines = a.sources.map((s, i) => {
+    const label = s.title ?? (s.snippet ? s.snippet.slice(0, 80) : s.id);
+    return `${i + 1}. [[observations/${safeName(s.id)}]] — ${label}`;
+  }).join('\n');
+
+  const knowledgeLine = a.knowledgeId
+    ? `- Filed as knowledge entry: [[knowledge/${safeName(a.knowledgeId)}]]`
+    : '';
+
+  return `# Q: ${a.question}
+
+**Answered:** ${fmtDateTime(a.createdAt)}
+**Answer ID:** \`${a.id}\`
+
+## Answer
+
+${a.answer}
+
+## Sources
+
+${sourceLines || '_No sources._'}
+
+## Context
+
+${knowledgeLine}
+- Re-asked? This page is overwritten only when explicitly re-filed; otherwise it accrues as history.
+`;
+}

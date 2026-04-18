@@ -49,6 +49,8 @@ export interface UnifiedSearchParams {
   };
   limit?: number;
   cursor?: string;
+  /** When set to 'knowledge', synthesize top-3 results and file as a knowledge entry + vault page. */
+  file_as?: 'knowledge';
 }
 
 // ---------------------------------------------------------------------------
@@ -89,6 +91,11 @@ export const searchToolDefinitions: ToolDefinition[] = [
         },
         limit: { type: 'number', description: 'Max results (default: 10)' },
         cursor: { type: 'string', description: 'Pagination cursor (stub in v4.0, fully implemented in v4.1)' },
+        file_as: {
+          type: 'string',
+          enum: ['knowledge'],
+          description: 'Synthesize top results and file the synthesis as a knowledge entry + vault page.',
+        },
         // Legacy parameters kept for backwards compatibility
         type: {
           type: 'string',
@@ -187,6 +194,12 @@ export const searchToolDefinitions: ToolDefinition[] = [
       type: 'object',
       properties: {
         question: { type: 'string', description: 'Natural language question about the project' },
+        limit: { type: 'number', description: 'Max results to consider (default: 5)' },
+        save_as_page: {
+          type: 'boolean',
+          default: false,
+          description: 'Also file this answer as a knowledge entry + vault page.',
+        },
       },
       required: ['question'],
     },
@@ -281,14 +294,68 @@ export async function handleSearchUnified(
     results = topicResults.slice(0, limit);
   }
 
+  const responseMeta: Record<string, unknown> = {
+    scope,
+    mode,
+    filters_applied: filters,
+  };
+
+  // file_as='knowledge': synthesize top-3 results and persist
+  if (params.file_as === 'knowledge' && params.query.trim() && results.length > 0) {
+    try {
+      // Exclude private observations from the synthesis to prevent leaking private content
+      const publicResults = results.filter(r => {
+        if (r.id.startsWith('__')) return true; // content/synthetic IDs are always OK
+        try {
+          const row = kernel.storage.prepare('SELECT privacy_level FROM observations WHERE id = ?').get(r.id) as
+            { privacy_level: string | null } | undefined;
+          return !row || row.privacy_level !== 'private';
+        } catch { return true; }
+      });
+
+      if (publicResults.length === 0) {
+        // Nothing public to synthesize — skip persistence
+        return { results, cursor: null, _meta: responseMeta };
+      }
+
+      const top3 = publicResults.slice(0, 3);
+      // Deterministic synthesis: concatenate top-3 snippets, trim to 500 chars
+      const synthesis = top3
+        .map(r => r.snippet)
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 500);
+
+      const knowledgeEntry = await kernel.knowledgeBase.save({
+        category: 'summary',
+        title: params.query.slice(0, 100),
+        content: synthesis,
+        tags: ['auto-filed', 'search-synthesis'],
+      });
+
+      if (kernel.vaultSync) {
+        await kernel.vaultSync.saveAnswerPage({
+          id: knowledgeEntry.id,
+          question: params.query,
+          answer: synthesis,
+          sources: top3.map(r => ({ id: r.id, title: r.title, snippet: r.snippet })),
+          createdAt: Date.now(),
+          knowledgeId: knowledgeEntry.id,
+        });
+      }
+
+      responseMeta.filed_as = knowledgeEntry.id;
+      responseMeta.vault_path = `answers/${knowledgeEntry.id}.md`;
+    } catch {
+      // fail-open: search results still returned even if persistence fails
+    }
+  }
+
   return {
     results,
     cursor: null, // v4.1 will implement real pagination
-    _meta: {
-      scope,
-      mode,
-      filters_applied: filters,
-    },
+    _meta: responseMeta,
   };
 }
 
@@ -779,7 +846,7 @@ export async function handleRecall(
 
 // Natural Language Query
 export async function handleAsk(
-  params: { question: string },
+  params: { question: string; limit?: number; save_as_page?: boolean },
   kernel: ToolKernel,
 ): Promise<unknown> {
   if (!params.question || typeof params.question !== 'string' || !params.question.trim()) {
@@ -791,16 +858,63 @@ export async function handleAsk(
   const nlQuery = new NaturalLanguageQuery(kernel.storage, kernel.knowledgeBase, graph, kernel.eventTracker);
   const result = await nlQuery.ask(params.question.trim());
 
-  // Add deprecation _meta without breaking the existing response shape
+  // Build the base _meta
+  const baseMeta: Record<string, unknown> = {
+    deprecated: true,
+    replacement: 'search',
+    replacement_params: { query: params.question, scope: 'all', mode: 'semantic' },
+    removal_planned: 'v5.0.0',
+  };
+
+  // Answer-as-Page: persist when save_as_page=true
+  if (params.save_as_page === true && result && typeof result === 'object' && !Array.isArray(result)) {
+    const resultObj = result as unknown as Record<string, unknown>;
+    const answerText: string = typeof resultObj.answer === 'string'
+      ? resultObj.answer
+      : typeof resultObj.response === 'string'
+        ? resultObj.response
+        : JSON.stringify(result);
+
+    const rawSources = Array.isArray(resultObj.sources) ? resultObj.sources : [];
+    const sources: Array<{ id: string; title?: string; snippet?: string }> = rawSources
+      .filter((s): s is Record<string, unknown> => s !== null && typeof s === 'object')
+      .map(s => ({
+        id: typeof s.id === 'string' ? s.id : String(s.id ?? ''),
+        title: typeof s.title === 'string' ? s.title : undefined,
+        snippet: typeof s.snippet === 'string' ? s.snippet : undefined,
+      }));
+
+    try {
+      const knowledgeEntry = await kernel.knowledgeBase.save({
+        category: 'answer',
+        title: params.question.slice(0, 100),
+        content: answerText,
+        tags: ['auto-filed', 'answer'],
+      });
+
+      if (kernel.vaultSync) {
+        await kernel.vaultSync.saveAnswerPage({
+          id: knowledgeEntry.id,
+          question: params.question,
+          answer: answerText,
+          sources,
+          createdAt: Date.now(),
+          knowledgeId: knowledgeEntry.id,
+        });
+      }
+
+      baseMeta.filed_as = knowledgeEntry.id;
+      baseMeta.vault_path = `answers/${knowledgeEntry.id}.md`;
+    } catch {
+      // fail-open: answer still returned even if persistence fails
+    }
+  }
+
+  // Add _meta without breaking the existing response shape
   if (result && typeof result === 'object' && !Array.isArray(result)) {
     return {
       ...(result as unknown as Record<string, unknown>),
-      _meta: {
-        deprecated: true,
-        replacement: 'search',
-        replacement_params: { query: params.question, scope: 'all', mode: 'semantic' },
-        removal_planned: 'v5.0.0',
-      },
+      _meta: baseMeta,
     };
   }
   return result;

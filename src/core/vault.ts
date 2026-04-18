@@ -8,11 +8,13 @@ import {
   renderKnowledgePage,
   renderIndex,
   renderLogEntry,
+  renderAnswerPage,
   safeName as safeNameImpl,
   type EntityRow,
   type TopicRow,
   type ObsRow,
   type KnowledgeRow,
+  type AnswerPage,
 } from './vault-templates.js';
 
 export interface VaultOptions {
@@ -47,7 +49,7 @@ export class VaultSync {
 
   async init(): Promise<void> {
     if (!this.enabled) return;
-    for (const sub of ['sources', 'entities', 'topics', 'knowledge']) {
+    for (const sub of ['sources', 'entities', 'topics', 'knowledge', 'answers']) {
       fs.mkdirSync(path.join(this.vaultDir, sub), { recursive: true });
     }
     const indexPath = path.join(this.vaultDir, 'index.md');
@@ -189,6 +191,15 @@ export class VaultSync {
 
     const content = renderIndex(counts, topEntities, recentTopics, recentKnowledge);
     const filePath = path.join(this.vaultDir, 'index.md');
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, content, 'utf8');
+  }
+
+  async saveAnswerPage(answer: AnswerPage): Promise<void> {
+    if (!this.enabled) return;
+    const content = renderAnswerPage(answer);
+    const filePath = path.join(this.vaultDir, 'answers', `${this.safeName(answer.id)}.md`);
+    if (!this.withinVault(filePath)) return;
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, content, 'utf8');
   }

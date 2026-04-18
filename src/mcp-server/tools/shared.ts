@@ -16,6 +16,7 @@ import type { GlobalKnowledgeStore } from '../../core/global-store.js';
 import type { KnowledgeGraph } from '../../core/knowledge-graph.js';
 import type { AgentRegistry } from '../../core/agent-registry.js';
 import type { LLMService } from '../../core/llm-provider.js';
+import type { VaultSync } from '../../core/vault.js';
 
 // Minimal kernel interface used by tool handlers
 export interface ToolKernel {
@@ -37,6 +38,7 @@ export interface ToolKernel {
   llmService?: LLMService;
   feedbackEngine?: import('../../core/feedback-engine.js').FeedbackEngine;
   errorLogger?: import('../../core/error-logger.js').ErrorLogger;
+  vaultSync?: VaultSync;
 }
 
 export interface ToolDefinition {

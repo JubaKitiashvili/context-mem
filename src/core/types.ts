@@ -85,7 +85,7 @@ export interface BudgetStatus {
 }
 
 // Knowledge types
-export type KnowledgeCategory = 'pattern' | 'decision' | 'error' | 'api' | 'component';
+export type KnowledgeCategory = 'pattern' | 'decision' | 'error' | 'api' | 'component' | 'answer' | 'summary';
 export type SourceType = 'explicit' | 'inferred' | 'observed';
 
 export interface KnowledgeEntry {
