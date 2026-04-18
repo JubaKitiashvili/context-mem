@@ -10,11 +10,13 @@
  *   4. Call Haiku-as-judge to score predicted vs expected.
  *   5. Aggregate accuracy + per-question-type breakdown.
  *
- * Requires: ANTHROPIC_API_KEY. Dataset: longmemeval_s_cleaned.json.
+ * Auth (no ANTHROPIC_API_KEY required if claude CLI is logged in):
+ *   Automatically uses claude CLI OAuth session (Claude Max subscription) OR
+ *   ANTHROPIC_API_KEY if set. Run `claude` once to log in if neither is present.
  *
  * Usage:
- *   ANTHROPIC_API_KEY=sk-ant-... node benchmarks/e2e-qa.js /tmp/longmemeval-data/longmemeval_s_cleaned.json --limit 20 --top-k 5
- *   ANTHROPIC_API_KEY=sk-ant-... node benchmarks/e2e-qa.js data.json --limit 100 --top-k 10 --out results/my-run.json
+ *   node benchmarks/e2e-qa.js /tmp/longmemeval-data/longmemeval_s_cleaned.json --limit 20 --top-k 5
+ *   node benchmarks/e2e-qa.js data.json --limit 100 --top-k 10 --out results/my-run.json
  */
 'use strict';
 
@@ -23,6 +25,9 @@ const path = require('path');
 const os = require('os');
 const { BenchKernel } = require('./lib/kernel-adapter');
 const { printHeader, formatPercent } = require('./lib/metrics');
+
+// haiku-client.mjs is ESM-only; we use a top-level promise and await it in main.
+const haikuClientPromise = import('./lib/haiku-client.mjs');
 
 // ── CLI ──────────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -38,12 +43,6 @@ if (!dataFile) {
   process.exit(1);
 }
 
-if (!process.env.ANTHROPIC_API_KEY) {
-  console.error('ERROR: ANTHROPIC_API_KEY not set. This benchmark calls Claude Haiku for answer generation and judging.');
-  console.error('  Set it with: export ANTHROPIC_API_KEY=sk-ant-...');
-  process.exit(1);
-}
-
 function getArg(name, def) {
   const idx = args.indexOf('--' + name);
   if (idx === -1 || idx + 1 >= args.length) return def;
@@ -56,51 +55,6 @@ const GRANULARITY = getArg('granularity', 'session');
 const OUT_FILE = getArg('out', `benchmarks/results/e2e-qa-lme-${new Date().toISOString().slice(0, 10)}.json`);
 
 const JUDGE_PROMPT = fs.readFileSync(path.resolve(__dirname, 'lib/qa-judge-prompt.md'), 'utf8');
-
-// ── Rate limiter (mirrors kernel-adapter.js pattern) ─────────────────────────
-const LLM_MIN_INTERVAL_MS = 2200;
-let _lastReq = 0;
-
-async function rateLimit() {
-  const elapsed = Date.now() - _lastReq;
-  if (elapsed < LLM_MIN_INTERVAL_MS) {
-    await new Promise(r => setTimeout(r, LLM_MIN_INTERVAL_MS - elapsed));
-  }
-  _lastReq = Date.now();
-}
-
-// ── Haiku caller ─────────────────────────────────────────────────────────────
-async function callHaiku(prompt, maxTokens = 500, retries = 3) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  for (let attempt = 0; attempt < retries; attempt++) {
-    await rateLimit();
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: maxTokens,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
-      const data = await res.json();
-      if (data?.error?.type === 'rate_limit_error') {
-        await new Promise(r => setTimeout(r, 20000));
-        continue;
-      }
-      return data?.content?.[0]?.text ?? '';
-    } catch (e) {
-      if (attempt === retries - 1) throw e;
-      await new Promise(r => setTimeout(r, 5000));
-    }
-  }
-  return '';
-}
 
 // ── Prompt builders ───────────────────────────────────────────────────────────
 function buildAnswerPrompt(question, context) {
@@ -123,9 +77,25 @@ function buildJudgePrompt(question, expected, predicted) {
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 (async () => {
-  printHeader('context-mem × LongMemEval E2E QA Benchmark');
-  console.log(`  Node:        ${process.version}`);
-  console.log(`  OS:          ${os.platform()} ${os.arch()}`);
+  // Resolve haiku-client (ESM bridge)
+  let callHaiku;
+  try {
+    const haikuClient = await haikuClientPromise;
+    callHaiku = haikuClient.callHaiku;
+
+    printHeader('context-mem × LongMemEval E2E QA Benchmark');
+    console.log(`  Node:        ${process.version}`);
+    console.log(`  OS:          ${os.platform()} ${os.arch()}`);
+    console.log('  Checking auth...');
+    await haikuClient.ensureAuth();
+  } catch (e) {
+    if (/Authentication required/i.test(e.message)) {
+      process.exit(1);
+    }
+    // Other errors (e.g. import failure) — surface them
+    console.error('ERROR loading haiku-client:', e.message);
+    process.exit(1);
+  }
   console.log(`  Top-K:       ${TOP_K}`);
   console.log(`  Granularity: ${GRANULARITY}`);
   console.log(`  Data:        ${dataFile}`);

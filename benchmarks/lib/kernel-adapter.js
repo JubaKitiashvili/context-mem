@@ -495,70 +495,14 @@ function resolveTemporalRange(query, referenceDate) {
   return null;
 }
 
-// ── LLM Judge (mirror of src/plugins/search/llm-judge.ts) ────────────────────
+// ── LLM Judge — delegate to haiku-client.mjs via dynamic import ──────────────
 
-let _llmLastRequest = 0;
-const LLM_MIN_INTERVAL_MS = 2200;
+// Top-level promise so the import starts immediately (but we await inside async fns)
+const _haikuClientPromise = import(require('path').join(__dirname, 'haiku-client.mjs'));
 
-async function rateLimit() {
-  const elapsed = Date.now() - _llmLastRequest;
-  if (elapsed < LLM_MIN_INTERVAL_MS) {
-    await new Promise(r => setTimeout(r, LLM_MIN_INTERVAL_MS - elapsed));
-  }
-  _llmLastRequest = Date.now();
-}
-
-async function llmScoreCandidates(query, candidates, apiKey, model = 'claude-haiku-4-5-20251001', retries = 3) {
-  if (candidates.length === 0) return [];
-  const numbered = candidates.map((c, i) => `[${i}] ${c.content.slice(0, 1500)}`).join('\n\n');
-  const prompt =
-    `A user is asking: "${query}"\n\n` +
-    `Find sessions that help answer this question. Look for BOTH direct and indirect evidence:\n\n` +
-    `Score 10: directly answers the question.\n` +
-    `Score 7-9: strongly relevant — same topic, related entities, specific details.\n` +
-    `Score 4-6: indirect clues — preferences, past activities, background context.\n` +
-    `Score 0-3: unrelated.\n\n` +
-    `Key rules:\n` +
-    `- "recommend a show/movie" → find sessions about entertainment: stand-up comedy, Netflix, streaming, actors, genres.\n` +
-    `- "siblings" → sessions mentioning brother, sister, family members.\n` +
-    `- "cooking for friend" → sessions about baking, recipes, dinner parties, desserts.\n` +
-    `- "bought X" / "X arrived" → sessions about ANY purchases or deliveries (even different items).\n` +
-    `- Sessions where user discusses specific titles, brands, or preferences ARE highly relevant.\n\n` +
-    `Sessions:\n${numbered}\n\n` +
-    `Return ONLY a JSON object with ALL ${candidates.length} indices: {"0": 8, "1": 3, ...}.`;
-
-  for (let attempt = 0; attempt < retries; attempt++) {
-    await rateLimit();
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model, max_tokens: 500, messages: [{ role: 'user', content: prompt }] }),
-      });
-      const data = await res.json();
-      if (data?.error?.type === 'rate_limit_error') {
-        await new Promise(r => setTimeout(r, 20000));
-        continue;
-      }
-      const text = data?.content?.[0]?.text || '';
-      const match = text.match(/\{[^{}]*\}/s);
-      if (!match) return null;
-      const scores = JSON.parse(match[0]);
-      if (typeof scores !== 'object' || scores === null) return null;
-      const scoreArr = new Array(candidates.length).fill(0);
-      for (const [k, v] of Object.entries(scores)) {
-        const idx = parseInt(k, 10);
-        if (!isNaN(idx) && idx >= 0 && idx < candidates.length && typeof v === 'number') {
-          scoreArr[idx] = Math.max(0, Math.min(10, v));
-        }
-      }
-      return scoreArr;
-    } catch (e) {
-      if (attempt === retries - 1) return null;
-      await new Promise(r => setTimeout(r, 5000));
-    }
-  }
-  return null;
+async function llmScoreCandidates(query, candidates) {
+  const { llmScoreCandidates: _score } = await _haikuClientPromise;
+  return _score(query, candidates);
 }
 
 /**
@@ -572,8 +516,7 @@ async function llmScoreCandidates(query, candidates, apiKey, model = 'claude-hai
  * - Let LLM pick the best
  */
 async function llmRerank(kernel, query, results, limit = 10, referenceDate = null) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || results.length === 0) return results.slice(0, limit);
+  if (results.length === 0) return results.slice(0, limit);
 
   let poolResults = results;
 
@@ -626,7 +569,7 @@ async function llmRerank(kernel, query, results, limit = 10, referenceDate = nul
     content: contentMap.get(r.id) || '',
   }));
 
-  const llmScores = await llmScoreCandidates(query, candidates, apiKey);
+  const llmScores = await llmScoreCandidates(query, candidates);
   if (!llmScores) return poolResults.slice(0, limit);
 
   // Blend: 35% retrieval + 65% LLM — LLM-dominant blend needed

@@ -79,21 +79,40 @@ npm run bench:full
 
 ### E2E QA accuracy — LongMemEval
 
-Requires `ANTHROPIC_API_KEY` (Claude Haiku is called for answer generation and judging).
+Claude Haiku is called for answer generation and judging. **No `ANTHROPIC_API_KEY` is required if you have the `claude` CLI logged in** (Claude Max subscription). The SDK auto-detects auth in this order:
+
+1. `ANTHROPIC_API_KEY` environment variable (API key billing).
+2. `claude` CLI OAuth session (Claude Max / Pro subscription). Run `claude` and follow the prompts to log in once.
+
+#### Authentication
 
 ```bash
-# Quick smoke test (20 questions)
+# Option A — Claude CLI subscription (no API key needed)
+claude   # follow login prompts once, then:
+node benchmarks/e2e-qa.js /tmp/longmemeval-data/longmemeval_s_cleaned.json --limit 20
+
+# Option B — API key
 ANTHROPIC_API_KEY=sk-ant-... node benchmarks/e2e-qa.js \
-  /tmp/longmemeval-data/longmemeval_s_cleaned.json \
-  --limit 20 --top-k 5
+  /tmp/longmemeval-data/longmemeval_s_cleaned.json --limit 20
+```
+
+The harness prints `Auth path: ...` at startup so you can confirm which path is active.
+
+#### Published numbers
+
+All published E2E QA scores can be reproduced with either auth method — the model (`claude-haiku-4-5-20251001`), prompt templates, and rate-limiting (2.2 s minimum interval) are identical in both paths.
+
+```bash
+# Quick smoke test (2 synthetic questions, ~60s)
+node benchmarks/smoke-e2e-qa.mjs
 
 # Full run (500 questions, ~30 min at rate limit)
-ANTHROPIC_API_KEY=sk-ant-... node benchmarks/e2e-qa.js \
+node benchmarks/e2e-qa.js \
   /tmp/longmemeval-data/longmemeval_s_cleaned.json \
   --top-k 5
 
-# npm shortcut (pass dataset path as trailing arg)
-ANTHROPIC_API_KEY=sk-ant-... npm run bench:e2e-qa -- \
+# npm shortcut
+npm run bench:e2e-qa -- \
   /tmp/longmemeval-data/longmemeval_s_cleaned.json --limit 20
 ```
 

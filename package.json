@@ -49,6 +49,7 @@
     "@huggingface/transformers": "^3.0.0"
   },
   "devDependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.114",
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^20.0.0",
     "@types/ws": "^8.18.1",
