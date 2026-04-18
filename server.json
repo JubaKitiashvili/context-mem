@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.JubaKitiashvili/context-mem",
-  "description": "Persistent memory for AI agents — 98%+ retrieval recall, 99% token savings, 45 tools",
+  "description": "Memory + context infrastructure for AI agents. LLM Wiki auto-sync, 15 summarizers, 99% token savings, 45+ tools, Obsidian plugin.",
   "repository": {
     "url": "https://github.com/JubaKitiashvili/context-mem",
     "source": "github"
   },
-  "version": "3.4.0",
+  "version": "4.0.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "context-mem",
-      "version": "3.4.0",
+      "version": "4.0.0",
       "transport": {
         "type": "stdio"
       },

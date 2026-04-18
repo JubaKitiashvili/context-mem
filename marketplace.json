@@ -1,7 +1,7 @@
 {
   "name": "context-mem",
-  "version": "3.4.0",
-  "description": "Dual-mode AI memory: real-time context optimization (99% token savings) AND long-term institutional memory. 14 content-aware summarizers, hybrid parallel search (BM25 + vector), entity intelligence, decision trails. Fully local, zero cost.",
+  "version": "4.0.0",
+  "description": "Memory + context infrastructure for AI agents. Reference implementation of Karpathy's LLM Wiki pattern: auto-syncing markdown vault, 15 content-aware summarizers, hybrid search (BM25 + vector + optional LLM judge), entity graph, synthesis pages, Obsidian plugin. Fully local, zero cost. MIT.",
   "author": "JubaKitiashvili",
   "repository": "https://github.com/JubaKitiashvili/context-mem",
   "npm": "https://www.npmjs.com/package/context-mem",

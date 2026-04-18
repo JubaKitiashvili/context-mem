@@ -5,7 +5,7 @@ import { ObserveQueue, type QueueItem } from './observe-queue.js';
 import { OBSERVATION_TYPES, type ObservationType } from './types.js';
 
 const MAX_BODY_SIZE = 512 * 1024; // 512KB
-const BRIDGE_VERSION = '3.4.0';
+const BRIDGE_VERSION = '4.0.0';
 
 function isPortInUse(port: number): Promise<boolean> {
   return new Promise((resolve) => {

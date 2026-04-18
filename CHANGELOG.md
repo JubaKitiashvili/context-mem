@@ -2,6 +2,55 @@
 
 All notable changes to context-mem are documented here.
 
+## [4.0.0] — 2026-04-18 — Cognition
+
+The LLM Wiki release. Reference implementation of Andrej Karpathy's [LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f). Dual-pillar positioning (Memory + Compression). Obsidian plugin v1. Context Protocol v1 RFC. Eight IDE integration guides. Refactored tool surface.
+
+### Added — Memory Pillar
+
+- **Synthesis pages** — `src/core/synthesis.ts`. Entity and topic pages auto-update incrementally. LLM-gated via `ai_curation.enabled` with deterministic template fallback when no provider is configured. Debounced scheduler, min-observations guard (default 3), privacy filter, fail-open. Adds `synthesize_page` prompt template + `LLMService.synthesizePage()` helper + new error category `synthesis`.
+- **Answer-as-Page** — `ask({save_as_page: true})` and `search({file_as: 'knowledge'})` persist synthesized answers into `vault/answers/*.md` with source citations AND as knowledge entries. Extends `KnowledgeCategory` with `'answer' | 'summary'`. Adds `VaultSync.saveAnswerPage` + `renderAnswerPage` template.
+- **Obsidian plugin v1** — new top-level `obsidian-plugin/` directory. Sidebar pane with bridge status + quick observe + recent log tail. Commands: observe selected text, observe this file, open dashboard, refresh sidebar. Status bar indicator. Settings tab with bridge host/port and auto-detect-vault. Standalone build (`cd obsidian-plugin && npm install && npm run build`).
+
+### Added — Compression Pillar
+
+- **15th summarizer — Python traceback** — `src/plugins/summarizers/python-traceback-summarizer.ts`. Extracts exception type + message + topmost user-code frame, skipping `site-packages`/`venv` library frames. Priority 250 (above generic ErrorSummarizer).
+- **Dashboard compression analytics** — new `/compression` page. Overall savings card, per-content-type bar chart, savings-ratio histogram. Backend: `getCompressionAnalytics(db)` in `dashboard/server/queries.js` + `/api/compression-analytics` endpoint.
+
+### Added — Platform
+
+- **Context Protocol v1 (Draft RFC)** — `docs/context-protocol-v1.md`. Formal 3-layer interop spec (Vault filesystem / MCP tool surface / HTTP bridge). Defines resource model, operations, identity + addressing, compliance levels (Core / Extended / Full). Released for community review.
+- **8 IDE integration guides** — `docs/integrations/{cursor,windsurf,vscode,cline,roo-code,aider,continue,jetbrains-ai}.md` + `README.md` landing page. Each config verified from canonical sources (Cursor docs, Windsurf docs, Cline README, Roo Code docs, Continue.dev docs, VS Code docs, JetBrains MCP proxy). Aider uses the HTTP bridge (no MCP).
+- **`GET /` and `GET /api` service info** on HTTP bridge (port 51894) — returns endpoints list + dashboard URL + version. `GET /favicon.ico` returns 204 (silences browser noise). 404 responses include a hint.
+
+### Changed — Refactor
+
+- **`src/mcp-server/tools.ts` split** (2576 LOC god file → 8 domain modules + barrel). New structure: `tools/{shared,core,search,knowledge,graph,agent,narrative,session,index}.ts`. `tools.ts` is now a 1-line re-export preserving external imports. No behavior change.
+- **Unified `search({query, scope, mode, filters, cursor, limit})` MCP tool** supersedes 7 legacy retrieval tools. Legacy tools (`search_knowledge`, `search_content`, `recall`, `browse`, `global_search`, `ask`, and legacy-observation-scoped `search`) remain callable and return results unchanged but now include `_meta.deprecated: true` + `replacement_params` for forward guidance. Removal planned in v5.0.
+- **`dashboard/server.js` split** (7890 LOC → 6 modules under `dashboard/server/`). `index.js` + `http.js` + `api.js` + `html-templates.js` + `queries.js` + 20-line entry. No framework change — Preact/Vite rewrite deferred to v4.2.
+- **README repositioned** — `README.md` promoted from `docs/README-v4-draft.md` with dual-pillar framing. Old README archived at `docs/README-v3-archive.md`.
+
+### Changed — Platform
+
+- Version strings bumped to 4.0.0 across `package.json`, `server.json` (×2), `marketplace.json`, `src/mcp-server/server.ts`, `src/core/http-bridge.ts`, `package-lock.json`.
+- Tests: 1182 → 1253 (+71 new): synthesis (9), answer-as-page (23), unified search (27), python-traceback (8), http-bridge extras (4).
+
+### Notes
+
+- `vault.enabled` is now default behavior when configured. Synthesis is opt-in via `vault.synthesis` (default true when vault enabled, off otherwise).
+- Benchmark sweep (synonym migration post-deltas, E2E QA baseline, full 4-suite re-run) is scheduled to run alongside the v4.0.0 tag. Results published to `benchmarks/results/v4-release-2026-04-18.json` and the migration doc's delta table.
+- The v1 Obsidian plugin is not yet submitted to the Obsidian community plugin store — manual install via `main.js` copy for this release.
+
+### Credits
+
+- Andrej Karpathy — [LLM Wiki gist (2026-04-04)](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) for the paradigm framing.
+- @AlexisOlson — benchmark-methodology review (issue #6), carried forward: E2E QA harness + synonym migration.
+- Vannevar Bush — "As We May Think" (1945), referenced in the schema spec + Context Protocol.
+
+### What's next
+
+**v4.1 "Network" (Month 3):** post-release polish, community feedback from Context Protocol RFC, HNSW vector index, bulk-ingest endpoint, Obsidian plugin community-store submission.
+
 ## [3.4.0] — 2026-04-18 — LLM Wiki Preview
 
 ### Added
