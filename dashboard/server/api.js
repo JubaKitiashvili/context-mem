@@ -442,6 +442,9 @@ function handleApi(req, res, state) {
       case '/api/tunnels':
         data = q.getTunnels(state);
         break;
+      case '/api/compression-analytics':
+        data = q.getCompressionAnalytics(state);
+        break;
       case '/api/diagnostics': {
         const mode = url.searchParams.get('mode') === 'list' ? 'list' : 'summary';
         const since = parseInt(url.searchParams.get('since') || String(Date.now() - 3600000), 10);

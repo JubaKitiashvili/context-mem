@@ -1909,6 +1909,7 @@ function getDashboardHtml() {
       <a href="/trail" class="nav-link">Trail</a>
       <a href="/narrative" class="nav-link">Narrative</a>
       <a href="/diagnostics" class="nav-link">Diagnostics</a>
+      <a href="/compression" class="nav-link">Compression</a>
     </nav>
   </div>
   <div class="header-right">
@@ -4511,6 +4512,7 @@ function getGraphPageHtml() {
       <a href="/graph" class="nav-link active">Graph</a>
       <a href="/timeline" class="nav-link">Timeline</a>
       <a href="/diagnostics" class="nav-link">Diagnostics</a>
+      <a href="/compression" class="nav-link">Compression</a>
     </nav>
   </div>
   <button class="theme-toggle" id="themeToggle" title="Toggle light/dark theme">L</button>
@@ -5324,6 +5326,7 @@ function getTimelinePageHtml() {
       <a href="/graph" class="nav-link">Graph</a>
       <a href="/timeline" class="nav-link active">Timeline</a>
       <a href="/diagnostics" class="nav-link">Diagnostics</a>
+      <a href="/compression" class="nav-link">Compression</a>
     </nav>
   </div>
   <div class="header-right">
@@ -5782,7 +5785,7 @@ function getTopicsPageHtml() {
 <div class="header"><div class="header-left">
   <div class="logo">cm</div><span style="font-size:14px;font-weight:600;">context-mem <span style="font-size:10px;color:var(--text-muted);font-weight:400;">v3.0</span></span>
   <nav class="nav-links">
-    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link active">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link">Trail</a><a href="/narrative" class="nav-link">Narrative</a><a href="/diagnostics" class="nav-link">Diagnostics</a>
+    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link active">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link">Trail</a><a href="/narrative" class="nav-link">Narrative</a><a href="/diagnostics" class="nav-link">Diagnostics</a><a href="/compression" class="nav-link">Compression</a>
   </nav>
 </div></div>
 <div class="main">
@@ -5867,7 +5870,7 @@ function getTrailPageHtml() {
 <div class="header"><div class="header-left">
   <div class="logo">cm</div><span style="font-size:14px;font-weight:600;">context-mem <span style="font-size:10px;color:var(--text-muted);font-weight:400;">v3.0</span></span>
   <nav class="nav-links">
-    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link active">Trail</a><a href="/narrative" class="nav-link">Narrative</a><a href="/diagnostics" class="nav-link">Diagnostics</a>
+    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link active">Trail</a><a href="/narrative" class="nav-link">Narrative</a><a href="/diagnostics" class="nav-link">Diagnostics</a><a href="/compression" class="nav-link">Compression</a>
   </nav>
 </div></div>
 <div class="main">
@@ -5941,7 +5944,7 @@ function getNarrativePageHtml() {
 <div class="header"><div class="header-left">
   <div class="logo">cm</div><span style="font-size:14px;font-weight:600;">context-mem <span style="font-size:10px;color:var(--text-muted);font-weight:400;">v3.0</span></span>
   <nav class="nav-links">
-    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link">Trail</a><a href="/narrative" class="nav-link active">Narrative</a><a href="/diagnostics" class="nav-link">Diagnostics</a>
+    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link">Trail</a><a href="/narrative" class="nav-link active">Narrative</a><a href="/diagnostics" class="nav-link">Diagnostics</a><a href="/compression" class="nav-link">Compression</a>
   </nav>
 </div></div>
 <div class="main">
@@ -6097,6 +6100,190 @@ loadDiagnostics();
 }
 
 
+function getCompressionAnalyticsHtml() {
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>context-mem - Compression Analytics</title>
+<style>
+  :root { --bg:#08080d;--bg-card:#0f0f17;--bg-card-hover:#161622;--bg-elevated:#1a1a28;--border:#1e1e30;--text:#e8e8ef;--text-dim:#7a7a90;--text-muted:#4a4a60;--accent:#818cf8;--green:#34d399;--green-dim:rgba(52,211,153,0.12);--orange:#fbbf24;--red:#f87171;--blue:#60a5fa;--purple:#c084fc;--cyan:#22d3ee;--radius:16px;--radius-sm:10px;--font-ui:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;--font-mono:'SF Mono','Cascadia Code',monospace; }
+  * { margin:0;padding:0;box-sizing:border-box; }
+  body { font-family:var(--font-ui);background:var(--bg);color:var(--text);min-height:100vh; }
+  .header { display:flex;align-items:center;padding:0 24px;height:56px;border-bottom:1px solid var(--border);background:rgba(8,8,13,0.85);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px); }
+  .header-left { display:flex;align-items:center;gap:10px; }
+  .logo { width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white; }
+  .nav-links { display:flex;gap:2px;margin-left:12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:3px; }
+  .nav-link { font-size:12px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:4px 12px;border-radius:7px;transition:all 0.15s; }
+  .nav-link:hover { color:var(--text);background:var(--bg-card-hover); }
+  .nav-link.active { color:var(--text);background:var(--bg-card); }
+  .main { max-width:960px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:20px; }
+  .page-title { font-size:18px;font-weight:700;margin-bottom:2px; }
+  .page-sub { font-size:12px;color:var(--text-dim);margin-bottom:4px; }
+  .cards-row { display:grid;grid-template-columns:repeat(3,1fr);gap:12px; }
+  .card { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px; }
+  .stat-label { font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px; }
+  .stat-val { font-size:26px;font-weight:700;color:var(--text); }
+  .stat-sub { font-size:11px;color:var(--text-dim);margin-top:4px; }
+  .section-title { font-size:13px;font-weight:600;margin-bottom:14px;color:var(--text); }
+  /* Bar chart */
+  .bar-chart { display:flex;flex-direction:column;gap:8px; }
+  .bar-row { display:grid;grid-template-columns:90px 1fr 60px;align-items:center;gap:10px; }
+  .bar-label { font-size:11px;color:var(--text-dim);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+  .bar-track { background:var(--bg-elevated);border-radius:4px;height:12px;overflow:hidden; }
+  .bar-fill { height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--cyan));transition:width 0.4s ease; }
+  .bar-pct { font-size:11px;color:var(--text-dim);text-align:right;font-variant-numeric:tabular-nums; }
+  /* Histogram */
+  .histo { display:flex;align-items:flex-end;gap:6px;height:100px; }
+  .histo-col { display:flex;flex-direction:column;align-items:center;gap:4px;flex:1; }
+  .histo-bar { width:100%;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px;transition:height 0.4s ease; }
+  .histo-label { font-size:9px;color:var(--text-muted);text-align:center;white-space:nowrap; }
+  .histo-count { font-size:9px;color:var(--text-dim); }
+  .data-table { width:100%;border-collapse:collapse;font-size:12px; }
+  .data-table th { text-align:left;padding:8px 12px;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.5px; }
+  .data-table td { padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-dim);vertical-align:middle; }
+  .data-table tr:last-child td { border-bottom:none; }
+  .data-table tr:hover td { background:var(--bg-card-hover); }
+  .badge { display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;background:var(--green-dim);color:var(--green); }
+  .empty { opacity:0.5;font-size:12px;text-align:center;padding:24px 0; }
+  @media(max-width:640px){ .cards-row{grid-template-columns:1fr;} .bar-row{grid-template-columns:70px 1fr 48px;} }
+</style></head><body>
+<div class="header"><div class="header-left">
+  <div class="logo">cm</div>
+  <span style="font-size:14px;font-weight:600;">context-mem <span style="font-size:10px;color:var(--text-muted);font-weight:400;">v3.0</span></span>
+  <nav class="nav-links">
+    <a href="/" class="nav-link">Home</a><a href="/topics" class="nav-link">Topics</a><a href="/graph" class="nav-link">Graph</a><a href="/timeline" class="nav-link">Timeline</a><a href="/trail" class="nav-link">Trail</a><a href="/narrative" class="nav-link">Narrative</a><a href="/diagnostics" class="nav-link">Diagnostics</a><a href="/compression" class="nav-link">Compression</a><a href="/compression" class="nav-link active">Compression</a>
+  </nav>
+</div></div>
+<div class="main">
+  <div>
+    <div class="page-title">Compression Analytics</div>
+    <div class="page-sub">Token savings achieved by content-aware summarizers across all observations.</div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="cards-row">
+    <div class="card">
+      <div class="stat-label">Total Observations</div>
+      <div class="stat-val" id="overall-obs">—</div>
+      <div class="stat-sub">with summarization metadata</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Tokens Saved</div>
+      <div class="stat-val" id="overall-saved">—</div>
+      <div class="stat-sub" id="overall-saved-sub">original vs summarized</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Overall Savings</div>
+      <div class="stat-val" id="overall-pct" style="color:var(--green);">—</div>
+      <div class="stat-sub">compression ratio</div>
+    </div>
+  </div>
+
+  <!-- Per content-type bar chart -->
+  <div class="card">
+    <div class="section-title">Savings by Content Type</div>
+    <div class="bar-chart" id="bar-chart">
+      <div class="empty">Loading…</div>
+    </div>
+  </div>
+
+  <!-- Histogram -->
+  <div class="card">
+    <div class="section-title">Compression Ratio Distribution</div>
+    <div id="histo-wrap" style="padding-bottom:4px;">
+      <div class="histo" id="histo">
+        <div class="empty">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail table -->
+  <div class="card">
+    <div class="section-title">Per Content-Type Detail</div>
+    <table class="data-table">
+      <thead><tr>
+        <th>Type</th><th>Observations</th><th>Original tokens</th><th>Summary tokens</th><th>Savings</th>
+      </tr></thead>
+      <tbody id="detail-tbody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+<script>
+function fmt(n) {
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+  return String(n);
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+async function load() {
+  const res = await fetch('/api/compression-analytics');
+  const data = await res.json();
+
+  // Overall cards
+  const ov = data.overall || {};
+  document.getElementById('overall-obs').textContent = fmt(ov.observations || 0);
+  const saved = (ov.total_original || 0) - (ov.total_summary || 0);
+  document.getElementById('overall-saved').textContent = fmt(Math.max(0, saved));
+  document.getElementById('overall-saved-sub').textContent =
+    fmt(ov.total_original || 0) + ' → ' + fmt(ov.total_summary || 0) + ' tokens';
+  document.getElementById('overall-pct').textContent = (ov.savings_pct || 0).toFixed(1) + '%';
+
+  // Bar chart — per content type
+  const types = (data.perContentType || []).filter(r => r.total_original_bytes > 0);
+  const barChart = document.getElementById('bar-chart');
+  if (types.length === 0) {
+    barChart.innerHTML = '<div class="empty">No summarization data recorded yet.</div>';
+  } else {
+    barChart.innerHTML = types.map(r => {
+      const pct = Math.min(100, Math.max(0, r.savings_pct));
+      return \`<div class="bar-row">
+        <div class="bar-label" title="\${escapeHtml(r.type)}">\${escapeHtml(r.type)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:\${pct}%"></div></div>
+        <div class="bar-pct">\${pct.toFixed(1)}%</div>
+      </div>\`;
+    }).join('');
+  }
+
+  // Histogram
+  const hist = data.histogram || [];
+  const histo = document.getElementById('histo');
+  if (hist.length === 0 || hist.every(b => b.count === 0)) {
+    histo.innerHTML = '<div class="empty">No distribution data yet.</div>';
+  } else {
+    const maxCount = Math.max(...hist.map(b => b.count), 1);
+    histo.innerHTML = hist.map(b => {
+      const h = Math.round((b.count / maxCount) * 100);
+      return \`<div class="histo-col">
+        <div class="histo-count">\${fmt(b.count)}</div>
+        <div class="histo-bar" style="height:\${h}px"></div>
+        <div class="histo-label">\${escapeHtml(b.bucket)}</div>
+      </div>\`;
+    }).join('');
+  }
+
+  // Detail table
+  const tbody = document.getElementById('detail-tbody');
+  const allTypes = data.perContentType || [];
+  if (allTypes.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No data.</td></tr>';
+  } else {
+    tbody.innerHTML = allTypes.map(r => {
+      const pct = r.savings_pct || 0;
+      const color = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--orange)' : 'var(--text-dim)';
+      return \`<tr>
+        <td style="font-weight:500;color:var(--text)">\${escapeHtml(r.type)}</td>
+        <td>\${fmt(r.observations)}</td>
+        <td>\${fmt(r.total_original_bytes)}</td>
+        <td>\${fmt(r.total_summary_bytes)}</td>
+        <td><span class="badge" style="color:\${color};background:none;padding:0;">\${pct.toFixed(1)}%</span></td>
+      </tr>\`;
+    }).join('');
+  }
+}
+load();
+</script></body></html>`;
+}
+
 module.exports = {
   getDashboardHtml,
   getGraphPageHtml,
@@ -6105,4 +6292,5 @@ module.exports = {
   getTrailPageHtml,
   getNarrativePageHtml,
   getDiagnosticsPageHtml,
+  getCompressionAnalyticsHtml,
 };

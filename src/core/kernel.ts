@@ -10,6 +10,7 @@ import { createLLMService } from './llm-factory.js';
 import type { LLMService } from './llm-provider.js';
 // Summarizers — registered in priority order
 import { TypescriptErrorSummarizer } from '../plugins/summarizers/typescript-error-summarizer.js';
+import { PythonTracebackSummarizer } from '../plugins/summarizers/python-traceback-summarizer.js';
 import { TestOutputSummarizer } from '../plugins/summarizers/test-output-summarizer.js';
 import { BuildOutputSummarizer } from '../plugins/summarizers/build-output-summarizer.js';
 import { GitLogSummarizer } from '../plugins/summarizers/git-log-summarizer.js';
@@ -230,6 +231,7 @@ export class Kernel {
     // 5. Summarizers — registered in priority order (most specific first)
     const summarizers = [
       new TypescriptErrorSummarizer(),  // Before generic Error
+      new PythonTracebackSummarizer(),  // Before generic Error (priority 250)
       new TestOutputSummarizer(),        // Before Shell
       new BuildOutputSummarizer(),       // Before Shell
       new GitLogSummarizer(),

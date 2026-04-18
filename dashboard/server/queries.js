@@ -1032,6 +1032,82 @@ function getPinnedObservations(state, limit = 20) {
   } catch { return []; }
 }
 
+function getCompressionAnalytics(state) {
+  const { db } = state;
+
+  // Per content-type breakdown (uses observation.type column)
+  let perContentType = [];
+  try {
+    perContentType = db.prepare(`
+      SELECT o.type,
+             COUNT(*) as observations,
+             COALESCE(SUM(json_extract(o.metadata, '$.tokens_original')), 0)    as total_original_bytes,
+             COALESCE(SUM(json_extract(o.metadata, '$.tokens_summarized')), 0)  as total_summary_bytes
+      FROM observations o
+      GROUP BY o.type
+      ORDER BY total_original_bytes DESC
+    `).all().map(r => ({
+      type: r.type,
+      observations: r.observations,
+      total_original_bytes: r.total_original_bytes,
+      total_summary_bytes: r.total_summary_bytes,
+      savings_pct: r.total_original_bytes > 0
+        ? Math.round((1 - r.total_summary_bytes / r.total_original_bytes) * 1000) / 10
+        : 0,
+    }));
+  } catch {}
+
+  // Overall totals
+  let overall = { observations: 0, total_original: 0, total_summary: 0, savings_pct: 0 };
+  try {
+    const row = db.prepare(`
+      SELECT COUNT(*) as observations,
+             COALESCE(SUM(json_extract(metadata, '$.tokens_original')), 0)   as total_original,
+             COALESCE(SUM(json_extract(metadata, '$.tokens_summarized')), 0) as total_summary
+      FROM observations
+    `).get();
+    if (row) {
+      overall = {
+        observations: row.observations,
+        total_original: row.total_original,
+        total_summary: row.total_summary,
+        savings_pct: row.total_original > 0
+          ? Math.round((1 - row.total_summary / row.total_original) * 1000) / 10
+          : 0,
+      };
+    }
+  } catch {}
+
+  // Compression ratio histogram — bucket by savings %
+  const buckets = [
+    { label: '0-10%',   min: 0,  max: 10  },
+    { label: '10-30%',  min: 10, max: 30  },
+    { label: '30-50%',  min: 30, max: 50  },
+    { label: '50-70%',  min: 50, max: 70  },
+    { label: '70-90%',  min: 70, max: 90  },
+    { label: '90-100%', min: 90, max: 101 },
+  ];
+  const histogram = buckets.map(b => ({ bucket: b.label, count: 0 }));
+
+  try {
+    const rows = db.prepare(`
+      SELECT json_extract(metadata, '$.tokens_original')   as orig,
+             json_extract(metadata, '$.tokens_summarized') as summ
+      FROM observations
+      WHERE json_extract(metadata, '$.tokens_original') > 0
+        AND json_extract(metadata, '$.tokens_summarized') IS NOT NULL
+    `).all();
+
+    for (const r of rows) {
+      const pct = Math.round((1 - r.summ / r.orig) * 100);
+      const idx = buckets.findIndex(b => pct >= b.min && pct < b.max);
+      if (idx >= 0) histogram[idx].count++;
+    }
+  } catch {}
+
+  return { perContentType, histogram, overall };
+}
+
 function getTunnels(state) {
   const { db, currentProject, PROJECT_DIR, path, fs, os, Database } = state;
   try {
@@ -1101,4 +1177,5 @@ module.exports = {
   generateNarrativeApi,
   getPinnedObservations,
   getTunnels,
+  getCompressionAnalytics,
 };

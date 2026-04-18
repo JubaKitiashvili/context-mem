@@ -10,6 +10,7 @@ const {
   getTrailPageHtml,
   getNarrativePageHtml,
   getDiagnosticsPageHtml,
+  getCompressionAnalyticsHtml,
 } = require('./html-templates.js');
 const q = require('./queries.js');
 
@@ -102,6 +103,8 @@ function createHTTPServer(state) {
       res.end(getNarrativePageHtml());
     } else if (pagePath === '/diagnostics') {
       res.end(getDiagnosticsPageHtml());
+    } else if (pagePath === '/compression') {
+      res.end(getCompressionAnalyticsHtml());
     } else {
       res.end(getDashboardHtml());
     }
