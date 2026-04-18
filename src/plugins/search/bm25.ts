@@ -3,6 +3,7 @@ import type { BetterSqlite3Storage } from '../storage/better-sqlite3.js';
 import { sanitizeFTS5Query } from './fts5-utils.js';
 import { extractBestSnippet } from './snippet-extractor.js';
 import { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, resolveTemporalKeywords, EXPANSIONS } from './query-builder.js';
+import { resolveTemporalRange } from './temporal-resolver.js';
 
 export class BM25Search implements SearchPlugin {
   name = 'bm25-search';
@@ -103,6 +104,55 @@ export class BM25Search implements SearchPlugin {
       if (temporalKws.length > 0) {
         const temporalQuery = temporalKws.map(w => `"${w}"`).join(' AND ');
         runQuery(temporalQuery, 1.6);
+      }
+    }
+
+    // Strategy 8b: Temporal INDEXED_AT range filter. For HIGH-confidence ranges
+    // ("last Saturday", "N days ago", "yesterday"), hard-constrain the candidate
+    // pool to in-range rows — content relevance against out-of-range dates is
+    // noise when the user explicitly anchors the question in time. For medium/low
+    // confidence, fall back to additive boost on in-range rows.
+    if (opts.referenceDate) {
+      const range = resolveTemporalRange(query, opts.referenceDate);
+      if (range) {
+        try {
+          const sql = `
+            SELECT o.id, o.type, o.summary, o.content, o.indexed_at, o.access_count,
+                   0 as relevance
+            FROM observations o
+            WHERE o.indexed_at >= ? AND o.indexed_at <= ?${filterSQL}`;
+          const rows = this.storage.prepare(sql).all(
+            range.start.getTime(),
+            range.end.getTime(),
+            ...filterParams,
+          ) as RowData[];
+          if (rows.length > 0) {
+            const inRangeById = new Map<string, RowData>(rows.map(r => [r.id, r]));
+            if (range.confidence === 'high') {
+              // Hard constraint: drop out-of-range candidates entirely.
+              const filtered = new Map<string, { row: RowData; score: number }>();
+              for (const [id, entry] of seen) {
+                if (inRangeById.has(id)) filtered.set(id, entry);
+              }
+              // In-range rows with zero content match → low floor so they rank
+              // below real content-matched in-range rows but above nothing.
+              const FLOOR = 0.5;
+              for (const [id, row] of inRangeById) {
+                if (!filtered.has(id)) filtered.set(id, { row, score: FLOOR });
+              }
+              seen.clear();
+              for (const [id, entry] of filtered) seen.set(id, entry);
+            } else {
+              // Medium/low confidence: additive boost instead of hard filter.
+              const confidenceWeight = range.confidence === 'medium' ? 1.8 : 1.2;
+              for (const [id, row] of inRangeById) {
+                const existing = seen.get(id);
+                const boosted = (existing?.score ?? 0) + confidenceWeight;
+                seen.set(id, { row: existing?.row ?? row, score: boosted });
+              }
+            }
+          }
+        } catch { /* non-critical */ }
       }
     }
 

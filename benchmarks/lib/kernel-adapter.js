@@ -15,6 +15,7 @@ const projectRoot = path.resolve(__dirname, '..', '..');
 const { migrations } = require(path.join(projectRoot, 'dist/plugins/storage/migrations.js'));
 const { sanitizeFTS5Query } = require(path.join(projectRoot, 'dist/plugins/search/fts5-utils.js'));
 const { buildORQuery, buildANDQuery, buildEntityQuery, buildPhraseQuery, buildRelaxedANDQuery, extractKeywords, resolveTemporalKeywords, EXPANSIONS, mergeExpansions } = require(path.join(projectRoot, 'dist/plugins/search/query-builder.js'));
+// NOTE: a local resolveTemporalRange already exists below (with rangeAround) — reuse it for Strategy 8b
 const { BENCH_EXPANSIONS } = require(path.join(__dirname, 'expansions.js'));
 
 // Merge benchmark-specific synonyms into the active expansion set
@@ -198,6 +199,47 @@ class BenchKernel {
         for (const kw of temporalKws) {
           if (kw.length >= 3) runFTS(`"${kw}"`, 0.8);
         }
+      }
+
+      // Strategy 8b: Temporal INDEXED_AT range filter — sessions carry their real
+      // date in observations.indexed_at. For HIGH-confidence ranges, collapse the
+      // candidate pool to in-range sessions only, ranked by whatever content score
+      // they had. Rationale: when the user says "last Saturday", they MEAN that day;
+      // content relevance against other dates is noise, not signal.
+      const range = resolveTemporalRange(query, opts.referenceDate);
+      if (range) {
+        try {
+          const inRangeIds = new Set(
+            this.db.prepare('SELECT id FROM observations WHERE indexed_at >= ? AND indexed_at <= ?')
+              .all(range.start.getTime(), range.end.getTime()).map(r => r.id)
+          );
+          if (inRangeIds.size > 0) {
+            if (range.confidence === 'high') {
+              // Hard constraint: drop out-of-range candidates entirely.
+              // For in-range candidates with zero content match, assign floor so they
+              // rank below content-matched in-range candidates but above nothing.
+              const contentFloor = seen.size > 0
+                ? Math.min(...[...seen.values()].filter(v => inRangeIds.has.bind(inRangeIds))) * 0.5
+                : 0.5;
+              const inRangeScores = new Map();
+              for (const [id, score] of seen) {
+                if (inRangeIds.has(id)) inRangeScores.set(id, score);
+              }
+              for (const id of inRangeIds) {
+                if (!inRangeScores.has(id)) inRangeScores.set(id, Math.max(0.5, contentFloor));
+              }
+              seen.clear();
+              for (const [id, score] of inRangeScores) seen.set(id, score);
+            } else {
+              // Medium/low confidence: additive boost instead of hard filter.
+              const confidenceWeight = range.confidence === 'medium' ? 1.8 : 1.2;
+              for (const id of inRangeIds) {
+                const existing = seen.get(id) || 0;
+                seen.set(id, existing + confidenceWeight);
+              }
+            }
+          }
+        } catch {}
       }
     }
 
@@ -486,11 +528,11 @@ function resolveTemporalRange(query, referenceDate) {
     const refDow = ref.getDay();
     let daysBack = (refDow - targetDow + 7) % 7;
     if (daysBack === 0) daysBack = 7;
-    return rangeAround(new Date(ref.getTime() - daysBack * DAY_MS), 0, 'high');
+    return rangeAround(new Date(ref.getTime() - daysBack * DAY_MS), 1, 'high');
   }
 
-  if (/\byesterday\b/.test(q)) return rangeAround(new Date(ref.getTime() - DAY_MS), 0, 'high');
-  if (/\btoday\b/.test(q)) return rangeAround(new Date(ref.getTime()), 0, 'high');
+  if (/\byesterday\b/.test(q)) return rangeAround(new Date(ref.getTime() - DAY_MS), 1, 'high');
+  if (/\btoday\b/.test(q)) return rangeAround(new Date(ref.getTime()), 1, 'high');
 
   return null;
 }

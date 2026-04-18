@@ -106,24 +106,26 @@ export function resolveTemporalRange(query: string, referenceDate: Date | string
     return rangeAround(new Date(ref.getTime() - 30 * DAY_MS), 5, 'last month', 'medium');
   }
 
-  // "last Saturday" / "last Monday" etc. — exact date
+  // "last Saturday" / "last Monday" etc. — exact calendar day (±1 day covers
+  // time-of-day variance: the observation may be timestamped any hour of that day
+  // while ref is a specific clock time)
   m = q.match(/\blast\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/);
   if (m) {
     const targetDow = WEEKDAYS[m[1]];
     const refDow = ref.getDay();
     let daysBack = (refDow - targetDow + 7) % 7;
     if (daysBack === 0) daysBack = 7; // "last X" never means today
-    return rangeAround(new Date(ref.getTime() - daysBack * DAY_MS), 0, m[0], 'high');
+    return rangeAround(new Date(ref.getTime() - daysBack * DAY_MS), 1, m[0], 'high');
   }
 
-  // "yesterday" — exact
+  // "yesterday" — calendar day, ±1 day for time-of-day variance
   if (/\byesterday\b/.test(q)) {
-    return rangeAround(new Date(ref.getTime() - DAY_MS), 0, 'yesterday', 'high');
+    return rangeAround(new Date(ref.getTime() - DAY_MS), 1, 'yesterday', 'high');
   }
 
-  // "today" — exact
+  // "today" — calendar day, ±1 day for time-of-day variance
   if (/\btoday\b/.test(q)) {
-    return rangeAround(new Date(ref.getTime()), 0, 'today', 'high');
+    return rangeAround(new Date(ref.getTime()), 1, 'today', 'high');
   }
 
   return null;
