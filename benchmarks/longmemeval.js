@@ -23,6 +23,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { BenchKernel, llmRerank } = require('./lib/kernel-adapter');
+const { RealKernelBench } = require('./lib/real-kernel-bench');
 const { recallAtK, ndcg, formatPercent, printHeader, printResults } = require('./lib/metrics');
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
@@ -51,11 +52,15 @@ const DUMP_FAILURES = args.includes('--dump-failures');
 const TOP_K = parseInt(getArg('top-k', '10'), 10);
 const OUT_FILE = getArg('out', null);
 const FAILURES_FILE = getArg('failures-out', 'benchmarks/results/lme-failures.json');
+const ENGINE = getArg('engine', 'bench'); // 'bench' (stripped BM25-only) or 'real' (full v4.0 product)
+const USE_SYNTHESIS = !args.includes('--no-synthesis');
+const USE_VAULT = !args.includes('--no-vault');
 
 // ── Load data ───────────────────────────────────────────────────────────────
 printHeader('context-mem × LongMemEval Benchmark');
 console.log(`  Node:        ${process.version}`);
 console.log(`  OS:          ${os.platform()} ${os.arch()}`);
+console.log(`  Engine:      ${ENGINE}${ENGINE === 'real' ? ` (synthesis=${USE_SYNTHESIS}, vault=${USE_VAULT}, vector=${USE_VECTOR})` : ' (BM25 adapter)'}`);
 console.log(`  Granularity: ${GRANULARITY}`);
 console.log(`  Top-K:       ${TOP_K}`);
 console.log(`  Data:        ${dataFile}`);
@@ -74,6 +79,24 @@ const perType = {};
 const resultsLog = [];
 const startTime = Date.now();
 
+// Shared real-kernel instance (reused across questions — expensive to start)
+let sharedRealKernel = null;
+async function acquireKernel() {
+  if (ENGINE === 'real') {
+    if (!sharedRealKernel) {
+      sharedRealKernel = await new RealKernelBench({
+        synthesis: USE_SYNTHESIS,
+        vault: USE_VAULT,
+        vector: USE_VECTOR,
+      }).open();
+    } else {
+      await sharedRealKernel.resetObservations();
+    }
+    return sharedRealKernel;
+  }
+  return new BenchKernel().open();
+}
+
 (async () => {
 for (let qi = 0; qi < entries.length; qi++) {
   const entry = entries[qi];
@@ -84,7 +107,7 @@ for (let qi = 0; qi < entries.length; qi++) {
   if (!correctSessionIds.length) continue;
 
   // Build corpus from haystack sessions
-  const kernel = new BenchKernel().open();
+  const kernel = await acquireKernel();
   const corpusIds = [];
 
   const sessions = entry.haystack_sessions || [];
@@ -109,7 +132,7 @@ for (let qi = 0; qi < entries.length; qi++) {
       const sessionDate = entry.haystack_dates?.[si] || null;
       if (parts.length > 0) {
         const doc = parts.join('\n');
-        kernel.ingest(sessId, doc, { session_index: si, date: sessionDate });
+        await kernel.ingest(sessId, doc, { session_index: si, date: sessionDate });
         corpusIds.push(sessId);
       }
     } else {
@@ -118,7 +141,7 @@ for (let qi = 0; qi < entries.length; qi++) {
       for (const turn of session) {
         if (turn.role === 'user') {
           const turnId = `${sessId}_turn_${turnNum}`;
-          kernel.ingest(turnId, turn.content, { session_id: sessId, turn: turnNum });
+          await kernel.ingest(turnId, turn.content, { session_id: sessId, turn: turnNum });
           corpusIds.push(turnId);
           turnNum++;
         }
@@ -129,6 +152,11 @@ for (let qi = 0; qi < entries.length; qi++) {
   // Embed corpus for hybrid search (per-question, ~50 docs — manageable)
   if (USE_VECTOR) {
     await kernel.embedAll();
+  }
+
+  // Real-engine: await synthesis flush + embedding queue drain before search
+  if (ENGINE === 'real' && typeof kernel.flushAll === 'function') {
+    await kernel.flushAll();
   }
 
   // Query — BM25 or hybrid parallel (BM25 + vector independent retrieval)
@@ -194,12 +222,20 @@ for (let qi = 0; qi < entries.length; qi++) {
     diagnostics,
   });
 
-  kernel.close();
+  // Real-engine: reset state (keep kernel hot) instead of closing between questions
+  if (ENGINE !== 'real') {
+    kernel.close();
+  }
 
   if ((qi + 1) % 50 === 0 || qi === entries.length - 1) {
     const avgR5 = allRecall5.reduce((a, b) => a + b, 0) / allRecall5.length;
     console.log(`  [${String(qi + 1).padStart(4)}/${entries.length}] R@5=${formatPercent(avgR5)}  R@10=${formatPercent(allRecall10.reduce((a, b) => a + b, 0) / allRecall10.length)}`);
   }
+}
+
+// Cleanup shared real kernel at end
+if (sharedRealKernel) {
+  try { await sharedRealKernel.close(); } catch {}
 }
 
 const elapsed = (Date.now() - startTime) / 1000;
