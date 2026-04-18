@@ -1,0 +1,64 @@
+{
+  "benchmark": "LongMemEval E2E QA",
+  "system": "context-mem",
+  "date": "2026-04-18",
+  "top_k": 5,
+  "granularity": "session",
+  "questions": 5,
+  "accuracy": 0.8,
+  "elapsed_seconds": 99.432,
+  "per_type": {
+    "single-session-user": {
+      "accuracy": 0.8,
+      "correct": 4,
+      "total": 5
+    }
+  },
+  "results": [
+    {
+      "q_id": "e47becba",
+      "type": "single-session-user",
+      "question": "What degree did I graduate with?",
+      "expected": "Business Administration",
+      "predicted": "Based on the context provided, you graduated with a degree in Business Administration.",
+      "score": 1,
+      "judgment": "SCORE: 1 "
+    },
+    {
+      "q_id": "118b2229",
+      "type": "single-session-user",
+      "question": "How long is my daily commute to work?",
+      "expected": "45 minutes each way",
+      "predicted": "Based on the provided context, your daily commute to work takes 45 minutes each way.",
+      "score": 1,
+      "judgment": "SCORE: 1 "
+    },
+    {
+      "q_id": "51a45a95",
+      "type": "single-session-user",
+      "question": "Where did I redeem a $5 coupon on coffee creamer?",
+      "expected": "Target",
+      "predicted": "I don't know. The context mentions that you redeemed a $5 coupon on coffee creamer last Sunday from your email inbox, but it does not specify the location or store where the coupon was redeemed.",
+      "score": 0,
+      "judgment": "SCORE: 0 "
+    },
+    {
+      "q_id": "58bf7951",
+      "type": "single-session-user",
+      "question": "What play did I attend at the local community theater?",
+      "expected": "The Glass Menagerie",
+      "predicted": "According to the provided context, you attended a production of **The Glass Menagerie** at the local community theater.",
+      "score": 1,
+      "judgment": "SCORE: 1 The predicted answer correctly identifies The Glass Menagerie as the play attended at the local community theater, matching the expected answer with appropriate additional context."
+    },
+    {
+      "q_id": "1e043500",
+      "type": "single-session-user",
+      "question": "What is the name of the playlist I created on Spotify?",
+      "expected": "Summer Vibes",
+      "predicted": "Based on the provided context, the name of the playlist you created on Spotify is **\"Summer Vibes.\"** You mentioned it contains chill tracks that are perfect for relaxing or working out.",
+      "score": 1,
+      "judgment": "SCORE: 1 "
+    }
+  ]
+}

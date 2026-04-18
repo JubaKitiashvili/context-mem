@@ -96,17 +96,53 @@ Result: `sport: ['game', 'play', 'athletic', 'team']` lives in core; `collectibl
 
 ## Delta on benchmarks
 
-| Benchmark | Before | After | Delta |
-|---|---|---|---|
-| LongMemEval R@5 (pure local) | 97.8% | _pending_ | _pending_ |
-| LoCoMo R@10 | 98.1% | _pending_ | _pending_ |
-| MemBench R@5 | 98.0% | _pending_ | _pending_ |
-| ConvoMem R@10 | 97.7% | _pending_ | _pending_ |
+Post-migration re-run alongside v4.0.0 "Cognition" (2026-04-18), pure-local mode (no LLM judge).
 
-> **Note:** v3.4.0 ships without re-run numbers — the release is a flag-plant preview (`vault.enabled` is opt-in
-> off by default) whose value is the LLM Wiki narrative and schema spec, not a retrieval-score claim. The migration
-> changes core expansion semantics, so the post-migration re-run is scheduled for v4.0.0 "Cognition" (target 2026-05-22)
-> where the full benchmark sweep is part of the release gate.
+| Benchmark | Before (v3.3.0) | After (v4.0.0) | Delta | Methodology |
+|---|---|---|---|---|
+| LongMemEval R@5 (500 questions) | 97.8% | **97.6%** | -0.2pp | session granularity, top-10 retrieval |
+| LongMemEval R@10 (500 questions) | 98.2% | **98.8%** | +0.6pp | session granularity, top-10 retrieval |
+| LoCoMo R@10 (1977 QA pairs) | 98.1% | **98.0%** | -0.1pp | session granularity, top-10 retrieval |
+| MemBench R@5 | 98.0% | _pending — dataset not yet downloaded_ | — | — |
+| ConvoMem R@10 | 97.7% | _running — result pending_ | — | — |
+
+### Observations
+
+The migration cost is **negligible** on retrieval recall: -0.2pp on LongMemEval R@5 and -0.1pp on LoCoMo R@10 —
+both well inside the "accept up to -2pp" tolerance the migration plan set. LongMemEval R@10 actually **improved
++0.6pp**, suggesting the general-vocabulary synonym set is better calibrated than the former benchmark-fitted one
+for the broader top-10 retrieval window.
+
+Per-type breakdown on LongMemEval (500q full run at v4.0.0):
+
+| Question type | N | R@5 |
+|---|---|---|
+| single-session-assistant | 56 | 100.0% |
+| knowledge-update | 78 | 98.7% |
+| single-session-user | 70 | 98.6% |
+| multi-session | 133 | 98.5% |
+| temporal-reasoning | 133 | 96.2% |
+| single-session-preference | 30 | 90.0% |
+
+The weakest bucket is `single-session-preference` at 90% — the kind of question where context-mem previously leaned
+on the `supervillain → villain, comic, hero, fan` style benchmark-fitted expansion. That drop is now visible and
+honest, rather than hidden behind a migration-only patch.
+
+### E2E QA (new metric — first published)
+
+Addresses point 1 of issue #6: moves beyond retrieval recall to end-to-end generate-and-judge accuracy.
+
+Harness: `benchmarks/e2e-qa.js` — retrieve top-k → Haiku generates an answer from context → Haiku-as-judge scores
+predicted vs expected (SCORE: 0 | 1). Auth: Claude CLI OAuth (Claude Max subscription) OR `ANTHROPIC_API_KEY`;
+both paths produce identical results.
+
+| Benchmark | Questions | Retrieval Recall | **E2E QA Accuracy** | Retrieval → QA gap |
+|---|---|---|---|---|
+| LongMemEval (smoke) | 5 | 100.0% R@5 | 80.0% | -20.0pp |
+| LongMemEval (full) | 500 | 97.6% R@5 | _running — result file: `benchmarks/results/e2e-qa-lme-v4-2026-04-18.json`_ | _pending_ |
+
+The ~20pp gap on the smoke sample matches published literature (Mem0, Graphiti, Zep all report retrieval recall
+substantially above E2E QA accuracy). Full-run numbers land alongside the v4.0.0 release notes.
 
 ## Honest reporting
 
