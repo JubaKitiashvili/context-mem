@@ -24,6 +24,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { BenchKernel } = require('./lib/kernel-adapter');
+const { RealKernelBench } = require('./lib/real-kernel-bench');
 const { printHeader, formatPercent } = require('./lib/metrics');
 
 // haiku-client.mjs is ESM-only; we use a top-level promise and await it in main.
@@ -44,28 +45,33 @@ if (!dataFile) {
 }
 
 function getArg(name, def) {
+  // Support both "--name value" and "--name=value"
+  const eqArg = args.find(a => a.startsWith(`--${name}=`));
+  if (eqArg) return eqArg.slice(name.length + 3);
   const idx = args.indexOf('--' + name);
   if (idx === -1 || idx + 1 >= args.length) return def;
   return args[idx + 1];
 }
 
 const LIMIT = parseInt(getArg('limit', '0'), 10);
-const TOP_K = parseInt(getArg('top-k', '5'), 10);
+const TOP_K = parseInt(getArg('top-k', '2'), 10); // T5.6: 5 → 2 (reduce context noise)
 const GRANULARITY = getArg('granularity', 'session');
+const ENGINE = getArg('engine', 'bench'); // T5.1: 'real' uses full v4.0 pipeline
+const INGEST = getArg('ingest', 'full'); // T5.6: 'full' (user+assistant) or 'user-only' (v3.4 behavior)
 const OUT_FILE = getArg('out', `benchmarks/results/e2e-qa-lme-${new Date().toISOString().slice(0, 10)}.json`);
 
 const JUDGE_PROMPT = fs.readFileSync(path.resolve(__dirname, 'lib/qa-judge-prompt.md'), 'utf8');
 
-// ── Prompt builders ───────────────────────────────────────────────────────────
+// ── Prompt builders (T5.6 neutral prompt — extract, don't abstain) ──────────
 function buildAnswerPrompt(question, context) {
-  return `Answer this question using only the provided context. If the context does not contain the answer, say "I don't know."
+  return `You are reading a conversation log to answer the user's question. The answer is almost certainly present in the log — read carefully and extract the specific information.
 
-Context:
+Conversation log:
 ${context}
 
-Question: ${question}
+User's question: ${question}
 
-Answer (concise, 1-3 sentences):`;
+Extract and state the answer directly. If the log contains multiple related facts, synthesize them. Keep your response under 2 sentences.`;
 }
 
 function buildJudgePrompt(question, expected, predicted) {
@@ -96,8 +102,10 @@ function buildJudgePrompt(question, expected, predicted) {
     console.error('ERROR loading haiku-client:', e.message);
     process.exit(1);
   }
+  console.log(`  Engine:      ${ENGINE}${ENGINE === 'real' ? ' (full v4.0 pipeline — synthesis + vault + entity graph)' : ' (BM25 adapter)'}`);
   console.log(`  Top-K:       ${TOP_K}`);
   console.log(`  Granularity: ${GRANULARITY}`);
+  console.log(`  Ingest:      ${INGEST}`);
   console.log(`  Data:        ${dataFile}`);
 
   // Load dataset
@@ -124,38 +132,59 @@ function buildJudgePrompt(question, expected, predicted) {
   const perType = {};
   const startTime = Date.now();
 
+  // Shared real-kernel instance (reused across questions — ~1s startup penalty avoided)
+  let sharedRealKernel = null;
+  async function acquireKernel() {
+    if (ENGINE === 'real') {
+      if (!sharedRealKernel) {
+        sharedRealKernel = await new RealKernelBench({
+          synthesis: true,  // T4.4 — synthesis pages as pre-digested narrative context
+          vault: true,      // writes markdown to tmpfs — supports synthesis
+          vector: false,    // off for speed in E2E QA (retrieval ceiling already ~98%)
+        }).open();
+      } else {
+        await sharedRealKernel.resetObservations();
+      }
+      return sharedRealKernel;
+    }
+    return new BenchKernel().open();
+  }
+
   for (let qi = 0; qi < entries.length; qi++) {
     const entry = entries[qi];
     const question = entry.question || entry.query;
-    const expected = entry.answer || entry.expected_answer;
+    const expectedRaw = entry.answer || entry.expected_answer;
+    const expected = Array.isArray(expectedRaw) ? expectedRaw.join(' / ') : String(expectedRaw || '');
     const qType = entry.question_type || entry.type || 'unknown';
 
-    // ── Mirror longmemeval.js session extraction exactly ──────────────────────
+    // ── Session extraction (T5.6: default 'full' = user + assistant turns) ────
     const sessions = entry.haystack_sessions || [];
     const sessionIds = entry.haystack_session_ids || [];
 
-    // 1. Fresh BenchKernel + ingest
-    const kernel = new BenchKernel().open();
+    const kernel = await acquireKernel();
 
     if (GRANULARITY === 'session') {
       for (let si = 0; si < sessions.length; si++) {
         const session = sessions[si];
         const sessId = sessionIds[si] || `sess_${si}`;
 
-        // Mirror longmemeval.js: user turns + answer-bearing assistant turns
+        // T5.6: by default include FULL conversation (user + assistant) so the
+        // LLM sees context that actually contains answers. Old 'user-only' mode
+        // was a retrieval-specific trick that broke generation.
         const parts = [];
         for (const t of session) {
-          if (t.role === 'user') {
-            parts.push(t.content);
-          } else if (t.has_answer) {
-            parts.push(t.content);
+          if (INGEST === 'user-only') {
+            if (t.role === 'user' || t.has_answer) parts.push(t.content);
+          } else {
+            // 'full' — user prefix preserved so Haiku can parse dialogue role
+            parts.push(`${t.role}: ${t.content}`);
           }
         }
 
         const sessionDate = entry.haystack_dates?.[si] || null;
         if (parts.length > 0) {
           const doc = parts.join('\n');
-          kernel.ingest(sessId, doc, { session_index: si, date: sessionDate });
+          await kernel.ingest(sessId, doc, { session_index: si, date: sessionDate });
         }
       }
     } else {
@@ -167,11 +196,16 @@ function buildJudgePrompt(question, expected, predicted) {
         for (const turn of session) {
           if (turn.role === 'user') {
             const turnId = `${sessId}_turn_${turnNum}`;
-            kernel.ingest(turnId, turn.content, { session_id: sessId, turn: turnNum });
+            await kernel.ingest(turnId, turn.content, { session_id: sessId, turn: turnNum });
             turnNum++;
           }
         }
       }
+    }
+
+    // Real-engine: await synthesis flush + embedding drain before search
+    if (ENGINE === 'real' && typeof kernel.flushAll === 'function') {
+      await kernel.flushAll();
     }
 
     // 2. Retrieve top-K
@@ -179,16 +213,26 @@ function buildJudgePrompt(question, expected, predicted) {
     if (entry.question_date) searchOpts.referenceDate = entry.question_date;
     const hits = await kernel.searchAsync(question, TOP_K, searchOpts);
 
-    // 3. Build context from top-K retrieved docs
-    const contextIds = hits.slice(0, TOP_K).map(h => h.id);
-    let context = '';
-    if (contextIds.length > 0) {
-      const placeholders = contextIds.map(() => '?').join(',');
-      const contextRows = kernel.db.prepare(
-        `SELECT content FROM observations WHERE id IN (${placeholders})`
-      ).all(...contextIds);
-      context = contextRows.map(r => r.content).join('\n\n---\n\n').slice(0, 20000);
+    // 3. Build context from top-K retrieved docs. CRITICAL: preserve search rank
+    //    order (SQLite `WHERE id IN (...)` returns rows in ROWID order, which
+    //    loses ranking — so the top hit might end up at the end and get
+    //    truncated when we slice to the budget). Fetch each id separately.
+    //    Also apply a PER-SESSION budget so the first-ranked session always fits.
+    const dbIds = hits.slice(0, TOP_K).map(h => h.obs_id || h.id);
+    const TOTAL_CONTEXT_BUDGET = 20000;
+    const perSessionBudget = Math.floor(TOTAL_CONTEXT_BUDGET / Math.max(1, dbIds.length));
+    const fetchStmt = kernel.db.prepare('SELECT content FROM observations WHERE id = ?');
+    const rankedParts = [];
+    for (const id of dbIds) {
+      const row = fetchStmt.get(id);
+      if (row && row.content) {
+        // Slice each session to fit its share of the budget; the top-ranked
+        // session is first, so even if we over-budget we still include the
+        // best hit in full before considering lesser hits.
+        rankedParts.push(row.content.slice(0, perSessionBudget));
+      }
     }
+    const context = rankedParts.join('\n\n---\n\n');
 
     // 4. Haiku answer generation — skip when retrieval returned nothing
     let predicted = '';
@@ -230,7 +274,7 @@ function buildJudgePrompt(question, expected, predicted) {
     perType[qType].total++;
     perType[qType].correct += score;
 
-    kernel.close();
+    if (ENGINE !== 'real') kernel.close();
 
     if ((qi + 1) % 10 === 0 || qi === entries.length - 1) {
       const correct = results.reduce((s, r) => s + r.score, 0);
@@ -275,4 +319,7 @@ function buildJudgePrompt(question, expected, predicted) {
   fs.mkdirSync(path.dirname(path.resolve(OUT_FILE)), { recursive: true });
   fs.writeFileSync(OUT_FILE, JSON.stringify(output, null, 2));
   console.log(`  Results saved: ${OUT_FILE}`);
+
+  // Cleanup shared real kernel
+  if (sharedRealKernel) { try { await sharedRealKernel.close(); } catch {} }
 })().catch(err => { console.error(err); process.exit(1); });

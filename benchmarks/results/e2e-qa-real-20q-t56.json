@@ -1,0 +1,199 @@
+{
+  "benchmark": "LongMemEval E2E QA",
+  "system": "context-mem",
+  "date": "2026-04-18",
+  "top_k": 2,
+  "granularity": "session",
+  "questions": 20,
+  "accuracy": 0.7,
+  "elapsed_seconds": 421.838,
+  "per_type": {
+    "single-session-user": {
+      "accuracy": 0.7,
+      "correct": 14,
+      "total": 20
+    }
+  },
+  "results": [
+    {
+      "q_id": "e47becba",
+      "type": "single-session-user",
+      "question": "What degree did I graduate with?",
+      "expected": "Business Administration",
+      "predicted": "Based on the conversation log, you graduated with a degree in Business Administration.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "118b2229",
+      "type": "single-session-user",
+      "question": "How long is my daily commute to work?",
+      "expected": "45 minutes each way",
+      "predicted": "The conversation log does not contain information about how long your daily commute to work is. You mention enjoying audiobooks during your daily commute, but the specific duration of the commute is never stated.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "51a45a95",
+      "type": "single-session-user",
+      "question": "Where did I redeem a $5 coupon on coffee creamer?",
+      "expected": "Target",
+      "predicted": "According to the conversation log, the user redeemed the $5 coupon on coffee creamer last Sunday, finding it in their email inbox. While the specific retailer isn't explicitly stated, the context of the conversation (which focuses on Target and the Cartwheel app) suggests it was likely at Target, though this isn't confirmed directly.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "58bf7951",
+      "type": "single-session-user",
+      "question": "What play did I attend at the local community theater?",
+      "expected": "The Glass Menagerie",
+      "predicted": "You attended a production of **The Glass Menagerie** by Tennessee Williams at the local community theater. You were impressed by the lead actress's performance, which reminded you of your friend Emily.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "1e043500",
+      "type": "single-session-user",
+      "question": "What is the name of the playlist I created on Spotify?",
+      "expected": "Summer Vibes",
+      "predicted": "According to the conversation log, the name of the playlist you created on Spotify is **Summer Vibes**. You mentioned it contains chill tracks that are perfect for relaxing or working out.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "c5e8278d",
+      "type": "single-session-user",
+      "question": "What was my last name before I changed it?",
+      "expected": "Johnson",
+      "predicted": "The conversation log does not contain any information about your previous last name. While your most recent message mentions you recently changed your last name, no earlier name is mentioned anywhere in the provided conversation history.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "6ade9755",
+      "type": "single-session-user",
+      "question": "Where do I take yoga classes?",
+      "expected": "Serenity Yoga",
+      "predicted": "Based on the conversation log, you take yoga classes at Serenity Yoga studio, and you also practice at home using the Down Dog app on days when you can't make it to the studio.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "6f9b354f",
+      "type": "single-session-user",
+      "question": "What color did I repaint my bedroom walls?",
+      "expected": "a lighter shade of gray",
+      "predicted": "According to the conversation log, you repainted your bedroom walls a **lighter shade of gray**. You mentioned that it has made the room feel much brighter.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "58ef2f1c",
+      "type": "single-session-user",
+      "question": "When did I volunteer at the local animal shelter's fundraising dinner?",
+      "expected": "February 14th",
+      "predicted": "The conversation log does not contain any information about you volunteering at a local animal shelter's fundraising dinner. The entire discussion focuses on food bank volunteering opportunities and food distribution work.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "f8c5f88b",
+      "type": "single-session-user",
+      "question": "Where did I buy my new tennis racket from?",
+      "expected": "the sports store downtown",
+      "predicted": "You bought your new tennis racket from a sports store downtown.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "5d3d2817",
+      "type": "single-session-user",
+      "question": "What was my previous occupation?",
+      "expected": "Marketing specialist at a small startup",
+      "predicted": "Based on the conversation log, your previous occupation was a **marketing specialist at a small startup**, where you were responsible for managing a team of interns and manually assigning tasks and tracking their progress. You are now in a new role as a senior marketing analyst.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "7527f7e2",
+      "type": "single-session-user",
+      "question": "How much did I spend on a designer handbag?",
+      "expected": "$800",
+      "predicted": "According to the conversation log, you spent **$800 on a designer handbag**. You mentioned this when discussing your luxury spending habits and your intention to start tracking your expenses.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "c960da58",
+      "type": "single-session-user",
+      "question": "How many playlists do I have on Spotify?",
+      "expected": "20",
+      "predicted": "You have 20 playlists on Spotify, as you mentioned in your second message. You were looking to organize them better by categorizing them by mood and activity.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "3b6f954b",
+      "type": "single-session-user",
+      "question": "Where did I attend for my study abroad program?",
+      "expected": "University of Melbourne in Australia",
+      "predicted": "According to the conversation log, you attended the **University of Melbourne** for your study abroad program. You mentioned visiting the Great Ocean Road with friends during that time.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "726462e0",
+      "type": "single-session-user",
+      "question": "What was the discount I got on my first purchase from the new clothing brand?",
+      "expected": "10%",
+      "predicted": "According to the conversation log, you received a **10% discount on your first purchase from a new clothing brand last month**.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "94f70d80",
+      "type": "single-session-user",
+      "question": "How long did it take me to assemble the IKEA bookshelf?",
+      "expected": "4 hours",
+      "predicted": "According to the conversation log, you assembled the IKEA bookshelf in 4 hours, which you noted wasn't too bad. This positive experience influenced your willingness to consider other IKEA furniture pieces, like their coffee tables with storage.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "66f24dbb",
+      "type": "single-session-user",
+      "question": "What did I buy for my sister's birthday gift?",
+      "expected": "a yellow dress",
+      "predicted": "For your sister's birthday, you bought her a yellow dress and a pair of earrings to match the dress.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "ad7109d1",
+      "type": "single-session-user",
+      "question": "What speed is my new internet plan?",
+      "expected": "500 Mbps",
+      "predicted": "The conversation log does not contain any information about your internet plan or its speed. This topic is not discussed anywhere in the provided conversation, which focuses on collectibles, jewelry appraisals, and laptop battery issues.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "af8d2e46",
+      "type": "single-session-user",
+      "question": "How many shirts did I pack for my 5-day trip to Costa Rica?",
+      "expected": "7",
+      "predicted": "This information is not present in the conversation log. The log discusses packing strategies for a generic 3-day business trip, but there is no mention of a 5-day trip to Costa Rica or how many shirts you packed for any trip.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "dccbc061",
+      "type": "single-session-user",
+      "question": "What was my previous stance on spirituality?",
+      "expected": "A staunch atheist",
+      "predicted": "According to the conversation log, your previous stance on spirituality was that you were a staunch atheist, but you've since been exploring other possibilities, including Buddhism.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    }
+  ]
+}

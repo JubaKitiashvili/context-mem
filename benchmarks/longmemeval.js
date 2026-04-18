@@ -39,6 +39,9 @@ if (!dataFile) {
 }
 
 function getArg(name, defaultVal) {
+  // Support both "--name value" and "--name=value"
+  const eqArg = args.find(a => a.startsWith(`--${name}=`));
+  if (eqArg) return eqArg.slice(name.length + 3);
   const idx = args.indexOf('--' + name);
   if (idx === -1 || idx + 1 >= args.length) return defaultVal;
   return args[idx + 1];
