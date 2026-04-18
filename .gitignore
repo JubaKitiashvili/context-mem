@@ -20,3 +20,7 @@ docs/superpowers/
 benchmarks/debug-*
 benchmarks/micro-test-*
 benchmarks/results/*-failures.json
+
+# Obsidian plugin — build artifacts (source is tracked)
+obsidian-plugin/node_modules/
+obsidian-plugin/main.js

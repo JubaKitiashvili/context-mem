@@ -1,0 +1,10 @@
+{
+  "id": "context-mem",
+  "name": "Context Mem",
+  "version": "0.1.0",
+  "minAppVersion": "1.4.0",
+  "description": "Bridge Obsidian to context-mem — observe notes, view synthesis pages, and query your AI memory vault from inside Obsidian.",
+  "author": "Juba Kitiashvili",
+  "authorUrl": "https://github.com/JubaKitiashvili/context-mem",
+  "isDesktopOnly": false
+}
