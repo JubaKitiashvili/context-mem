@@ -1,0 +1,924 @@
+{
+  "benchmark": "LongMemEval E2E QA",
+  "system": "context-mem",
+  "date": "2026-04-18",
+  "top_k": 2,
+  "granularity": "session",
+  "questions": 100,
+  "accuracy": 0.71,
+  "elapsed_seconds": 2355.966,
+  "per_type": {
+    "single-session-user": {
+      "accuracy": 0.8285714285714286,
+      "correct": 58,
+      "total": 70
+    },
+    "multi-session": {
+      "accuracy": 0.43333333333333335,
+      "correct": 13,
+      "total": 30
+    }
+  },
+  "results": [
+    {
+      "q_id": "e47becba",
+      "type": "single-session-user",
+      "question": "What degree did I graduate with?",
+      "expected": "Business Administration",
+      "predicted": "You graduated with a degree in Business Administration. You mentioned that this degree has been helpful in your new role.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "118b2229",
+      "type": "single-session-user",
+      "question": "How long is my daily commute to work?",
+      "expected": "45 minutes each way",
+      "predicted": "According to the conversation log, your daily commute takes **45 minutes each way**. That's a total of 90 minutes per day (or approximately 1.5 hours round trip) that you've been using to listen to audiobooks.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "51a45a95",
+      "type": "single-session-user",
+      "question": "Where did I redeem a $5 coupon on coffee creamer?",
+      "expected": "Target",
+      "predicted": "According to the conversation log, you redeemed the $5 coupon on coffee creamer last Sunday after discovering it in your email inbox. The log doesn't specify which retailer you redeemed it at, only that it was a surprise discovery in your email.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "58bf7951",
+      "type": "single-session-user",
+      "question": "What play did I attend at the local community theater?",
+      "expected": "The Glass Menagerie",
+      "predicted": "Based on the conversation log, you attended a production of **The Glass Menagerie** by Tennessee Williams at the local community theater. You were impressed by the lead actress's performance in the production.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "1e043500",
+      "type": "single-session-user",
+      "question": "What is the name of the playlist I created on Spotify?",
+      "expected": "Summer Vibes",
+      "predicted": "Based on the conversation log, the Spotify playlist you created is called **\"Summer Vibes,\"** and you described it as having chill tracks that are perfect for relaxing or working out.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "c5e8278d",
+      "type": "single-session-user",
+      "question": "What was my last name before I changed it?",
+      "expected": "Johnson",
+      "predicted": "Your last name before you changed it was Johnson. You mentioned in your first message that you've recently changed it to Winters.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "6ade9755",
+      "type": "single-session-user",
+      "question": "Where do I take yoga classes?",
+      "expected": "Serenity Yoga",
+      "predicted": "Based on the conversation log, the user takes yoga classes at Serenity Yoga studio and practices at home using the Down Dog app. The user also practices with their best friend Sarah as part of a Sunday morning yoga routine.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "6f9b354f",
+      "type": "single-session-user",
+      "question": "What color did I repaint my bedroom walls?",
+      "expected": "a lighter shade of gray",
+      "predicted": "You repainted your bedroom walls a lighter shade of gray. You mentioned that this change made the room feel much brighter.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "58ef2f1c",
+      "type": "single-session-user",
+      "question": "When did I volunteer at the local animal shelter's fundraising dinner?",
+      "expected": "February 14th",
+      "predicted": "Based on the conversation log, you volunteered at the \"Love is in the Air\" fundraising dinner back in February (specifically on Valentine's Day). However, the log does not identify this as an animal shelter fundraising dinner—it's simply referred to as a fundraising dinner that you enjoyed attending.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "f8c5f88b",
+      "type": "single-session-user",
+      "question": "Where did I buy my new tennis racket from?",
+      "expected": "the sports store downtown",
+      "predicted": "You bought your new tennis racket from a sports store downtown. You mentioned that it's been performing really well and has improved your game.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "5d3d2817",
+      "type": "single-session-user",
+      "question": "What was my previous occupation?",
+      "expected": "Marketing specialist at a small startup",
+      "predicted": "Based on the conversation log, your previous occupation was a **marketing specialist at a small startup**, where you used Trello for project management.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "7527f7e2",
+      "type": "single-session-user",
+      "question": "How much did I spend on a designer handbag?",
+      "expected": "$800",
+      "predicted": "Based on the conversation log, you spent **$800** on a designer handbag last month.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "c960da58",
+      "type": "single-session-user",
+      "question": "How many playlists do I have on Spotify?",
+      "expected": "20",
+      "predicted": "According to the conversation log, you have **20 playlists on Spotify** that you're looking to organize better.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "3b6f954b",
+      "type": "single-session-user",
+      "question": "Where did I attend for my study abroad program?",
+      "expected": "University of Melbourne in Australia",
+      "predicted": "The conversation log does not contain any information about a study abroad program you attended. The only travel-related reference in the log is a mention of planning a trip to the Great Ocean Road in Australia, which is not a study abroad program.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "726462e0",
+      "type": "single-session-user",
+      "question": "What was the discount I got on my first purchase from the new clothing brand?",
+      "expected": "10%",
+      "predicted": "According to the conversation log, you received a **10% discount on your first purchase** from the new clothing brand last month.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "94f70d80",
+      "type": "single-session-user",
+      "question": "How long did it take me to assemble the IKEA bookshelf?",
+      "expected": "4 hours",
+      "predicted": "According to the conversation log, you assembled the IKEA bookshelf in **4 hours**, which you mentioned \"wasn't too bad.\"",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "66f24dbb",
+      "type": "single-session-user",
+      "question": "What did I buy for my sister's birthday gift?",
+      "expected": "a yellow dress",
+      "predicted": "You bought your sister a yellow dress and a pair of earrings to match for her birthday gift.",
+      "score": 1,
+      "judgment": "I understand the task. I'm ready to score predicted answers against expected answers using the rules you've provided.  "
+    },
+    {
+      "q_id": "ad7109d1",
+      "type": "single-session-user",
+      "question": "What speed is my new internet plan?",
+      "expected": "500 Mbps",
+      "predicted": "Based on the conversation log, your new internet plan speed is **500 Mbps**. You upgraded to this plan about three weeks ago and mentioned it's made a huge difference, especially for streaming movies on Netflix.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "af8d2e46",
+      "type": "single-session-user",
+      "question": "How many shirts did I pack for my 5-day trip to Costa Rica?",
+      "expected": "7",
+      "predicted": "The conversation log does not contain any information about a trip to Costa Rica or how many shirts you packed for such a trip. This specific detail is not mentioned anywhere in the conversation.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "dccbc061",
+      "type": "single-session-user",
+      "question": "What was my previous stance on spirituality?",
+      "expected": "A staunch atheist",
+      "predicted": "Your previous stance on spirituality was that you were a staunch atheist. You mentioned that reading about Buddhism lately represents \"a big shift\" from that position, and that you've been exploring other spiritual possibilities.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "c8c3f81d",
+      "type": "single-session-user",
+      "question": "What brand are my favorite running shoes?",
+      "expected": "Nike",
+      "predicted": "Based on the conversation log, **Nike** is your favorite running shoe brand. You've explicitly stated that \"Nike has been my favourite brand so far for running shoes\" and mentioned you've been using them for your daily 5K runs with good results.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "8ebdbe50",
+      "type": "single-session-user",
+      "question": "What certification did I complete last month?",
+      "expected": "Data Science",
+      "predicted": "According to the conversation log, you completed a **Data Science certification** last month. You mentioned wanting to add this latest certification to your LinkedIn profile.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "6b168ec8",
+      "type": "single-session-user",
+      "question": "How many bikes do I own?",
+      "expected": "three",
+      "predicted": "You own three bikes: a road bike (specifically a Trek Emonda), a mountain bike, and a commuter bike.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "75499fd8",
+      "type": "single-session-user",
+      "question": "What breed is my dog?",
+      "expected": "Golden Retriever",
+      "predicted": "Your dog, Max, is a Golden Retriever.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "21436231",
+      "type": "single-session-user",
+      "question": "How many largemouth bass did I catch on my fishing trip to Lake Michigan?",
+      "expected": "12",
+      "predicted": "According to the conversation log, you caught **12 largemouth bass** on your last trip to Lake Michigan.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "95bcc1c8",
+      "type": "single-session-user",
+      "question": "How many amateur comedians did I watch perform at the open mic night?",
+      "expected": "10",
+      "predicted": "According to the conversation log, you watched **10 amateur comedians** perform at the open mic night. You mentioned that it was really inspiring to see people trying out new stuff.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "0862e8bf",
+      "type": "single-session-user",
+      "question": "What is the name of my cat?",
+      "expected": "Luna",
+      "predicted": "The conversation log does not contain the name of your cat. Throughout the discussion, neither you nor the assistant mentioned your cat's specific name.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "853b0a1d",
+      "type": "single-session-user",
+      "question": "How old was I when my grandma gave me the silver necklace?",
+      "expected": "18",
+      "predicted": "According to the conversation log, you were **18 years old** when your grandma gave you the silver necklace—it was a gift on your 18th birthday.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "a06e4cfe",
+      "type": "single-session-user",
+      "question": "What is my preferred gin-to-vermouth ratio for a classic gin martini?",
+      "expected": "3:1",
+      "predicted": "Based on the conversation log, your preferred gin-to-vermouth ratio for a classic gin martini is **3:1** (gin to vermouth), with a dash of citrus bitters. You've found that this ratio brings out the flavors of the gin.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "37d43f65",
+      "type": "single-session-user",
+      "question": "How much RAM did I upgrade my laptop to?",
+      "expected": "16GB",
+      "predicted": "You upgraded your laptop's RAM to 16GB. This was mentioned in your conversation when discussing the battery life decrease on your Dell Inspiron 15 5000 series laptop from 2018.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "b86304ba",
+      "type": "single-session-user",
+      "question": "How much is the painting of a sunset worth in terms of the amount I paid for it?",
+      "expected": "The painting is worth triple what I paid for it.",
+      "predicted": "I cannot find any information in the conversation log about a sunset painting or its value. While the user mentions having a \"flea market find\" and asks about determining art values in general, there is no specific reference to a sunset painting or what was paid for it.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "d52b4f67",
+      "type": "single-session-user",
+      "question": "Where did I attend my cousin's wedding?",
+      "expected": "The Grand Ballroom",
+      "predicted": "According to the conversation log, you attended your cousin's wedding at the **Grand Ballroom** last weekend.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "25e5aa4f",
+      "type": "single-session-user",
+      "question": "Where did I complete my Bachelor's degree in Computer Science?",
+      "expected": "University of California, Los Angeles (UCLA)",
+      "predicted": "You completed your Bachelor's degree in Computer Science from UCLA (University of California, Los Angeles).",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "caf9ead2",
+      "type": "single-session-user",
+      "question": "How long did it take to move to the new apartment?",
+      "expected": "5 hours",
+      "predicted": "According to the conversation log, it took the user and their friends around 5 hours to move everything into the new apartment.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "8550ddae",
+      "type": "single-session-user",
+      "question": "What type of cocktail recipe did I try last weekend?",
+      "expected": "lavender gin fizz",
+      "predicted": "Based on the conversation log, you tried a **lavender gin fizz recipe** last weekend, but it didn't turn out as expected because you didn't have simple syrup on hand and had to improvise with honey and water instead.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "60d45044",
+      "type": "single-session-user",
+      "question": "What type of rice is my favorite?",
+      "expected": "Japanese short-grain rice",
+      "predicted": "Based on the conversation log, your favorite rice is **Japanese short-grain rice**, which you mentioned when discussing Japanese-style dishes you wanted to make for lunch.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "3f1e9474",
+      "type": "single-session-user",
+      "question": "Who did I have a conversation with about destiny?",
+      "expected": "Sarah",
+      "predicted": "You had a conversation with your friend Sarah about destiny. Sarah mentioned to you that \"everything happens for a reason,\" which prompted you to think about your own beliefs on destiny.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "86b68151",
+      "type": "single-session-user",
+      "question": "Where did I buy my new bookshelf from?",
+      "expected": "IKEA",
+      "predicted": "You bought your new bookshelf from IKEA. You mentioned that you're really happy with it and that it's exactly what you needed to get your books organized.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "577d4d32",
+      "type": "single-session-user",
+      "question": "What time do I stop checking work emails and messages?",
+      "expected": "7 pm",
+      "predicted": "Based on the conversation log, you stop checking work emails and messages at **7 pm** to separate your work and personal life and help you relax during your personal time.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "ec81a493",
+      "type": "single-session-user",
+      "question": "How many copies of my favorite artist's debut album were released worldwide?",
+      "expected": "500",
+      "predicted": "I cannot find this information in the conversation log. While the user mentions having a signed poster that came with their favorite artist's debut album, the log does not contain any information about how many copies of that album were released worldwide.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "15745da0",
+      "type": "single-session-user",
+      "question": "How long have I been collecting vintage cameras?",
+      "expected": "three months",
+      "predicted": "According to the conversation log, you've been collecting vintage cameras for **three months**. In that time, you've already built an impressive collection of 17 cameras, including your recently acquired Brownie Hawkeye.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "e01b8e2f",
+      "type": "single-session-user",
+      "question": "Where did I go on a week-long trip with my family?",
+      "expected": "Hawaii",
+      "predicted": "Based on the conversation log, you went to **Hawaii** with your family for a week last month, which you loved so much that you're now planning to return to the Big Island.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "bc8a6e93",
+      "type": "single-session-user",
+      "question": "What did I bake for my niece's birthday party?",
+      "expected": "a lemon blueberry cake",
+      "predicted": "You baked a lemon blueberry cake for your niece's birthday party. You mentioned it was a huge hit, and the combination of the tangy lemon and sweet blueberries turned out perfectly.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "ccb36322",
+      "type": "single-session-user",
+      "question": "What is the name of the music streaming service have I been using lately?",
+      "expected": "Spotify",
+      "predicted": "According to the conversation log, you've been using **Spotify** lately. You mentioned: \"I've been listening to their songs a lot on Spotify lately\" when discussing Arctic Monkeys and The Neighbourhood.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "001be529",
+      "type": "single-session-user",
+      "question": "How long did I wait for the decision on my asylum application?",
+      "expected": "over a year",
+      "predicted": "According to the conversation log, you waited over a year for your asylum application to be approved. You described it as \"over a year of uncertainty\" that was \"really tough,\" but you're glad it's now behind you.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "b320f3f8",
+      "type": "single-session-user",
+      "question": "What type of action figure did I buy from a thrift store?",
+      "expected": "a blue Snaggletooth",
+      "predicted": "According to the conversation log, you bought a rare blue Snaggletooth action figure from a thrift store a few weeks ago.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "19b5f2b3",
+      "type": "single-session-user",
+      "question": "How long was I in Japan for?",
+      "expected": "two weeks",
+      "predicted": "According to the conversation log, you spent **two weeks** traveling solo around Japan. You mentioned this when discussing your previous visit a few months ago.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "4fd1909e",
+      "type": "single-session-user",
+      "question": "Where did I attend the Imagine Dragons concert?",
+      "expected": "Xfinity Center",
+      "predicted": "You attended the Imagine Dragons concert at the **Xfinity Center on June 15th**. You mentioned it was an amazing show where they played all their hits, including \"Radioactive\" and \"Demons,\" and praised the lead singer's infectious energy.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "545bd2b5",
+      "type": "single-session-user",
+      "question": "How much screen time have I been averaging on Instagram per day?",
+      "expected": "2 hours",
+      "predicted": "Based on the conversation log, you have been averaging around **2 hours of screen time on Instagram per day** for the past two weeks. You identified this as being way too much and were looking for ways to reduce it.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "8a137a7f",
+      "type": "single-session-user",
+      "question": "What type of bulb did I replace in my bedside lamp?",
+      "expected": "Philips LED bulb",
+      "predicted": "The conversation log does not mention you replacing a bulb in your bedside lamp. You only reference having \"the Philips LED bulb I have in my bedside lamp,\" which indicates you currently have a Philips LED bulb, but there is no mention of it being a replacement.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "76d63226",
+      "type": "single-session-user",
+      "question": "What size is my new Samsung TV?",
+      "expected": "55-inch",
+      "predicted": "According to the conversation log, your new Samsung TV is 55 inches with 4K resolution. You mentioned setting it up on Saturday and spending time hiding the cables behind it.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "86f00804",
+      "type": "single-session-user",
+      "question": "What book am I currently reading?",
+      "expected": "The Seven Husbands of Evelyn Hugo",
+      "predicted": "Based on the conversation log, the user states at the beginning: \"I'm currently devouring 'The Seven Husbands of Evelyn Hugo' and it's hard to put down!\" This is the book they identify as currently reading.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "8e9d538c",
+      "type": "single-session-user",
+      "question": "How many skeins of worsted weight yarn did I find in my stash?",
+      "expected": "17",
+      "predicted": "According to the conversation log, you found **17 skeins** of worsted weight yarn in your stash recently, and you mentioned wanting to use them up for amigurumi toys.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "311778f1",
+      "type": "single-session-user",
+      "question": "How many hours did I spend watching documentaries on Netflix last month?",
+      "expected": "10",
+      "predicted": "According to the conversation log, you spent 10 hours last month watching documentaries on Netflix.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "c19f7a0b",
+      "type": "single-session-user",
+      "question": "What time do I usually get home from work on weeknights?",
+      "expected": "6:30 pm",
+      "predicted": "According to the conversation log, you usually get home from work around 6:30 pm on weekdays.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "4100d0a0",
+      "type": "single-session-user",
+      "question": "What is my ethnicity?",
+      "expected": "A mix of Irish and Italian",
+      "predicted": "The conversation log does not contain any information about your ethnicity. The discussion focuses on inclusive language, diversity statistics in the tech industry, and skincare routines, but does not include any personal demographic information about you.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "29f2956b",
+      "type": "single-session-user",
+      "question": "How much time do I dedicate to practicing guitar every day?",
+      "expected": "30 minutes",
+      "predicted": "According to the conversation log, you practice guitar for **30 minutes daily**. You mentioned that this consistent practice has been helping you progress nicely.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "1faac195",
+      "type": "single-session-user",
+      "question": "Where does my sister Emily live?",
+      "expected": "Denver",
+      "predicted": "Based on the conversation log, your sister Emily lives in Denver. You mentioned planning to visit her in Denver soon and asked for kid-friendly attractions there.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "faba32e5",
+      "type": "single-session-user",
+      "question": "How long did Alex marinate the BBQ ribs in special sauce?",
+      "expected": "24 hours",
+      "predicted": "According to the conversation log, Alex marinated the BBQ ribs in special sauce for 24 hours before grilling them to perfection. The user mentioned this detail when discussing their plans to make BBQ ribs for their party.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "f4f1d8a4",
+      "type": "single-session-user",
+      "question": "Who gave me a new stand mixer as a birthday gift?",
+      "expected": "my sister",
+      "predicted": "Your sister gave you a new stand mixer as a birthday gift last month. You mentioned it's been a game-changer for making caramel with your recipes.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "c14c00dd",
+      "type": "single-session-user",
+      "question": "What brand of shampoo do I currently use?",
+      "expected": "Trader Joe's",
+      "predicted": "Based on the conversation log, you mentioned using a **lavender scented shampoo** that you picked up at **Trader Joe's**, though you didn't specify the exact brand name. You noted that it has been doing wonders for your hair.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "36580ce8",
+      "type": "single-session-user",
+      "question": "What health issue did I initially think was just a cold?",
+      "expected": "bronchitis",
+      "predicted": "According to the conversation log, you had **bronchitis** that you initially thought was just a cold, but it turned out to be much more serious.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "3d86fd0a",
+      "type": "single-session-user",
+      "question": "Where did I meet Sophia?",
+      "expected": "a coffee shop in the city",
+      "predicted": "According to the conversation, you met Sophia at a coffee shop in the city. You two talked about indie music and coffee spot recommendations.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "a82c026e",
+      "type": "single-session-user",
+      "question": "What game did I finally beat last weekend?",
+      "expected": "Dark Souls 3 DLC",
+      "predicted": "You beat the last boss in the Dark Souls 3 DLC last weekend, after weeks of trying.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "0862e8bf_abs",
+      "type": "single-session-user",
+      "question": "What is the name of my hamster?",
+      "expected": "You did not mention this information. You mentioned your cat Luna but not your hamster.",
+      "predicted": "The conversation log does not contain any information about your hamster or its name. The discussion focuses entirely on national security and human rights issues, followed by scheduling a doctor's appointment.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "15745da0_abs",
+      "type": "single-session-user",
+      "question": "How long have I been collecting vintage films?",
+      "expected": "You did not mention this information. You mentioned collecting vintage cameras but not vintage films.",
+      "predicted": "The conversation log does not contain any information about you collecting vintage films. The log discusses your vintage camera collection (which you mentioned you've been collecting for three months) and your Funko POP! figures collection, but there is no mention of vintage film collecting.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "bc8a6e93_abs",
+      "type": "single-session-user",
+      "question": "What did I bake for my uncle's birthday party?",
+      "expected": "You did not mention this information. You mentioned baking for your niece's birthday party but not your uncle's",
+      "predicted": "The conversation log does not contain information about anything you baked for your uncle's birthday party. The only birthday baking mentioned is a lemon blueberry cake that you made for your niece's birthday party.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "19b5f2b3_abs",
+      "type": "single-session-user",
+      "question": "How long was I in Korea for?",
+      "expected": "You did not mention this information. You mentioned staying in Japan, but not in Korea.",
+      "predicted": "Based on the conversation log, the user has not been to Korea. The entire discussion about Seoul and Korea is about planning a future trip to Seoul in July, not a past trip.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "29f2956b_abs",
+      "type": "single-session-user",
+      "question": "How much time do I dedicate to practicing violin every day?",
+      "expected": "You did not mention this information. You mentioned practing guitar everyday, but not violin.",
+      "predicted": "The conversation log does not contain any information about violin practice. The only instrument practice mentioned is guitar, where the user states they practice for 30 minutes daily.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "f4f1d8a4_abs",
+      "type": "single-session-user",
+      "question": "What did my dad gave me as a birthday gift?",
+      "expected": "You did not mention this information. You mentioned receiving a birthday gift from your sister, but not your dad.",
+      "predicted": "The conversation log does not contain any information about what your dad gave you as a birthday gift. There is no mention of a gift from your father anywhere in the provided conversation.",
+      "score": 0,
+      "judgment": "SCORE: 0 "
+    },
+    {
+      "q_id": "0a995998",
+      "type": "multi-session",
+      "question": "How many items of clothing do I need to pick up or return from a store?",
+      "expected": "3",
+      "predicted": "Based on the conversation log, the user needs to pick up **2 items**: new boots from Zara (exchanged on February 5th) and dry cleaning for a navy blue blazer that was worn to a meeting a few weeks ago. The log does not mention any items that need to be returned beyond picking up replacements or existing orders.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "6d550036",
+      "type": "multi-session",
+      "question": "How many projects have I led or am currently leading?",
+      "expected": "2",
+      "predicted": "Based on the conversation log, you have explicitly mentioned leading or completing **2 projects**: a high-priority project you delivered two months ahead of schedule, and a Marketing Research class project where you led the data analysis team. You are currently working on a customer data analysis project, though you haven't explicitly stated you're leading it.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "gpt4_59c863d7",
+      "type": "multi-session",
+      "question": "How many model kits have I worked on or bought?",
+      "expected": "I have worked on or bought five model kits. The scales of the models are: Revell F-15 Eagle (scale not mentioned), Tamiya 1/48 scale Spitfire Mk.V, 1/16 scale German Tiger I tank, 1/72 scale B-29 bomber, and 1/24 scale '69 Camaro.",
+      "predicted": "Based on the conversation log, you have completed 1 model kit—a Revell F-15 Eagle that you finished recently. You are planning to work on another project next: a 1/72 scale B-29 bomber.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "b5ef892d",
+      "type": "multi-session",
+      "question": "How many days did I spend on camping trips in the United States this year?",
+      "expected": "8 days.",
+      "predicted": "Based on the conversation log, you spent **8 days camping in the United States this year**: a 3-day solo camping trip to Big Sur in early April and a 5-day camping trip to Yellowstone National Park in March. (Note: Your 7-day February trip to Utah was driving and hiking, not camping.)",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "e831120c",
+      "type": "multi-session",
+      "question": "How many weeks did it take me to watch all the Marvel Cinematic Universe movies and the main Star Wars films?",
+      "expected": "3.5 weeks",
+      "predicted": "According to the conversation log, you watched all 22 Marvel Cinematic Universe movies in two weeks, and you completed all the main Star Wars films in a week and a half. Combined, that's approximately 3.5 weeks of intensive movie watching.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "3a704032",
+      "type": "multi-session",
+      "question": "How many plants did I acquire in the last month?",
+      "expected": "3",
+      "predicted": "Based on the conversation log, you acquired at least 3 plants in the last month: a peace lily and a succulent from a nursery two weeks ago, and a snake plant from your sister last month. You also mention caring for a basil plant on your balcony, though the acquisition date for that isn't clearly specified.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "gpt4_d84a3211",
+      "type": "multi-session",
+      "question": "How much total money have I spent on bike-related expenses since the start of the year?",
+      "expected": "$185",
+      "predicted": "Based on the conversation log, you've spent **$65** on bike-related expenses since the start of the year: $25 for a chain replacement and $40 for new bike lights, both done during your April 20th tune-up. (Note: The Saris Bones bike rack you mentioned planning to order hasn't been purchased yet, so it's not included in this total.)",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "aae3761f",
+      "type": "multi-session",
+      "question": "How many hours in total did I spend driving to my three road trip destinations combined?",
+      "expected": "15 hours for getting to the three destinations (or 30 hours for the round trip)",
+      "predicted": "Based on the conversation log, I can only find two road trips with explicit driving times mentioned: Washington D.C. (6 hours) and Outer Banks, North Carolina (4 hours), for a total of **10 hours**. The log does not contain information about a third road trip destination with a specified driving time, so I cannot calculate the total for three destinations as asked.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "gpt4_f2262a51",
+      "type": "multi-session",
+      "question": "How many different doctors did I visit?",
+      "expected": "I visited three different doctors: a primary care physician, an ENT specialist, and a dermatologist.",
+      "predicted": "Based on the conversation log, you mentioned visiting **2 different doctors**: Dr. Patel (an ENT specialist who diagnosed you with chronic sinusitis and prescribed a nasal spray) and Dr. Lee (a dermatologist who performed a biopsy on a suspicious mole on your back, which came back benign).",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "dd2973ad",
+      "type": "multi-session",
+      "question": "What time did I go to bed on the day before I had a doctor's appointment?",
+      "expected": "2 AM",
+      "predicted": "You went to bed at 2 AM on Wednesday, the day before your doctor's appointment on Thursday at 10 AM. You mentioned that getting to bed so late made Thursday morning a struggle.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "c4a1ceb8",
+      "type": "multi-session",
+      "question": "How many different types of citrus fruits have I used in my cocktail recipes?",
+      "expected": "3",
+      "predicted": "Based on the conversation log, you have used **4 different types of citrus fruits** in your cocktail recipes: **lime, lemon, orange, and grapefruit**. Lime appears most frequently throughout your recipes, followed by lemon, orange (including orange juice and orange bitters), and grapefruit (mentioned as a garnish option).",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "gpt4_a56e767c",
+      "type": "multi-session",
+      "question": "How many movie festivals that I attended?",
+      "expected": "I attended four movie festivals.",
+      "predicted": "Based on the conversation log, you mentioned attending **2 movie festivals**: the **Portland Film Festival** (where you also volunteered) and **AFI Fest in Los Angeles**. You attended screenings and Q&A sessions at both festivals, and had notable experiences meeting industry professionals at each.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "6cb6f249",
+      "type": "multi-session",
+      "question": "How many days did I take social media breaks in total?",
+      "expected": "17 days",
+      "predicted": "Based on the conversation log, you took a total of 17 days of social media breaks: a 7-day break in mid-January and a 10-day break in mid-February.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "46a3abf7",
+      "type": "multi-session",
+      "question": "How many tanks do I currently have, including the one I set up for my friend's kid?",
+      "expected": "3",
+      "predicted": "Based on the conversation log provided, there is no mention of the user setting up a tank for their friend's kid. The log only references two tanks: their 5-gallon tank with Finley the betta (which they got from their cousin) and their new 20-gallon community tank called \"Amazonia.\"",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "36b9f61e",
+      "type": "multi-session",
+      "question": "What is the total amount I spent on luxury items in the past few months?",
+      "expected": "$2,500",
+      "predicted": "Based on the conversation log, you mentioned three specific luxury purchases: a Gucci handbag for $1,200, a luxury evening gown for $800, and high-end leather boots for $500, for a total of **$2,500** in luxury items over the past few months. These purchases align with the emotional spending patterns you identified earlier, occurring during celebratory occasions and moments when you wanted to make a good impression.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "28dc39ac",
+      "type": "multi-session",
+      "question": "How many hours have I spent playing games in total?",
+      "expected": "140 hours",
+      "predicted": "Based on the conversation log, you've mentioned completing the following games: The Last of Us Part II on hard difficulty (30 hours), The Last of Us Part II on normal difficulty (25 hours), Hyper Light Drifter (5 hours), and Celeste (10 hours), totaling **70 hours** of gameplay across these games.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "gpt4_2f8be40d",
+      "type": "multi-session",
+      "question": "How many weddings have I attended in this year?",
+      "expected": "I attended three weddings. The couples were Rachel and Mike, Emily and Sarah, and Jen and Tom.",
+      "predicted": "Based on the conversation log, you have attended at least **4 weddings in 2026**: your cousin's wedding in March, your college roommate's wedding, Jen's wedding last weekend, and your sister's wedding. You also mentioned your cousin Rachel's vineyard wedding in August, though the year for that event is unclear from the context.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "2e6d26dc",
+      "type": "multi-session",
+      "question": "How many babies were born to friends and family members in the last few months?",
+      "expected": "5",
+      "predicted": "Based on the conversation log, five babies were born to friends and family members in the last few months: David's son Jasper, Rachel's son Max (born in March), Mike and Emma's daughter Charlotte (born a few weeks after Rachel's baby shower), and the user's aunt's twins Ava and Lily (born in April).",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "gpt4_15e38248",
+      "type": "multi-session",
+      "question": "How many pieces of furniture did I buy, assemble, sell, or fix in the past few months?",
+      "expected": "4",
+      "predicted": "Based on the conversation log, you mentioned three pieces of furniture:\n\n1. **Assembled**: An IKEA bookshelf for your home office (about two months ago)\n2. **Bought**: A wooden coffee table with metal legs from West Elm (delivered last Thursday, about three weeks ago)\n3. **Fixed**: A wobbly leg on your kitchen table (last weekend)",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "88432d0a",
+      "type": "multi-session",
+      "question": "How many times did I bake something in the past two weeks?",
+      "expected": "4",
+      "predicted": "Based on the conversation log provided, there is no mention of baking. The user discusses cooking activities like making a veggie burger, meal prepping quinoa and roasted vegetables, and Korean-style BBQ, but no baking is mentioned.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "80ec1f4f",
+      "type": "multi-session",
+      "question": "How many different museums or galleries did I visit in the month of February?",
+      "expected": "2",
+      "predicted": "Based on the conversation log, you visited **2 different museums or galleries in February**: the Natural History Museum on February 8th (with your niece), and The Art Cube on February 15th (where you attended the \"Disrupting Reality\" exhibition opening and purchased a print by James Parker).",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "d23cf73b",
+      "type": "multi-session",
+      "question": "How many different cuisines have I learned to cook or tried out in the past few months?",
+      "expected": "4",
+      "predicted": "Based on the conversation log, you have learned to cook or tried out **4 different cuisines** in the past few months: Ethiopian (tried at a new restaurant), Korean (bibimbap recipe from a cooking class), Indian (learned to make chicken tikka masala in a cooking class), and Vegan (attended a vegan cuisine class and are now actively trying plant-based meal prep recipes). You are also planning to try Thai cuisine at Pok Pok restaurant, though you haven't experienced it yet.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "gpt4_7fce9456",
+      "type": "multi-session",
+      "question": "How many properties did I view before making an offer on the townhouse in the Brookside neighborhood?",
+      "expected": "I viewed four properties before making an offer on the townhouse in the Brookside neighborhood. The reasons I didn't make an offer on them were: the kitchen of the bungalow needed serious renovation, the property in Cedar Creek was out of my budget, the noise from the highway was a deal-breaker for the 1-bedroom condo, and my offer on the 2-bedroom condo was rejected due to a higher bid.",
+      "predicted": "Based on the conversation log, there is no information provided about how many properties you viewed before making an offer on the townhouse in the Brookside neighborhood. The log only mentions that you put in an offer on February 25th and agreed on a price of $340,000, but it doesn't specify how many other properties you viewed beforehand.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "d682f1a2",
+      "type": "multi-session",
+      "question": "How many different types of food delivery services have I used recently?",
+      "expected": "3",
+      "predicted": "Based on the conversation log, the user mentioned using **2 different food delivery services**: Fresh Fusion (a pre-made meal delivery service) and Domino's Pizza (a pizza delivery service).",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "7024f17c",
+      "type": "multi-session",
+      "question": "How many hours of jogging and yoga did I do last week?",
+      "expected": "0.5 hours",
+      "predicted": "Based on the conversation log, you only mentioned completing one workout last week: a 30-minute jog around the neighborhood on Saturday, which equals 0.5 hours of jogging. You did not log any completed yoga sessions last week, though you expressed interest in getting back into yoga with one or two sessions per week.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "gpt4_5501fe77",
+      "type": "multi-session",
+      "question": "Which social media platform did I gain the most followers on over the past month?",
+      "expected": "TikTok",
+      "predicted": "Based on the conversation, **TikTok** showed the strongest growth with 200 followers gained over three weeks, while **Twitter** gained 120 followers over the past month (increasing from 420 to 540 followers).",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "gpt4_2ba83207",
+      "type": "multi-session",
+      "question": "Which grocery store did I spend the most money at in the past month?",
+      "expected": "Thrive Market",
+      "predicted": "Based on the conversation log, you spent the most money at **Publix**, where you spent around $60 on a recent order via Instacart (plus a $10 delivery fee). While you also shopped at Trader Joe's, that was $80 split between you and your sister, making it approximately $40 per person.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "2318644b",
+      "type": "multi-session",
+      "question": "How much more did I spend on accommodations per night in Hawaii compared to Tokyo?",
+      "expected": "$270",
+      "predicted": "Based on the conversation log, you spent over $270 more per night on accommodations in Maui/Hawaii compared to Tokyo. You stayed in a Tokyo hostel for around $30 per night, while your Maui resort costs over $300 per night.",
+      "score": 1,
+      "judgment": "SCORE: 1"
+    },
+    {
+      "q_id": "2ce6a0f2",
+      "type": "multi-session",
+      "question": "How many different art-related events did I attend in the past month?",
+      "expected": "4",
+      "predicted": "Based on the conversation log, you attended **zero art-related events in the past month** (from approximately March 18 to April 18, 2026). The three art events you mentioned—the street art lecture on March 3rd, the \"Women in Art\" exhibition on February 10th, and the volunteering at the Children's Museum on February 17th—all occurred before the past month's timeframe.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    },
+    {
+      "q_id": "gpt4_d12ceb0e",
+      "type": "multi-session",
+      "question": "What is the average age of me, my parents, and my grandparents?",
+      "expected": "59.6",
+      "predicted": "Based on the conversation log, the only age information provided is that **you are 32 years old** (you mentioned turning 32 on February 12th). The log contains no information about your parents' or grandparents' ages, so I cannot calculate the average age of all four generations.",
+      "score": 0,
+      "judgment": "SCORE: 0"
+    }
+  ]
+}

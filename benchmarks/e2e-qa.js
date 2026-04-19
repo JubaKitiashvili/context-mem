@@ -208,18 +208,26 @@ function buildJudgePrompt(question, expected, predicted) {
       await kernel.flushAll();
     }
 
-    // 2. Retrieve top-K
+    // 2. Retrieve top-K (adaptive: aggregation questions need wider context)
+    // Empirical 100q sweep v2-v5: broad heuristic (top-k 2/8) at 74% beats
+    // narrow (2/8) 73%, 3-tier (2/4/8) 71%, static top-k=2 66%. Keep broad.
     const searchOpts = {};
     if (entry.question_date) searchOpts.referenceDate = entry.question_date;
-    const hits = await kernel.searchAsync(question, TOP_K, searchOpts);
+    const lc = question.toLowerCase();
+    const needsAggregation =
+      /\b(how many|how much|how often|total|combined|all\s+\w+s|different|across|since|in total|every time)\b/.test(lc);
+    const effectiveTopK = needsAggregation ? Math.max(TOP_K, 8) : TOP_K;
+    const hits = await kernel.searchAsync(question, effectiveTopK, searchOpts);
 
     // 3. Build context from top-K retrieved docs. CRITICAL: preserve search rank
     //    order (SQLite `WHERE id IN (...)` returns rows in ROWID order, which
     //    loses ranking — so the top hit might end up at the end and get
     //    truncated when we slice to the budget). Fetch each id separately.
     //    Also apply a PER-SESSION budget so the first-ranked session always fits.
-    const dbIds = hits.slice(0, TOP_K).map(h => h.obs_id || h.id);
-    const TOTAL_CONTEXT_BUDGET = 20000;
+    const dbIds = hits.slice(0, effectiveTopK).map(h => h.obs_id || h.id);
+    // Aggregation questions get a wider budget too, so each of top-8 sessions has
+    // enough room. Single-answer questions keep tighter 20KB.
+    const TOTAL_CONTEXT_BUDGET = needsAggregation ? 40000 : 20000;
     const perSessionBudget = Math.floor(TOTAL_CONTEXT_BUDGET / Math.max(1, dbIds.length));
     const fetchStmt = kernel.db.prepare('SELECT content FROM observations WHERE id = ?');
     const rankedParts = [];
