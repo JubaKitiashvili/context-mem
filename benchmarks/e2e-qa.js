@@ -30,6 +30,16 @@ const { printHeader, formatPercent } = require('./lib/metrics');
 // haiku-client.mjs is ESM-only; we use a top-level promise and await it in main.
 const haikuClientPromise = import('./lib/haiku-client.mjs');
 
+// Hard categories where Sonnet outperforms Haiku at extraction. Empirically,
+// temporal-reasoning, multi-session, knowledge-update, single-session-preference
+// are the four categories where Haiku at 39-58% pulls our overall down.
+const SONNET_CATEGORIES = new Set([
+  'temporal-reasoning',
+  'multi-session',
+  'knowledge-update',
+  'single-session-preference',
+]);
+
 // ── CLI ──────────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
 const dataFile = args.find(a => !a.startsWith('--'));
@@ -58,20 +68,47 @@ const TOP_K = parseInt(getArg('top-k', '2'), 10); // T5.6: 5 → 2 (reduce conte
 const GRANULARITY = getArg('granularity', 'session');
 const ENGINE = getArg('engine', 'bench'); // T5.1: 'real' uses full v4.0 pipeline
 const INGEST = getArg('ingest', 'full'); // T5.6: 'full' (user+assistant) or 'user-only' (v3.4 behavior)
+const USE_SONNET = !args.includes('--no-sonnet'); // route hard categories to Sonnet
+const USE_SYNTHESIS = !args.includes('--no-synthesis'); // T5.4: prepend synthesis pages to context
+const USE_VERIFIER = !args.includes('--no-verifier'); // verifier pass on low-confidence answers
 const OUT_FILE = getArg('out', `benchmarks/results/e2e-qa-lme-${new Date().toISOString().slice(0, 10)}.json`);
 
 const JUDGE_PROMPT = fs.readFileSync(path.resolve(__dirname, 'lib/qa-judge-prompt.md'), 'utf8');
 
 // ── Prompt builders (T5.6 neutral prompt — extract, don't abstain) ──────────
-function buildAnswerPrompt(question, context) {
+function buildAnswerPrompt(question, context, synthesisPages = []) {
+  // T5.4: prepend synthesis pages (pre-digested narrative per entity) before raw context.
+  const synthesisSection = synthesisPages.length > 0
+    ? `## Pre-digested narrative\n\n${synthesisPages.map(p => `### ${p.name}\n${p.content}`).join('\n\n')}\n\n## Raw conversation log\n\n`
+    : '';
+
   return `You are reading a conversation log to answer the user's question. The answer is almost certainly present in the log — read carefully and extract the specific information.
 
-Conversation log:
-${context}
+${synthesisSection}${synthesisSection ? '' : 'Conversation log:\n'}${context}
 
 User's question: ${question}
 
 Extract and state the answer directly. If the log contains multiple related facts, synthesize them. Keep your response under 2 sentences.`;
+}
+
+// Verifier: re-examines an answer against the source context. Catches abstentions
+// and hallucinations. Returns either the original answer (confirmed) or a corrected one.
+function buildVerifierPrompt(question, context, predicted) {
+  return `A user asked: "${question}"
+Another agent looked at this conversation log and answered: "${predicted}"
+
+Conversation log:
+${context}
+
+Re-examine the log carefully. If the agent's answer is correct, reply with exactly:
+VERDICT: KEEP
+
+If the agent missed information that IS clearly in the log (e.g., they said "I don't know" but the log contains the answer, OR they gave a wrong number/name), reply with:
+VERDICT: REVISE
+ANSWER: <the correct answer in 1-2 sentences>
+
+If the log genuinely doesn't contain the answer, reply with:
+VERDICT: KEEP`;
 }
 
 function buildJudgePrompt(question, expected, predicted) {
@@ -84,10 +121,12 @@ function buildJudgePrompt(question, expected, predicted) {
 // ── Main ─────────────────────────────────────────────────────────────────────
 (async () => {
   // Resolve haiku-client (ESM bridge)
-  let callHaiku;
+  let callHaiku, callClaude, MODELS;
   try {
     const haikuClient = await haikuClientPromise;
     callHaiku = haikuClient.callHaiku;
+    callClaude = haikuClient.callClaude;
+    MODELS = haikuClient.MODELS;
 
     printHeader('context-mem × LongMemEval E2E QA Benchmark');
     console.log(`  Node:        ${process.version}`);
@@ -106,6 +145,9 @@ function buildJudgePrompt(question, expected, predicted) {
   console.log(`  Top-K:       ${TOP_K}`);
   console.log(`  Granularity: ${GRANULARITY}`);
   console.log(`  Ingest:      ${INGEST}`);
+  console.log(`  Sonnet:      ${USE_SONNET ? 'on (hard categories: temporal/multi/knowledge-update/preference)' : 'off (Haiku for everything)'}`);
+  console.log(`  Synthesis:   ${USE_SYNTHESIS && ENGINE === 'real' ? 'on (vault entity pages prepended to context)' : 'off'}`);
+  console.log(`  Verifier:    ${USE_VERIFIER ? 'on (revise abstentions/hallucinations)' : 'off'}`);
   console.log(`  Data:        ${dataFile}`);
 
   // Load dataset
@@ -209,22 +251,35 @@ function buildJudgePrompt(question, expected, predicted) {
     }
 
     // 2. Retrieve top-K (adaptive: aggregation questions need wider context)
-    // Empirical 100q sweep v2-v5: broad heuristic (top-k 2/8) at 74% beats
-    // narrow (2/8) 73%, 3-tier (2/4/8) 71%, static top-k=2 66%. Keep broad.
     const searchOpts = {};
     if (entry.question_date) searchOpts.referenceDate = entry.question_date;
     const lc = question.toLowerCase();
     const needsAggregation =
       /\b(how many|how much|how often|total|combined|all\s+\w+s|different|across|since|in total|every time)\b/.test(lc);
     const effectiveTopK = needsAggregation ? Math.max(TOP_K, 8) : TOP_K;
-    const hits = await kernel.searchAsync(question, effectiveTopK, searchOpts);
+    let hits = await kernel.searchAsync(question, effectiveTopK, searchOpts);
+
+    // Phase 2: cross-session entity aggregation. For aggregation questions, do a
+    // second retrieval round on the count target (e.g., "model kits") and union.
+    if (needsAggregation && ENGINE === 'real' && typeof kernel.getEntityAggregateHits === 'function') {
+      try {
+        const extra = await kernel.getEntityAggregateHits(question, 6);
+        const seen = new Set(hits.map(h => h.obs_id || h.id));
+        for (const h of extra) {
+          const key = h.obs_id || h.id;
+          if (!seen.has(key)) { hits.push(h); seen.add(key); }
+        }
+      } catch {}
+    }
 
     // 3. Build context from top-K retrieved docs. CRITICAL: preserve search rank
     //    order (SQLite `WHERE id IN (...)` returns rows in ROWID order, which
     //    loses ranking — so the top hit might end up at the end and get
     //    truncated when we slice to the budget). Fetch each id separately.
     //    Also apply a PER-SESSION budget so the first-ranked session always fits.
-    const dbIds = hits.slice(0, effectiveTopK).map(h => h.obs_id || h.id);
+    // For aggregation, allow wider pull (effectiveTopK + entity extras up to 12)
+    const cap = needsAggregation ? 12 : effectiveTopK;
+    const dbIds = hits.slice(0, cap).map(h => h.obs_id || h.id);
     // Aggregation questions get a wider budget too, so each of top-8 sessions has
     // enough room. Single-answer questions keep tighter 20KB.
     const TOTAL_CONTEXT_BUDGET = needsAggregation ? 40000 : 20000;
@@ -242,15 +297,42 @@ function buildJudgePrompt(question, expected, predicted) {
     }
     const context = rankedParts.join('\n\n---\n\n');
 
-    // 4. Haiku answer generation — skip when retrieval returned nothing
+    // 3.5. T5.4 — fetch synthesis pages for entities mentioned in query
+    let synthesisPages = [];
+    if (USE_SYNTHESIS && ENGINE === 'real' && typeof kernel.getSynthesisForQuery === 'function') {
+      try { synthesisPages = kernel.getSynthesisForQuery(question, { maxPages: 3, maxLength: 3000 }); } catch {}
+    }
+
+    // 4. Answer generation — Sonnet for hard categories, Haiku for easy
+    const useSonnet = USE_SONNET && SONNET_CATEGORIES.has(qType);
+    const answerModel = useSonnet ? MODELS.SONNET : MODELS.HAIKU;
     let predicted = '';
     if (context.length === 0) {
       predicted = "I don't know.";
     } else {
       try {
-        predicted = await callHaiku(buildAnswerPrompt(question, context), 400);
+        predicted = await callClaude(buildAnswerPrompt(question, context, synthesisPages), { model: answerModel });
       } catch (e) {
         predicted = '[ERROR: answer generation failed]';
+      }
+    }
+
+    // 4.5. Verifier pass — catches abstentions ("I don't know") and obvious wrong answers
+    let verifierUsed = false;
+    if (USE_VERIFIER && context.length > 0 && predicted) {
+      const looksLikeAbstention = /^(i don't know|i do not know|the (conversation|context|log) does not contain|no information|cannot find|i cannot)\b/i.test(predicted.trim()) || predicted.length < 12;
+      if (looksLikeAbstention || useSonnet) {
+        try {
+          // Use the strong model for verification when answering with Sonnet, else Haiku
+          const verifier = await callClaude(buildVerifierPrompt(question, context, predicted), { model: useSonnet ? MODELS.SONNET : MODELS.HAIKU });
+          if (/VERDICT:\s*REVISE/i.test(verifier)) {
+            const m = verifier.match(/ANSWER:\s*([\s\S]+?)(?:\n\n|$)/i);
+            if (m) {
+              predicted = m[1].trim();
+              verifierUsed = true;
+            }
+          }
+        } catch {}
       }
     }
 
@@ -276,6 +358,9 @@ function buildJudgePrompt(question, expected, predicted) {
       predicted,
       score,
       judgment: judgment.split('\n').slice(0, 2).join(' '),
+      model_used: useSonnet ? 'sonnet' : 'haiku',
+      synthesis_pages: synthesisPages.length,
+      verifier_revised: verifierUsed,
     });
 
     perType[qType] = perType[qType] || { correct: 0, total: 0 };

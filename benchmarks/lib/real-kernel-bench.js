@@ -226,6 +226,74 @@ class RealKernelBench {
     return row ? row.content : null;
   }
 
+  /**
+   * Phase 2 — Cross-session entity aggregation. For aggregation questions
+   * ("how many X", "total X"), extract the count target (the X), search for
+   * ALL sessions mentioning it, and return them as additional context.
+   *
+   * @param {string} question
+   * @param {number} maxExtraHits
+   * @returns {Promise<Array<{id, obs_id, score}>>}
+   */
+  async getEntityAggregateHits(question, maxExtraHits = 6) {
+    // Extract count target: text between "how many|much|often" and "do|did|have|are|is"
+    // E.g. "how many model kits do I own" → "model kits"
+    const lc = question.toLowerCase();
+    const countMatch = lc.match(/\b(how\s+(many|much|often)|total\s+\w+|all\s+\w+\s+of\s+\w+)\s+([a-z][a-z\-\s]{2,40}?)(?=\s+(do|did|have|has|are|is|i\b|i've|i'm|in\s+the|across|of|that|which|combined))/);
+    const target = countMatch ? countMatch[3].trim().replace(/\s+/g, ' ') : null;
+    if (!target || target.length < 3) return [];
+
+    // Strip generic words from target
+    const cleaned = target.replace(/\b(of\s+my|my|the|a|an|some|each)\s+/g, '').trim();
+    if (!cleaned || cleaned.length < 3) return [];
+
+    try {
+      const hits = await this.searchAsync(cleaned, maxExtraHits);
+      return hits;
+    } catch { return []; }
+  }
+
+  /**
+   * T5.4 — Get synthesis page contents (from vault) for the entities mentioned
+   * in the query. Returns an array of markdown strings (one per matched entity).
+   *
+   * @param {string} query — the user's question; entities are extracted from this
+   * @param {object} [opts={}] — { maxPages?: number, maxLength?: number }
+   * @returns {Array<{ name: string, type: 'entity'|'topic', content: string }>}
+   */
+  getSynthesisForQuery(query, opts = {}) {
+    if (!this.opts.vault) return [];
+    const maxPages = opts.maxPages ?? 5;
+    const maxLength = opts.maxLength ?? 4000;
+
+    // 1. Get all entity names that the kernel has extracted from ingested content.
+    let entityNames;
+    try {
+      entityNames = this.storage.prepare('SELECT DISTINCT name FROM entities').all().map(r => r.name);
+    } catch { return []; }
+
+    // 2. Match entities mentioned in the query (case-insensitive substring match)
+    const lcQuery = query.toLowerCase();
+    const matched = entityNames.filter(n => n && lcQuery.includes(n.toLowerCase())).slice(0, maxPages);
+
+    // 3. Read synthesis page from vault for each matched entity
+    const pages = [];
+    const vaultEntitiesDir = path.join(this.tmpDir, '.context-mem', 'vault', 'entities');
+    for (const name of matched) {
+      // safeName logic mirrors src/core/vault-templates.ts
+      const safeFileName = name.replace(/[/\\:]/g, '-').replace(/[\x00-\x1f\x7f]/g, '').replace(/\.\./g, '--').trim();
+      const fileName = (safeFileName.length > 0 ? safeFileName.slice(0, 200) : '_unnamed') + '.md';
+      const fullPath = path.join(vaultEntitiesDir, fileName);
+      try {
+        if (fs.existsSync(fullPath)) {
+          const content = fs.readFileSync(fullPath, 'utf8').slice(0, maxLength);
+          pages.push({ name, type: 'entity', content });
+        }
+      } catch {}
+    }
+    return pages;
+  }
+
   async close() {
     if (this.kernel) {
       try { await this.kernel.stop(); } catch {}

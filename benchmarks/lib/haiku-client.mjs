@@ -29,15 +29,23 @@ async function rateLimit() {
 
 // ── Core single-turn call via SDK ─────────────────────────────────────────────
 /**
- * Call Claude Haiku for a single prompt → text response.
+ * Available Claude models via subscription auth.
+ */
+export const MODELS = {
+  HAIKU: 'claude-haiku-4-5-20251001',
+  SONNET: 'claude-sonnet-4-6',  // smarter for hard categories
+};
+
+/**
+ * Call any Claude model for a single prompt → text response.
  * Retries up to 3× on rate-limit or transient errors.
  *
  * @param {string} prompt
- * @param {number} [maxTokens=500]
- * @param {object} [opts={}]
+ * @param {object} [opts={}] - { model?: string, maxTokens?: number, retries?: number }
  * @returns {Promise<string>}
  */
-export async function callHaiku(prompt, maxTokens = 500, opts = {}) {
+export async function callClaude(prompt, opts = {}) {
+  const model = opts.model || MODELS.HAIKU;
   const retries = opts.retries ?? 3;
 
   for (let attempt = 0; attempt < retries; attempt++) {
@@ -45,27 +53,22 @@ export async function callHaiku(prompt, maxTokens = 500, opts = {}) {
     try {
       const q = query({
         prompt,
-        options: {
-          model: 'claude-haiku-4-5-20251001',
-          maxTurns: 1,
-        },
+        options: { model, maxTurns: 1 },
       });
 
       for await (const msg of q) {
         if (msg.type === 'result') {
           if (msg.subtype === 'success') return msg.result;
-          // Non-success result — treat as retriable on last attempt
           const errMsg = msg.errors?.join('; ') ?? msg.subtype;
           if (attempt < retries - 1) {
             await new Promise(r => setTimeout(r, 5000));
-            break; // retry
+            break;
           }
           throw new Error(`SDK error: ${errMsg}`);
         }
       }
     } catch (e) {
       const msg = e?.message ?? String(e);
-      // Detect rate-limit errors — back off 20s
       if (/rate.?limit|429|overloaded/i.test(msg)) {
         await new Promise(r => setTimeout(r, 20000));
         continue;
@@ -75,6 +78,13 @@ export async function callHaiku(prompt, maxTokens = 500, opts = {}) {
     }
   }
   return '';
+}
+
+/**
+ * Backwards-compatible wrapper — defaults to Haiku.
+ */
+export async function callHaiku(prompt, maxTokens = 500, opts = {}) {
+  return callClaude(prompt, { ...opts, model: MODELS.HAIKU });
 }
 
 // ── LLM candidate scorer (moved from kernel-adapter.js) ───────────────────────
