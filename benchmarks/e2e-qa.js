@@ -30,13 +30,13 @@ const { printHeader, formatPercent } = require('./lib/metrics');
 // haiku-client.mjs is ESM-only; we use a top-level promise and await it in main.
 const haikuClientPromise = import('./lib/haiku-client.mjs');
 
-// Hard categories where Sonnet outperforms Haiku at extraction. Empirically,
-// temporal-reasoning, multi-session, knowledge-update, single-session-preference
-// are the four categories where Haiku at 39-58% pulls our overall down.
+// Empirical selection (500q T5full experiment, valid subset before rate limit):
+//   - preference: Haiku 17% → Sonnet+synthesis 27% (+10pp) ✓ keep Sonnet
+//   - knowledge-update: Haiku 55% → Sonnet+verifier 49% (-6pp) ✗ keep Haiku
+//   - temporal-reasoning: Haiku 39% → Sonnet 41% (+2pp, noise) - stick with Haiku (saves budget)
+//   - multi-session: Haiku 58% → Sonnet 55% (-3pp) ✗ keep Haiku
+// Sonnet only for preference. Also reduces total LLM calls (~350/500 extra).
 const SONNET_CATEGORIES = new Set([
-  'temporal-reasoning',
-  'multi-session',
-  'knowledge-update',
   'single-session-preference',
 ]);
 
@@ -317,13 +317,13 @@ function buildJudgePrompt(question, expected, predicted) {
       }
     }
 
-    // 4.5. Verifier pass — catches abstentions ("I don't know") and obvious wrong answers
+    // 4.5. Verifier pass — ONLY on abstention answers (not all Sonnet calls).
+    // Empirical: always-on verifier doubles LLM cost + hurts knowledge-update.
     let verifierUsed = false;
     if (USE_VERIFIER && context.length > 0 && predicted) {
       const looksLikeAbstention = /^(i don't know|i do not know|the (conversation|context|log) does not contain|no information|cannot find|i cannot)\b/i.test(predicted.trim()) || predicted.length < 12;
-      if (looksLikeAbstention || useSonnet) {
+      if (looksLikeAbstention) {
         try {
-          // Use the strong model for verification when answering with Sonnet, else Haiku
           const verifier = await callClaude(buildVerifierPrompt(question, context, predicted), { model: useSonnet ? MODELS.SONNET : MODELS.HAIKU });
           if (/VERDICT:\s*REVISE/i.test(verifier)) {
             const m = verifier.match(/ANSWER:\s*([\s\S]+?)(?:\n\n|$)/i);
